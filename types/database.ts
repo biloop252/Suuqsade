@@ -1,0 +1,416 @@
+export type UserRole = 'customer' | 'staff' | 'admin' | 'super_admin';
+export type OrderStatus = 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'returned';
+export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded';
+export type DeliveryStatus = 'pending' | 'in_transit' | 'delivered' | 'failed';
+export type ReturnStatus = 'pending' | 'approved' | 'rejected' | 'completed';
+
+export interface Profile {
+  id: string;
+  email: string;
+  first_name?: string;
+  last_name?: string;
+  phone?: string;
+  avatar_url?: string;
+  role: UserRole;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  image_url?: string;
+  parent_id?: string;
+  is_active: boolean;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Brand {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  logo_url?: string;
+  website_url?: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Vendor {
+  id: string;
+  business_name: string;
+  business_description: string;
+  logo_url?: string;
+  address: string;
+  city: string;
+  district: string;
+  neighborhood: string;
+  country: string;
+  tax_id: string;
+  business_license_url?: string;
+  national_id_url?: string;
+  commission_rate: number;
+  status: 'active' | 'inactive' | 'pending' | 'suspended';
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Product {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  short_description?: string;
+  sku?: string;
+  category_id?: string;
+  brand_id?: string;
+  vendor_id?: string;
+  price: number;
+  sale_price?: number;
+  cost_price?: number;
+  stock_quantity: number;
+  min_stock_level: number;
+  weight?: number;
+  dimensions?: Record<string, any>;
+  is_active: boolean;
+  is_featured: boolean;
+  meta_title?: string;
+  meta_description?: string;
+  return_policy_id?: string;
+  cod_policy_id?: string;
+  cancellation_policy_id?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProductImage {
+  id: string;
+  product_id: string;
+  image_url: string;
+  alt_text?: string;
+  is_primary: boolean;
+  sort_order: number;
+  created_at: string;
+}
+
+export interface ProductWithImages extends Product {
+  images?: ProductImage[];
+}
+
+export interface ProductVariant {
+  id: string;
+  product_id: string;
+  name: string;
+  sku?: string;
+  price?: number;
+  sale_price?: number;
+  stock_quantity: number;
+  attributes?: Record<string, any>;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProductAttribute {
+  id: string;
+  name: string;
+  slug: string;
+  type: 'text' | 'number' | 'select' | 'multiselect' | 'boolean' | 'color' | 'size';
+  description?: string;
+  is_required: boolean;
+  is_filterable: boolean;
+  is_variant_attribute: boolean;
+  sort_order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProductAttributeValue {
+  id: string;
+  product_id: string;
+  attribute_id: string;
+  value: string;
+  display_value?: string;
+  sort_order: number;
+  created_at: string;
+}
+
+export interface ProductVariantAttribute {
+  id: string;
+  variant_id: string;
+  attribute_id: string;
+  value: string;
+  display_value?: string;
+  created_at: string;
+}
+
+// New interfaces for the improved attribute structure
+export interface AttributeValue {
+  id: string;
+  attribute_id: string;
+  value: string;
+  display_value?: string;
+  sort_order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProductAttributeAssignment {
+  id: string;
+  product_id: string;
+  attribute_value_id: string;
+  created_at: string;
+}
+
+export interface VariantAttributeAssignment {
+  id: string;
+  variant_id: string;
+  attribute_value_id: string;
+  created_at: string;
+}
+
+export interface Address {
+  id: string;
+  user_id: string;
+  type: 'billing' | 'shipping';
+  first_name: string;
+  last_name: string;
+  company?: string;
+  address_line_1: string;
+  address_line_2?: string;
+  city: string;
+  state: string;
+  postal_code: string;
+  country: string;
+  phone?: string;
+  is_default: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CartItem {
+  id: string;
+  user_id: string;
+  product_id: string;
+  variant_id?: string;
+  quantity: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Order {
+  id: string;
+  order_number: string;
+  user_id: string;
+  status: OrderStatus;
+  total_amount: number;
+  subtotal: number;
+  tax_amount: number;
+  shipping_amount: number;
+  discount_amount: number;
+  billing_address_id?: string;
+  shipping_address_id?: string;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface OrderItem {
+  id: string;
+  order_id: string;
+  product_id?: string;
+  variant_id?: string;
+  product_name: string;
+  product_sku?: string;
+  quantity: number;
+  unit_price: number;
+  total_price: number;
+  created_at: string;
+}
+
+export interface Payment {
+  id: string;
+  order_id: string;
+  amount: number;
+  currency: string;
+  payment_method: string;
+  status: PaymentStatus;
+  transaction_id?: string;
+  gateway_response?: Record<string, any>;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Delivery {
+  id: string;
+  order_id: string;
+  tracking_number?: string;
+  carrier?: string;
+  status: DeliveryStatus;
+  estimated_delivery_date?: string;
+  actual_delivery_date?: string;
+  shipping_label_url?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Return {
+  id: string;
+  order_id: string;
+  user_id: string;
+  status: ReturnStatus;
+  reason: string;
+  description?: string;
+  return_label_url?: string;
+  tracking_number?: string;
+  refund_amount?: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ReturnItem {
+  id: string;
+  return_id: string;
+  order_item_id?: string;
+  product_id?: string;
+  variant_id?: string;
+  quantity: number;
+  reason?: string;
+  condition?: string;
+  created_at: string;
+}
+
+export interface Review {
+  id: string;
+  product_id: string;
+  user_id: string;
+  order_id?: string;
+  rating: number;
+  title?: string;
+  comment?: string;
+  is_verified_purchase: boolean;
+  is_approved: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WishlistItem {
+  id: string;
+  user_id: string;
+  product_id: string;
+  created_at: string;
+}
+
+export interface ReturnPolicy {
+  id: string;
+  name: string;
+  is_returnable: boolean;
+  return_days?: number;
+  description?: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CodPolicy {
+  id: string;
+  name: string;
+  is_cod_allowed: boolean;
+  description?: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CancellationPolicy {
+  id: string;
+  name: string;
+  is_cancelable: boolean;
+  cancel_until_status?: 'pending' | 'processing' | 'shipped';
+  description?: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface StaffPermission {
+  id: string;
+  name: string;
+  description?: string;
+  created_at: string;
+}
+
+export interface StaffRolePermission {
+  id: string;
+  role: UserRole;
+  permission_id: string;
+  created_at: string;
+}
+
+// Extended types with relationships
+export interface AttributeValueWithDetails extends AttributeValue {
+  attribute?: ProductAttribute;
+}
+
+export interface ProductAttributeAssignmentWithDetails extends ProductAttributeAssignment {
+  product?: Product;
+  attribute_value?: AttributeValueWithDetails;
+}
+
+export interface VariantAttributeAssignmentWithDetails extends VariantAttributeAssignment {
+  variant?: ProductVariant;
+  attribute_value?: AttributeValueWithDetails;
+}
+
+export interface ProductWithDetails extends Product {
+  category?: Category;
+  brand?: Brand;
+  vendor?: Vendor;
+  images?: ProductImage[];
+  variants?: ProductVariant[];
+  reviews?: Review[];
+  attribute_assignments?: ProductAttributeAssignmentWithDetails[];
+  return_policy?: ReturnPolicy;
+  cod_policy?: CodPolicy;
+  cancellation_policy?: CancellationPolicy;
+  // Keep old interface for backward compatibility
+  attribute_values?: ProductAttributeValue[];
+}
+
+export interface ProductVariantWithDetails extends ProductVariant {
+  product?: Product;
+  attribute_assignments?: VariantAttributeAssignmentWithDetails[];
+  // Keep old interface for backward compatibility
+  variant_attributes?: ProductVariantAttribute[];
+}
+
+export interface ProductAttributeWithValues extends ProductAttribute {
+  attribute_values?: AttributeValue[];
+  // Keep old interface for backward compatibility
+  old_attribute_values?: ProductAttributeValue[];
+}
+
+export interface OrderWithDetails extends Order {
+  user?: Profile;
+  items?: OrderItem[];
+  billing_address?: Address;
+  shipping_address?: Address;
+  payments?: Payment[];
+  delivery?: Delivery;
+  returns?: Return[];
+}
+
+export interface CartItemWithProduct extends CartItem {
+  product?: Product;
+  variant?: ProductVariant;
+}
+
+
