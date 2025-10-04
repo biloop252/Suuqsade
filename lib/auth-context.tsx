@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from './supabase';
 import { Profile } from '@/types/database';
@@ -21,22 +21,50 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const isInitialized = useRef(false);
+  const authSubscription = useRef<any>(null);
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user.id);
+    let mounted = true;
+
+    const initializeAuth = async () => {
+      try {
+        // Get initial session
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (!mounted) return;
+        
+        if (error) {
+          console.error('Error getting session:', error);
+          setLoading(false);
+          return;
+        }
+
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        // Set loading to false immediately for better UX
+        setLoading(false);
+        isInitialized.current = true;
+        
+        // Fetch profile in background if user exists
+        if (session?.user) {
+          fetchProfile(session.user.id);
+        }
+      } catch (error) {
+        console.error('Error initializing auth:', error);
+        if (mounted) {
+          setLoading(false);
+        }
       }
-      setLoading(false);
-    });
+    };
 
     // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    authSubscription.current = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return;
+      
+      console.log('Auth state change:', event, session?.user?.id);
+      
       setSession(session);
       setUser(session?.user ?? null);
       
@@ -49,16 +77,66 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    initializeAuth();
+
+    return () => {
+      mounted = false;
+      if (authSubscription.current) {
+        authSubscription.current.data.subscription.unsubscribe();
+      }
+    };
   }, []);
+
+  // Handle page visibility changes
+  useEffect(() => {
+    let lastVisibilityChange = Date.now();
+    
+    const handleVisibilityChange = async () => {
+      const now = Date.now();
+      // Throttle visibility changes to prevent excessive calls
+      if (now - lastVisibilityChange < 2000) return;
+      lastVisibilityChange = now;
+      
+      if (document.visibilityState === 'visible' && isInitialized.current) {
+        // Only refresh if we don't have a profile or session seems stale
+        if (!profile || !session) {
+          try {
+            const { data: { session }, error } = await supabase.auth.getSession();
+            if (!error && session) {
+              setSession(session);
+              setUser(session.user);
+              if (session.user && (!profile || profile.id !== session.user.id)) {
+                fetchProfile(session.user.id);
+              }
+            }
+          } catch (error) {
+            console.error('Error refreshing session on visibility change:', error);
+          }
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [profile, session]);
 
   const fetchProfile = async (userId: string) => {
     try {
-      const { data, error } = await supabase
+      // Reduced timeout for faster failure detection
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Profile fetch timeout')), 5000);
+      });
+
+      const profilePromise = supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
         .single();
+
+      const { data, error } = await Promise.race([profilePromise, timeoutPromise]) as any;
 
       if (error) {
         console.error('Error fetching profile:', error);
@@ -68,6 +146,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setProfile(data);
     } catch (error) {
       console.error('Error fetching profile:', error);
+      // Don't set profile to null on error, keep existing profile
     }
   };
 
