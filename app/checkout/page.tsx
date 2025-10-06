@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth-context';
 import { useCart } from '@/lib/cart-context';
 import { ProductWithDetails } from '@/types/database';
+import AddressForm from '@/components/profile/AddressForm';
 import { 
   ArrowLeftIcon,
   CreditCardIcon,
@@ -34,13 +35,18 @@ interface Address {
   address_line_1: string;
   address_line_2?: string;
   city: string;
-  state: string;
-  postal_code: string;
   district: string;
   neighborhood: string;
   country: string;
+  country_id?: string;
+  state_id?: string;
+  city_id?: string;
+  district_id?: string;
+  neighborhood_id?: string;
   phone?: string;
   is_default: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export default function CheckoutPage() {
@@ -63,6 +69,10 @@ export default function CheckoutPage() {
   // Address selection states
   const [selectedShippingAddressId, setSelectedShippingAddressId] = useState<string>('');
   const [useNewShippingAddress, setUseNewShippingAddress] = useState(false);
+  
+  // AddressForm modal states
+  const [showAddressForm, setShowAddressForm] = useState(false);
+  const [editingAddress, setEditingAddress] = useState<any>(null);
 
   useEffect(() => {
     if (user) {
@@ -169,6 +179,8 @@ export default function CheckoutPage() {
       // Clear shipping costs when creating new address
       setShippingCost(0);
       setProductDeliveryCosts({});
+      // Open the AddressForm modal
+      handleAddNewAddress();
     } else {
       setUseNewShippingAddress(false);
       const selectedAddress = addresses.find(addr => addr.id === addressId);
@@ -232,66 +244,150 @@ export default function CheckoutPage() {
         products: cartItems.map(item => item.product.name)
       });
 
-      // Calculate shipping for each product in cart
+      // Calculate shipping for each product in cart using direct queries like single product page
       for (const cartItem of cartItems) {
         if (cartItem.product) {
           console.log(`Calculating delivery for product: ${cartItem.product.name} (${cartItem.product.id})`);
           
-          // Use the cheapest delivery option for each product
-          const { data: deliveryOptions, error } = await supabase.rpc(
-            'get_cheapest_delivery_option',
-            {
-              product_uuid: cartItem.product.id,
-              delivery_city: shippingAddress.city,
-              delivery_country: shippingAddress.country
+          try {
+            // First check if delivery is allowed to this city (like single product page)
+            const { data: deliveryZone, error: zoneError } = await supabase
+              .from('product_delivery_zones')
+              .select('is_allowed')
+              .eq('product_id', cartItem.product.id)
+              .eq('city', shippingAddress.city)
+              .eq('country', shippingAddress.country)
+              .eq('is_allowed', true)
+              .single();
+
+            if (zoneError || !deliveryZone) {
+              console.log(`Delivery not allowed for ${cartItem.product.name} to ${shippingAddress.city}, ${shippingAddress.country}`);
+              productCosts[cartItem.product.id] = {
+                name: cartItem.product.name,
+                cost: 0,
+                isFree: true,
+                method: 'Not Available',
+                estimatedDays: 0
+              };
+              continue;
             }
-          );
 
-          if (error) {
-            console.error('Error calculating delivery for product:', cartItem.product.name, error);
-            // Set default cost for this product
+            // Get delivery options using direct queries (like single product page)
+            const { data: options, error: optionsError } = await supabase
+              .from('product_delivery_options')
+              .select(`
+                id,
+                is_free_delivery,
+                delivery_rate:delivery_rates(
+                  id,
+                  pickup_city,
+                  delivery_city,
+                  price,
+                  estimated_min_days,
+                  estimated_max_days,
+                  delivery_method:delivery_methods(
+                    id,
+                    name
+                  )
+                )
+              `)
+              .eq('product_id', cartItem.product.id)
+              .eq('delivery_rate.delivery_city', shippingAddress.city)
+              .eq('delivery_rate.is_active', true);
+
+            if (optionsError) {
+              console.error('Error fetching delivery options for', cartItem.product.name, ':', optionsError);
+              productCosts[cartItem.product.id] = {
+                name: cartItem.product.name,
+                cost: 0,
+                isFree: true,
+                method: 'Error',
+                estimatedDays: 0
+              };
+              continue;
+            }
+
+            // Get pickup locations for the matching cities
+            const pickupCities = [...new Set(options?.map(opt => opt.delivery_rate?.pickup_city).filter(Boolean) || [])];
+            
+            let pickupLocations: any[] = [];
+            if (pickupCities.length > 0) {
+              const { data: locations, error: locationsError } = await supabase
+                .from('pickup_locations')
+                .select('id, name, city, country')
+                .in('city', pickupCities)
+                .eq('is_active', true);
+
+              if (!locationsError) {
+                pickupLocations = locations || [];
+              }
+            }
+
+            // Transform the data and find the cheapest option
+            const transformedOptions = (options || [])
+              .filter(opt => opt.delivery_rate)
+              .map(opt => {
+                const pickupLocation = pickupLocations.find(pl => pl.city === opt.delivery_rate?.pickup_city);
+                return {
+                  pickup_location_id: pickupLocation?.id || '',
+                  pickup_location_name: pickupLocation?.name || 'Unknown Location',
+                  pickup_city: opt.delivery_rate?.pickup_city || '',
+                  delivery_method_id: opt.delivery_rate?.delivery_method?.id || '',
+                  delivery_method_name: opt.delivery_rate?.delivery_method?.name || 'Unknown Method',
+                  is_free_delivery: opt.is_free_delivery,
+                  delivery_price: opt.delivery_rate?.price || 0,
+                  estimated_min_days: opt.delivery_rate?.estimated_min_days || 0,
+                  estimated_max_days: opt.delivery_rate?.estimated_max_days || 0
+                };
+              })
+              .filter(opt => opt.pickup_location_id); // Only include options with valid pickup locations
+
+            console.log(`Found ${transformedOptions.length} delivery options for ${cartItem.product.name}`);
+
+            if (transformedOptions.length > 0) {
+              // Find the cheapest option
+              const cheapestOption = transformedOptions.reduce((cheapest, current) => {
+                const currentPrice = current.is_free_delivery ? 0 : current.delivery_price;
+                const cheapestPrice = cheapest.is_free_delivery ? 0 : cheapest.delivery_price;
+                return currentPrice < cheapestPrice ? current : cheapest;
+              });
+
+              const deliveryCost = cheapestOption.is_free_delivery ? 0 : cheapestOption.delivery_price;
+              
+              productCosts[cartItem.product.id] = {
+                name: cartItem.product.name,
+                cost: deliveryCost,
+                isFree: cheapestOption.is_free_delivery,
+                method: cheapestOption.delivery_method_name,
+                estimatedDays: cheapestOption.estimated_min_days
+              };
+              
+              totalShippingCost += deliveryCost;
+              hasValidShipping = true;
+              
+              console.log(`Selected delivery option for ${cartItem.product.name}:`, {
+                method: cheapestOption.delivery_method_name,
+                cost: deliveryCost,
+                isFree: cheapestOption.is_free_delivery,
+                estimatedDays: cheapestOption.estimated_min_days
+              });
+            } else {
+              console.log(`No delivery options found for ${cartItem.product.name}`);
+              productCosts[cartItem.product.id] = {
+                name: cartItem.product.name,
+                cost: 0,
+                isFree: true,
+                method: 'Not Available',
+                estimatedDays: 0
+              };
+            }
+          } catch (productError) {
+            console.error(`Error calculating delivery for product ${cartItem.product.name}:`, productError);
             productCosts[cartItem.product.id] = {
               name: cartItem.product.name,
               cost: 0,
               isFree: true,
-              method: 'Default',
-              estimatedDays: 0
-            };
-            continue;
-          }
-
-          console.log(`Delivery options for ${cartItem.product.name}:`, deliveryOptions);
-
-          if (deliveryOptions && deliveryOptions.length > 0) {
-            const cheapestOption = deliveryOptions[0];
-            const deliveryCost = cheapestOption.delivery_price || 0;
-            const isFree = cheapestOption.is_free_delivery || deliveryCost === 0;
-            
-            productCosts[cartItem.product.id] = {
-              name: cartItem.product.name,
-              cost: deliveryCost,
-              isFree: isFree,
-              method: cheapestOption.delivery_method_name || 'Unknown',
-              estimatedDays: cheapestOption.estimated_min_days || 0
-            };
-            
-            totalShippingCost += deliveryCost;
-            hasValidShipping = true;
-            
-            console.log(`Selected delivery option for ${cartItem.product.name}:`, {
-              method: cheapestOption.delivery_method_name,
-              cost: deliveryCost,
-              isFree: isFree,
-              estimatedDays: cheapestOption.estimated_min_days
-            });
-          } else {
-            // No delivery options found for this product
-            console.log(`No delivery options found for ${cartItem.product.name}`);
-            productCosts[cartItem.product.id] = {
-              name: cartItem.product.name,
-              cost: 0,
-              isFree: true,
-              method: 'Not Available',
+              method: 'Error',
               estimatedDays: 0
             };
           }
@@ -355,59 +451,76 @@ export default function CheckoutPage() {
     return calculateSubtotal() + calculateTax() + calculateShipping();
   };
 
+  // AddressForm handlers
+  const handleAddNewAddress = () => {
+    setEditingAddress(null);
+    setShowAddressForm(true);
+  };
+
+  const handleEditAddress = (address: Address) => {
+    setEditingAddress(address);
+    setShowAddressForm(true);
+  };
+
+  const handleAddressFormSuccess = async () => {
+    await fetchAddresses(); // Refresh addresses list
+    
+    // If we were creating a new address, select the most recently created one
+    if (useNewShippingAddress) {
+      const updatedAddresses = await supabase
+        .from('addresses')
+        .select('*')
+        .eq('user_id', user?.id)
+        .eq('type', 'shipping')
+        .order('created_at', { ascending: false })
+        .limit(1);
+      
+      if (updatedAddresses.data && updatedAddresses.data.length > 0) {
+        const newAddress = updatedAddresses.data[0];
+        setSelectedShippingAddressId(newAddress.id);
+        setShippingAddress(newAddress);
+        setUseNewShippingAddress(false);
+        
+        // Calculate shipping for the new address
+        if (newAddress.city && newAddress.country && cartItems.length > 0) {
+          await calculateShippingCost();
+        }
+      }
+    }
+    
+    setShowAddressForm(false);
+    setEditingAddress(null);
+  };
+
+  const handleAddressFormClose = () => {
+    setShowAddressForm(false);
+    setEditingAddress(null);
+  };
+
   const handleAddressSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setAddressProcessing(true);
     
     try {
-      // Validate shipping address
+      // Validate shipping address selection
       if (!selectedShippingAddressId) {
         alert('Please select a shipping address');
         setAddressProcessing(false);
         return;
       }
 
-      let shippingAddressId = selectedShippingAddressId;
-
-      // Save shipping address if it's new
-      if (useNewShippingAddress && shippingAddress.first_name) {
-        // Validate required fields for new shipping address
-        if (!shippingAddress.first_name || !shippingAddress.last_name || !shippingAddress.address_line_1 || 
-            !shippingAddress.city || !shippingAddress.district || !shippingAddress.neighborhood || 
-            !shippingAddress.state || !shippingAddress.postal_code || !shippingAddress.country) {
-          alert('Please fill in all required fields for shipping address');
-          setAddressProcessing(false);
-          return;
-        }
-
-        const { data: newShippingAddress, error: shippingError } = await supabase
-          .from('addresses')
-          .insert({
-            user_id: user?.id,
-            type: 'shipping',
-            ...shippingAddress,
-            is_default: true
-          })
-          .select()
-          .single();
-
-        if (shippingError) {
-          console.error('Error saving shipping address:', shippingError);
-          alert('Error saving shipping address. Please try again.');
-          setAddressProcessing(false);
-          return;
-        }
-        shippingAddressId = newShippingAddress.id;
+      // If a new address was created through the modal, it should now be in the addresses list
+      // Find the selected address
+      const selectedAddress = addresses.find(addr => addr.id === selectedShippingAddressId);
+      
+      if (!selectedAddress) {
+        alert('Selected address not found. Please try again.');
+        setAddressProcessing(false);
+        return;
       }
 
-      // Update the address in state for the order creation
-      if (shippingAddressId && shippingAddressId !== 'new') {
-        const selectedShipping = addresses.find(addr => addr.id === shippingAddressId);
-        if (selectedShipping) {
-          setShippingAddress(selectedShipping);
-        }
-      }
-
+      // Set the shipping address for order creation
+      setShippingAddress(selectedAddress);
       setStep('payment');
     } catch (error) {
       console.error('Error:', error);
@@ -447,7 +560,7 @@ export default function CheckoutPage() {
       // If creating a new address, we need to create it first
       if (finalShippingAddressId === 'new') {
         // Check if we have the address data
-        if (!shippingAddress.first_name || !shippingAddress.last_name || !shippingAddress.address_line_1 || !shippingAddress.city || !shippingAddress.district || !shippingAddress.neighborhood || !shippingAddress.state || !shippingAddress.postal_code || !shippingAddress.country) {
+        if (!shippingAddress.first_name || !shippingAddress.last_name || !shippingAddress.address_line_1 || !shippingAddress.city || !shippingAddress.district || !shippingAddress.neighborhood || !shippingAddress.country) {
           alert('Please fill in all required address fields.');
           return;
         }
@@ -733,7 +846,6 @@ export default function CheckoutPage() {
                           {shippingAddress.address_line_1}<br />
                           {shippingAddress.address_line_2 && <>{shippingAddress.address_line_2}<br /></>}
                           {shippingAddress.city}, {shippingAddress.district}, {shippingAddress.neighborhood}<br />
-                          {shippingAddress.state} {shippingAddress.postal_code}<br />
                           {shippingAddress.country}
                           {shippingAddress.phone && <><br />{shippingAddress.phone}</>}
                         </p>
@@ -743,154 +855,18 @@ export default function CheckoutPage() {
 
                   {/* Address Form - Show only if new address is selected or no addresses exist */}
                   {(useNewShippingAddress || getShippingAddresses().length === 0) && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">First Name *</label>
-                        <input
-                          type="text"
-                          required
-                          value={shippingAddress.first_name || ''}
-                          onChange={(e) => setShippingAddress({...shippingAddress, first_name: e.target.value})}
-                          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Last Name *</label>
-                        <input
-                          type="text"
-                          required
-                          value={shippingAddress.last_name || ''}
-                          onChange={(e) => setShippingAddress({...shippingAddress, last_name: e.target.value})}
-                          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                        />
-                      </div>
-                      <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Company</label>
-                        <input
-                          type="text"
-                          value={shippingAddress.company || ''}
-                          onChange={(e) => setShippingAddress({...shippingAddress, company: e.target.value})}
-                          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                        />
-                      </div>
-                      <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Address Line 1 *</label>
-                        <input
-                          type="text"
-                          required
-                          value={shippingAddress.address_line_1 || ''}
-                          onChange={(e) => setShippingAddress({...shippingAddress, address_line_1: e.target.value})}
-                          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                        />
-                      </div>
-                      <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Address Line 2</label>
-                        <input
-                          type="text"
-                          value={shippingAddress.address_line_2 || ''}
-                          onChange={(e) => setShippingAddress({...shippingAddress, address_line_2: e.target.value})}
-                          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">City *</label>
-                        <input
-                          type="text"
-                          required
-                          value={shippingAddress.city || ''}
-                          onChange={(e) => {
-                            const newCity = e.target.value;
-                            setShippingAddress({...shippingAddress, city: newCity});
-                            console.log('City changed to:', newCity);
-                          }}
-                          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                          placeholder="Enter city name"
-                        />
-                        {shippingAddress.city && (
-                          <div className="text-xs text-gray-500 mt-1">
-                            <p>Shipping will be calculated for: <strong>{shippingAddress.city}</strong></p>
-                            {shippingAddress.country && (
-                              <p className="text-green-600 mt-1">
-                                ✓ Ready to calculate delivery costs
-                              </p>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">District *</label>
-                        <input
-                          type="text"
-                          required
-                          value={shippingAddress.district || ''}
-                          onChange={(e) => setShippingAddress({...shippingAddress, district: e.target.value})}
-                          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Neighborhood *</label>
-                        <input
-                          type="text"
-                          required
-                          value={shippingAddress.neighborhood || ''}
-                          onChange={(e) => setShippingAddress({...shippingAddress, neighborhood: e.target.value})}
-                          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">State *</label>
-                        <input
-                          type="text"
-                          required
-                          value={shippingAddress.state || ''}
-                          onChange={(e) => setShippingAddress({...shippingAddress, state: e.target.value})}
-                          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Postal Code *</label>
-                        <input
-                          type="text"
-                          required
-                          value={shippingAddress.postal_code || ''}
-                          onChange={(e) => setShippingAddress({...shippingAddress, postal_code: e.target.value})}
-                          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Country *</label>
-                        <input
-                          type="text"
-                          required
-                          value={shippingAddress.country || ''}
-                          onChange={(e) => {
-                            const newCountry = e.target.value;
-                            setShippingAddress({...shippingAddress, country: newCountry});
-                            console.log('Country changed to:', newCountry);
-                          }}
-                          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                          placeholder="Enter country name"
-                        />
-                        {shippingAddress.country && (
-                          <div className="text-xs text-gray-500 mt-1">
-                            <p>Shipping will be calculated for: <strong>{shippingAddress.country}</strong></p>
-                            {shippingAddress.city && (
-                              <p className="text-green-600 mt-1">
-                                ✓ Ready to calculate delivery costs
-                              </p>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                      <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                        <input
-                          type="tel"
-                          value={shippingAddress.phone || ''}
-                          onChange={(e) => setShippingAddress({...shippingAddress, phone: e.target.value})}
-                          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                        />
-                      </div>
+                    <div className="text-center py-8">
+                      <button
+                        type="button"
+                        onClick={handleAddNewAddress}
+                        className="bg-primary-600 text-white px-6 py-3 rounded-md font-medium hover:bg-primary-700 flex items-center justify-center mx-auto"
+                      >
+                        <MapPinIcon className="h-5 w-5 mr-2" />
+                        Add New Address
+                      </button>
+                      <p className="text-sm text-gray-500 mt-2">
+                        Click to open the address form
+                      </p>
                     </div>
                   )}
                   
@@ -1261,7 +1237,6 @@ export default function CheckoutPage() {
                       {shippingAddress.address_line_1}<br />
                       {shippingAddress.address_line_2 && <>{shippingAddress.address_line_2}<br /></>}
                       {shippingAddress.city}, {shippingAddress.district}, {shippingAddress.neighborhood}<br />
-                      {shippingAddress.state} {shippingAddress.postal_code}<br />
                       {shippingAddress.country}
                     </p>
                   </div>
@@ -1281,6 +1256,15 @@ export default function CheckoutPage() {
           </div>
         </div>
       </div>
+      
+      {/* AddressForm Modal */}
+      {showAddressForm && (
+        <AddressForm
+          address={editingAddress}
+          onClose={handleAddressFormClose}
+          onSuccess={handleAddressFormSuccess}
+        />
+      )}
     </div>
   );
 }

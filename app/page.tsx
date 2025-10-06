@@ -638,13 +638,6 @@ export default function HomePage() {
                           )}
                         </div>
                         
-                        {/* Badges */}
-                        <div className="absolute top-3 left-3 flex flex-col space-y-2">
-                          <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full font-medium">
-                            Free Delivery
-                          </span>
-                        </div>
-                        
                         {/* Heart Icon */}
                         <div className="absolute top-3 right-3">
                           <button 
@@ -808,13 +801,6 @@ export default function HomePage() {
                           )}
                         </div>
                         
-                        {/* Badges */}
-                        <div className="absolute top-3 left-3 flex flex-col space-y-2">
-                          <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full font-medium">
-                            Free Delivery
-                          </span>
-                        </div>
-                        
                         {/* Heart Icon */}
                         <div className="absolute top-3 right-3">
                           <button 
@@ -976,16 +962,6 @@ export default function HomePage() {
                               <span className="text-gray-400">No Image</span>
                             </div>
                           )}
-                        </div>
-                        
-                        {/* Badges */}
-                        <div className="absolute top-3 left-3 flex flex-col space-y-2">
-                          <span className="bg-orange-500 text-white text-xs px-2 py-1 rounded-full font-medium">
-                            Trending
-                          </span>
-                          <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full font-medium">
-                            Free Delivery
-                          </span>
                         </div>
                         
                         {/* Heart Icon */}
@@ -1191,18 +1167,6 @@ export default function HomePage() {
                             <span className="text-gray-400">No Image</span>
                           </div>
                         )}
-                      </div>
-                      
-                      {/* Badges */}
-                      <div className="absolute top-3 left-3 flex flex-col space-y-2">
-                        {hasSalePrice && (
-                          <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-medium">
-                            Sale
-                          </span>
-                        )}
-                        <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full font-medium">
-                          Free Delivery
-                        </span>
                       </div>
                       
                       {/* Heart Icon */}

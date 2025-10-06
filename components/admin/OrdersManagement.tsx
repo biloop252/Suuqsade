@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Order, OrderStatus } from '@/types/database';
+import { Order, OrderStatus, DeliveryStatus } from '@/types/database';
 import { 
   Search,
   Filter,
@@ -12,7 +12,9 @@ import {
   CheckCircle,
   Clock,
   Truck,
-  XCircle
+  XCircle,
+  RefreshCw,
+  AlertCircle
 } from 'lucide-react';
 import Pagination from './Pagination';
 
@@ -155,6 +157,76 @@ export default function OrdersManagement() {
     }
   };
 
+  const getDeliveryStatusIcon = (status: DeliveryStatus) => {
+    switch (status) {
+      case 'pending':
+        return <Clock className="h-3 w-3 text-yellow-500" />;
+      case 'in_transit':
+        return <Truck className="h-3 w-3 text-blue-500" />;
+      case 'delivered':
+        return <CheckCircle className="h-3 w-3 text-green-500" />;
+      case 'failed':
+        return <XCircle className="h-3 w-3 text-red-500" />;
+      default:
+        return <Clock className="h-3 w-3 text-gray-500" />;
+    }
+  };
+
+  const getDeliveryStatusColor = (status: DeliveryStatus) => {
+    switch (status) {
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'in_transit':
+        return 'bg-blue-100 text-blue-800';
+      case 'delivered':
+        return 'bg-green-100 text-green-800';
+      case 'failed':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const isStatusSynced = (orderStatus: OrderStatus, deliveryStatus?: DeliveryStatus) => {
+    if (!deliveryStatus) return true; // No delivery means synced
+    
+    const expectedDeliveryStatus = mapOrderToDeliveryStatus(orderStatus);
+    return expectedDeliveryStatus === deliveryStatus;
+  };
+
+  const mapOrderToDeliveryStatus = (orderStatus: OrderStatus): DeliveryStatus => {
+    switch (orderStatus) {
+      case 'pending':
+      case 'confirmed':
+      case 'processing':
+        return 'pending';
+      case 'shipped':
+        return 'in_transit';
+      case 'delivered':
+        return 'delivered';
+      case 'cancelled':
+      case 'returned':
+        return 'failed';
+      default:
+        return 'pending';
+    }
+  };
+
+  const syncOrderDeliveryStatus = async (orderId: string) => {
+    try {
+      const { error } = await supabase.rpc('sync_order_delivery_status', {
+        order_id_param: orderId
+      });
+
+      if (error) throw error;
+
+      // Refresh orders to get updated status
+      await fetchOrders();
+    } catch (error) {
+      console.error('Error syncing order delivery status:', error);
+    }
+  };
+
   const statusOptions: { value: OrderStatus; label: string }[] = [
     { value: 'pending', label: 'Pending' },
     { value: 'confirmed', label: 'Confirmed' },
@@ -237,7 +309,10 @@ export default function OrdersManagement() {
                     Customer
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
+                    Order Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Delivery Status
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Total
@@ -274,6 +349,23 @@ export default function OrdersManagement() {
                         </span>
                       </div>
                     </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        {(order as any).delivery?.[0] ? (
+                          <>
+                            {getDeliveryStatusIcon((order as any).delivery[0].status)}
+                            <span className={`ml-2 inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getDeliveryStatusColor((order as any).delivery[0].status)}`}>
+                              {(order as any).delivery[0].status.replace('_', ' ').charAt(0).toUpperCase() + (order as any).delivery[0].status.replace('_', ' ').slice(1)}
+                            </span>
+                            {!isStatusSynced(order.status, (order as any).delivery[0].status) && (
+                              <AlertCircle className="ml-1 h-3 w-3 text-orange-500" title="Status not synced" />
+                            )}
+                          </>
+                        ) : (
+                          <span className="text-xs text-gray-400">No delivery</span>
+                        )}
+                      </div>
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       ${order.total_amount.toFixed(2)}
                     </td>
@@ -282,6 +374,15 @@ export default function OrdersManagement() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end space-x-2">
+                        {(order as any).delivery?.[0] && !isStatusSynced(order.status, (order as any).delivery[0].status) && (
+                          <button
+                            onClick={() => syncOrderDeliveryStatus(order.id)}
+                            className="text-orange-500 hover:text-orange-600"
+                            title="Sync status"
+                          >
+                            <RefreshCw className="h-4 w-4" />
+                          </button>
+                        )}
                         <button
                           onClick={() => setEditingOrder(order)}
                           className="text-gray-400 hover:text-blue-600"

@@ -13,7 +13,9 @@ import {
   XCircle,
   Package,
   Calendar,
-  MapPin
+  MapPin,
+  RefreshCw,
+  AlertCircle
 } from 'lucide-react';
 
 const supabase = createClient(
@@ -33,7 +35,9 @@ interface Delivery {
   created_at: string;
   updated_at: string;
   order?: {
+    id: string;
     order_number: string;
+    status: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'returned';
     user: {
       first_name: string;
       last_name: string;
@@ -58,6 +62,16 @@ const statusConfig = {
   failed: { label: 'Failed', color: 'bg-red-100 text-red-800', icon: XCircle }
 };
 
+const orderStatusConfig = {
+  pending: { label: 'Pending', color: 'bg-yellow-100 text-yellow-800', icon: Clock },
+  confirmed: { label: 'Confirmed', color: 'bg-blue-100 text-blue-800', icon: Package },
+  processing: { label: 'Processing', color: 'bg-blue-100 text-blue-800', icon: Package },
+  shipped: { label: 'Shipped', color: 'bg-purple-100 text-purple-800', icon: Truck },
+  delivered: { label: 'Delivered', color: 'bg-green-100 text-green-800', icon: CheckCircle },
+  cancelled: { label: 'Cancelled', color: 'bg-red-100 text-red-800', icon: XCircle },
+  returned: { label: 'Returned', color: 'bg-red-100 text-red-800', icon: XCircle }
+};
+
 export default function DeliveriesManagement() {
   const [deliveries, setDeliveries] = useState<Delivery[]>([]);
   const [loading, setLoading] = useState(true);
@@ -70,6 +84,43 @@ export default function DeliveriesManagement() {
   useEffect(() => {
     fetchDeliveries();
   }, []);
+
+  const mapDeliveryToOrderStatus = (deliveryStatus: string): string => {
+    switch (deliveryStatus) {
+      case 'pending':
+        return 'processing';
+      case 'in_transit':
+        return 'shipped';
+      case 'delivered':
+        return 'delivered';
+      case 'failed':
+        return 'cancelled';
+      default:
+        return 'processing';
+    }
+  };
+
+  const isStatusSynced = (deliveryStatus: string, orderStatus?: string) => {
+    if (!orderStatus) return true; // No order means synced
+    
+    const expectedOrderStatus = mapDeliveryToOrderStatus(deliveryStatus);
+    return expectedOrderStatus === orderStatus;
+  };
+
+  const syncDeliveryOrderStatus = async (deliveryId: string) => {
+    try {
+      const { error } = await supabase.rpc('sync_delivery_order_status', {
+        delivery_id_param: deliveryId
+      });
+
+      if (error) throw error;
+
+      // Refresh deliveries to get updated status
+      await fetchDeliveries();
+    } catch (error) {
+      console.error('Error syncing delivery order status:', error);
+    }
+  };
 
   const fetchDeliveries = async () => {
     try {
@@ -96,7 +147,7 @@ export default function DeliveriesManagement() {
       // First try to fetch orders without profiles join to see if orders exist
       const { data: simpleOrdersData, error: simpleOrdersError } = await supabase
         .from('orders')
-        .select('id, order_number, user_id')
+        .select('id, order_number, user_id, status')
         .in('id', orderIds);
 
       if (simpleOrdersError || !simpleOrdersData || simpleOrdersData.length === 0) {
@@ -111,6 +162,7 @@ export default function DeliveriesManagement() {
           id,
           order_number,
           user_id,
+          status,
           profiles!inner(
             first_name,
             last_name,
@@ -341,7 +393,10 @@ export default function DeliveriesManagement() {
                   Customer
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
+                  Order Status
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Delivery Status
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Delivery Date
@@ -390,6 +445,26 @@ export default function DeliveriesManagement() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        {delivery.orders?.status ? (
+                          <>
+                            {(() => {
+                              const OrderStatusIcon = orderStatusConfig[delivery.orders.status].icon;
+                              return <OrderStatusIcon className="h-3 w-3 mr-1" />;
+                            })()}
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${orderStatusConfig[delivery.orders.status].color}`}>
+                              {orderStatusConfig[delivery.orders.status].label}
+                            </span>
+                            {!isStatusSynced(delivery.status, delivery.orders.status) && (
+                              <AlertCircle className="ml-1 h-3 w-3 text-orange-500" title="Status not synced" />
+                            )}
+                          </>
+                        ) : (
+                          <span className="text-xs text-gray-400">No order</span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusConfig[delivery.status].color}`}>
                         <StatusIcon className="h-3 w-3 mr-1" />
                         {statusConfig[delivery.status].label}
@@ -415,6 +490,15 @@ export default function DeliveriesManagement() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex space-x-2">
+                        {delivery.orders?.status && !isStatusSynced(delivery.status, delivery.orders.status) && (
+                          <button
+                            onClick={() => syncDeliveryOrderStatus(delivery.id)}
+                            className="text-orange-500 hover:text-orange-600"
+                            title="Sync status"
+                          >
+                            <RefreshCw className="h-4 w-4" />
+                          </button>
+                        )}
                         <button
                           onClick={() => {
                             setSelectedDelivery(delivery);

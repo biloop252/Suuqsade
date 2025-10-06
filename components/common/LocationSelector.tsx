@@ -13,15 +13,12 @@ interface Location {
 
 interface LocationSelectorProps {
   selectedCountryId?: string;
-  selectedStateId?: string;
   selectedCityId?: string;
   selectedDistrictId?: string;
   selectedNeighborhoodId?: string;
   onLocationChange: (locations: {
     countryId: string;
     countryName: string;
-    stateId: string;
-    stateName: string;
     cityId: string;
     cityName: string;
     districtId: string;
@@ -34,7 +31,6 @@ interface LocationSelectorProps {
 
 export default function LocationSelector({
   selectedCountryId = '',
-  selectedStateId = '',
   selectedCityId = '',
   selectedDistrictId = '',
   selectedNeighborhoodId = '',
@@ -42,20 +38,17 @@ export default function LocationSelector({
   disabled = false
 }: LocationSelectorProps) {
   const [countries, setCountries] = useState<Location[]>([]);
-  const [states, setStates] = useState<Location[]>([]);
   const [cities, setCities] = useState<Location[]>([]);
   const [districts, setDistricts] = useState<Location[]>([]);
   const [neighborhoods, setNeighborhoods] = useState<Location[]>([]);
   
   const [selectedCountry, setSelectedCountry] = useState(selectedCountryId);
-  const [selectedState, setSelectedState] = useState(selectedStateId);
   const [selectedCity, setSelectedCity] = useState(selectedCityId);
   const [selectedDistrict, setSelectedDistrict] = useState(selectedDistrictId);
   const [selectedNeighborhood, setSelectedNeighborhood] = useState(selectedNeighborhoodId);
   
   const [loading, setLoading] = useState({
     countries: true,
-    states: false,
     cities: false,
     districts: false,
     neighborhoods: false
@@ -69,35 +62,21 @@ export default function LocationSelector({
   // Update internal state when props change
   useEffect(() => {
     setSelectedCountry(selectedCountryId);
-    setSelectedState(selectedStateId);
     setSelectedCity(selectedCityId);
     setSelectedDistrict(selectedDistrictId);
     setSelectedNeighborhood(selectedNeighborhoodId);
-  }, [selectedCountryId, selectedStateId, selectedCityId, selectedDistrictId, selectedNeighborhoodId]);
+  }, [selectedCountryId, selectedCityId, selectedDistrictId, selectedNeighborhoodId]);
 
-  // Load states when country changes
+  // Load cities when country changes
   useEffect(() => {
     if (selectedCountry) {
-      loadStates(selectedCountry);
-    } else {
-      setStates([]);
-      setSelectedState('');
-    }
-  }, [selectedCountry]);
-
-  // Load cities when state or country changes
-  useEffect(() => {
-    if (selectedState) {
-      // Load cities from state
-      loadCities(selectedState);
-    } else if (selectedCountry) {
-      // Load cities directly from country (when state is optional)
+      // Load cities directly from country
       loadCitiesFromCountry(selectedCountry);
     } else {
       setCities([]);
       setSelectedCity('');
     }
-  }, [selectedState, selectedCountry]);
+  }, [selectedCountry]);
 
   // Load districts when city changes
   useEffect(() => {
@@ -123,7 +102,6 @@ export default function LocationSelector({
   useEffect(() => {
     if (selectedCountry && selectedCity) {
       const country = countries.find(c => c.id === selectedCountry);
-      const state = states.find(s => s.id === selectedState);
       const city = cities.find(c => c.id === selectedCity);
       const district = districts.find(d => d.id === selectedDistrict);
       const neighborhood = neighborhoods.find(n => n.id === selectedNeighborhood);
@@ -132,8 +110,6 @@ export default function LocationSelector({
         onLocationChange({
           countryId: selectedCountry,
           countryName: country.name,
-          stateId: selectedState || '',
-          stateName: state?.name || '',
           cityId: selectedCity,
           cityName: city.name,
           districtId: selectedDistrict || '',
@@ -143,7 +119,7 @@ export default function LocationSelector({
         });
       }
     }
-  }, [selectedCountry, selectedState, selectedCity, selectedDistrict, selectedNeighborhood, countries, states, cities, districts, neighborhoods]);
+  }, [selectedCountry, selectedCity, selectedDistrict, selectedNeighborhood, countries, cities, districts, neighborhoods]);
 
   const loadCountries = async () => {
     try {
@@ -161,46 +137,6 @@ export default function LocationSelector({
       console.error('Error loading countries:', error);
     } finally {
       setLoading(prev => ({ ...prev, countries: false }));
-    }
-  };
-
-  const loadStates = async (countryId: string) => {
-    try {
-      setLoading(prev => ({ ...prev, states: true }));
-      const { data, error } = await supabase
-        .from('locations')
-        .select('id, name, parent_id, level')
-        .eq('parent_id', countryId)
-        .eq('level', 1)
-        .eq('is_active', true)
-        .order('name');
-
-      if (error) throw error;
-      setStates(data || []);
-    } catch (error) {
-      console.error('Error loading states:', error);
-    } finally {
-      setLoading(prev => ({ ...prev, states: false }));
-    }
-  };
-
-  const loadCities = async (stateId: string) => {
-    try {
-      setLoading(prev => ({ ...prev, cities: true }));
-      const { data, error } = await supabase
-        .from('locations')
-        .select('id, name, parent_id, level')
-        .eq('parent_id', stateId)
-        .eq('level', 2)
-        .eq('is_active', true)
-        .order('name');
-
-      if (error) throw error;
-      setCities(data || []);
-    } catch (error) {
-      console.error('Error loading cities:', error);
-    } finally {
-      setLoading(prev => ({ ...prev, cities: false }));
     }
   };
 
@@ -266,14 +202,6 @@ export default function LocationSelector({
 
   const handleCountryChange = (countryId: string) => {
     setSelectedCountry(countryId);
-    setSelectedState('');
-    setSelectedCity('');
-    setSelectedDistrict('');
-    setSelectedNeighborhood('');
-  };
-
-  const handleStateChange = (stateId: string) => {
-    setSelectedState(stateId);
     setSelectedCity('');
     setSelectedDistrict('');
     setSelectedNeighborhood('');
@@ -322,36 +250,6 @@ export default function LocationSelector({
             </div>
           )}
         </div>
-      </div>
-
-      {/* State/Province Selection */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          State/Province (Optional)
-        </label>
-        <div className="relative">
-          <select
-            value={selectedState}
-            onChange={(e) => handleStateChange(e.target.value)}
-            disabled={disabled || !selectedCountry || loading.states}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-          >
-            <option value="">Select State/Province (Optional)</option>
-            {states.map((state) => (
-              <option key={state.id} value={state.id}>
-                {state.name}
-              </option>
-            ))}
-          </select>
-          {loading.states && (
-            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-600"></div>
-            </div>
-          )}
-        </div>
-        <p className="text-xs text-gray-500 mt-1">
-          Some countries may not have states/provinces. You can skip this step.
-        </p>
       </div>
 
       {/* City Selection */}
@@ -442,7 +340,6 @@ export default function LocationSelector({
           <h4 className="text-sm font-medium text-blue-800 mb-1">Selected Location:</h4>
           <p className="text-sm text-blue-700">
             {countries.find(c => c.id === selectedCountry)?.name}
-            {selectedState && ` → ${states.find(s => s.id === selectedState)?.name}`}
             {` → ${cities.find(c => c.id === selectedCity)?.name}`}
             {selectedDistrict && ` → ${districts.find(d => d.id === selectedDistrict)?.name}`}
             {selectedNeighborhood && ` → ${neighborhoods.find(n => n.id === selectedNeighborhood)?.name}`}

@@ -51,11 +51,11 @@ export default function AddressForm({ address, onClose, onSuccess }: AddressForm
     district: '',
     neighborhood: '',
     country: 'Turkey',
-    country_id: '',
-    state_id: '',
-    city_id: '',
-    district_id: '',
-    neighborhood_id: '',
+    country_id: null as string | null,
+    state_id: null as string | null,
+    city_id: null as string | null,
+    district_id: null as string | null,
+    neighborhood_id: null as string | null,
     phone: '',
     is_default: false,
   });
@@ -64,8 +64,6 @@ export default function AddressForm({ address, onClose, onSuccess }: AddressForm
   const [selectedLocations, setSelectedLocations] = useState({
     countryId: '',
     countryName: '',
-    stateId: '',
-    stateName: '',
     cityId: '',
     cityName: '',
     districtId: '',
@@ -87,11 +85,11 @@ export default function AddressForm({ address, onClose, onSuccess }: AddressForm
         district: address.district,
         neighborhood: address.neighborhood,
         country: address.country,
-        country_id: address.country_id || '',
-        state_id: address.state_id || '',
-        city_id: address.city_id || '',
-        district_id: address.district_id || '',
-        neighborhood_id: address.neighborhood_id || '',
+        country_id: address.country_id || null,
+        state_id: null, // No longer using state
+        city_id: address.city_id || null,
+        district_id: address.district_id || null,
+        neighborhood_id: address.neighborhood_id || null,
         phone: address.phone || '',
         is_default: address.is_default,
       });
@@ -100,8 +98,6 @@ export default function AddressForm({ address, onClose, onSuccess }: AddressForm
       setSelectedLocations({
         countryId: address.country_id || '',
         countryName: address.country,
-        stateId: address.state_id || '',
-        stateName: '', // Will be loaded by LocationSelector
         cityId: address.city_id || '',
         cityName: address.city,
         districtId: address.district_id || '',
@@ -123,8 +119,6 @@ export default function AddressForm({ address, onClose, onSuccess }: AddressForm
   const handleLocationChange = (locations: {
     countryId: string;
     countryName: string;
-    stateId: string;
-    stateName: string;
     cityId: string;
     cityName: string;
     districtId: string;
@@ -135,17 +129,18 @@ export default function AddressForm({ address, onClose, onSuccess }: AddressForm
     setSelectedLocations(locations);
     
     // Update form data with location information
+    // Convert empty strings to null for UUID columns
     setFormData(prev => ({
       ...prev,
       country: locations.countryName,
       city: locations.cityName,
       district: locations.districtName,
       neighborhood: locations.neighborhoodName,
-      country_id: locations.countryId,
-      state_id: locations.stateId,
-      city_id: locations.cityId,
-      district_id: locations.districtId,
-      neighborhood_id: locations.neighborhoodId,
+      country_id: locations.countryId || null,
+      state_id: null, // No longer using state
+      city_id: locations.cityId || null,
+      district_id: locations.districtId || null,
+      neighborhood_id: locations.neighborhoodId || null,
     }));
   };
 
@@ -156,16 +151,22 @@ export default function AddressForm({ address, onClose, onSuccess }: AddressForm
     setIsLoading(true);
     try {
       // Prepare the data for submission
+      // Ensure UUID columns are null instead of empty strings
       const addressData = {
         ...formData,
-        user_id: user.id
+        user_id: user.id,
+        country_id: formData.country_id || null,
+        state_id: null, // No longer using state
+        city_id: formData.city_id || null,
+        district_id: formData.district_id || null,
+        neighborhood_id: formData.neighborhood_id || null,
       };
 
       if (address) {
         // Update existing address
         const { error } = await supabase
           .from('addresses')
-          .update(formData)
+          .update(addressData)
           .eq('id', address.id);
 
         if (error) throw error;
@@ -325,7 +326,6 @@ export default function AddressForm({ address, onClose, onSuccess }: AddressForm
             <h3 className="text-lg font-medium text-gray-900 mb-4">Location</h3>
             <LocationSelector
               selectedCountryId={selectedLocations.countryId}
-              selectedStateId={selectedLocations.stateId}
               selectedCityId={selectedLocations.cityId}
               selectedDistrictId={selectedLocations.districtId}
               selectedNeighborhoodId={selectedLocations.neighborhoodId}
