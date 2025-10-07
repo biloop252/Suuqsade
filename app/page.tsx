@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ShoppingBagIcon, StarIcon, TruckIcon, ShieldCheckIcon, SmartphoneIcon, LaptopIcon, ShirtIcon, HomeIcon, GamepadIcon, BookOpenIcon, SparklesIcon, ChevronLeftIcon, ChevronRightIcon, CreditCardIcon, ShoppingCartIcon, ZapIcon, HeartIcon, PackageIcon, ShoppingBasketIcon, PercentIcon, CrownIcon, GiftIcon } from 'lucide-react';
+import { ShoppingBagIcon, StarIcon, TruckIcon, ShieldCheckIcon, SmartphoneIcon, LaptopIcon, ShirtIcon, HomeIcon, GamepadIcon, BookOpenIcon, SparklesIcon, ChevronLeftIcon, ChevronRightIcon, CreditCardIcon, ShoppingCartIcon, HeartIcon, PackageIcon, ShoppingBasketIcon, PercentIcon, CrownIcon, GiftIcon } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { ProductWithDetails } from '@/types/database';
 import Image from 'next/image';
@@ -9,6 +9,10 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { useCart } from '@/lib/cart-context';
 import { useFavorites } from '@/lib/favorites-context';
+import PromotionalMediaDisplay from '@/components/promotional/PromotionalMediaDisplay';
+import PromotionalBanner from '@/components/promotional/PromotionalBanner';
+import LimitedTimeDeals from '@/components/promotional/LimitedTimeDeals';
+import HomepageMiddleSlider from '@/components/promotional/HomepageMiddleSlider';
 
 export default function HomePage() {
   const { user } = useAuth();
@@ -29,7 +33,6 @@ export default function HomePage() {
     minutes: 59,
     seconds: 59
   });
-  const [currentSlide, setCurrentSlide] = useState(0);
   const [heroSlide, setHeroSlide] = useState(0);
   const [addingToCart, setAddingToCart] = useState<string | null>(null);
 
@@ -114,59 +117,6 @@ export default function HomePage() {
     }
   ];
 
-  // Hero carousel data - Promotional offers with images
-  const heroSlides = [
-    {
-      id: 1,
-      title: "Flash Sale",
-      subtitle: "Limited time offer",
-      badge: "Up to 80% off",
-      description: "Don't miss out on incredible deals",
-      image: "https://images.unsplash.com/photo-1607082349566-187342175e2f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
-      href: "/products?sort=flash",
-      cta: "Shop Now"
-    },
-    {
-      id: 2,
-      title: "New Arrivals",
-      subtitle: "Fresh products daily",
-      badge: "Just In",
-      description: "Discover the latest trends",
-      image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
-      href: "/products?sort=newest",
-      cta: "Explore"
-    },
-    {
-      id: 3,
-      title: "Free Shipping",
-      subtitle: "On orders over $50",
-      badge: "No minimum",
-      description: "Fast and reliable delivery",
-      image: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2340&q=80",
-      href: "/products?shipping=free",
-      cta: "Learn More"
-    },
-    {
-      id: 4,
-      title: "Member Exclusive",
-      subtitle: "Special member deals",
-      badge: "VIP Access",
-      description: "Join our loyalty program",
-      image: "https://images.unsplash.com/photo-1556742111-a301076d9d18?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
-      href: "/auth/signup",
-      cta: "Join Now"
-    },
-    {
-      id: 5,
-      title: "Weekend Special",
-      subtitle: "End of week deals",
-      badge: "50% off",
-      description: "Weekend shopping made better",
-      image: "https://images.unsplash.com/photo-1472851294608-062f824d29cc?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
-      href: "/products?discount=50",
-      cta: "Shop Deals"
-    }
-  ];
 
   // Auto-slide effect for hero banner carousel
   useEffect(() => {
@@ -177,14 +127,6 @@ export default function HomePage() {
     return () => clearInterval(interval);
   }, [heroBannerSlides.length]);
 
-  // Auto-slide effect for promotional carousel
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
-    }, 4000); // Change slide every 4 seconds
-
-    return () => clearInterval(interval);
-  }, [heroSlides.length]);
 
   // Function to fetch all products with pagination
   const fetchAllProducts = async (page: number = 1, append: boolean = false) => {
@@ -393,182 +335,35 @@ export default function HomePage() {
       <section className="bg-white">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           
-          {/* Section 1: Hero Carousel with 8 Plain Images */}
+          {/* Section 1: Dynamic Hero Carousel from Admin Panel */}
           <div className="relative overflow-hidden lg:col-span-2">
-            <div className="relative h-64">
-              {/* Slides */}
-              <div 
-                className="flex transition-transform duration-500 ease-in-out h-full"
-                style={{ transform: `translateX(-${heroSlide * 100}%)` }}
-              >
-                {heroBannerSlides.map((slide) => (
-                  <Link
-                    key={slide.id}
-                    href={slide.href}
-                    className="w-full flex-shrink-0 relative"
-                  >
-                    <div className="h-full relative group cursor-pointer overflow-hidden">
-                      {/* Background Image */}
-                      <div 
-                        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-                        style={{ backgroundImage: `url(${slide.image})` }}
-                      />
-                </div>
-                  </Link>
-                ))}
-                </div>
-              
-              {/* Navigation Arrows */}
-              <button
-                onClick={() => setHeroSlide((prev) => (prev - 1 + heroBannerSlides.length) % heroBannerSlides.length)}
-                className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg transition-all duration-300"
-              >
-                <ChevronLeftIcon className="h-4 w-4 text-gray-600" />
-                </button>
-              
-              <button
-                onClick={() => setHeroSlide((prev) => (prev + 1) % heroBannerSlides.length)}
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg transition-all duration-300"
-              >
-                <ChevronRightIcon className="h-4 w-4 text-gray-600" />
-                </button>
-              </div>
-              
-            {/* Dots Indicator */}
-            <div className="flex justify-center mt-3 space-x-1">
-              {heroBannerSlides.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setHeroSlide(index)}
-                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                    index === heroSlide 
-                      ? 'bg-orange-500 scale-125' 
-                      : 'bg-gray-300 hover:bg-gray-400'
-                  }`}
-                />
-              ))}
-                </div>
-                  </div>
+            <PromotionalMediaDisplay 
+              position="homepage_top" 
+              className="h-64"
+              maxItems={5}
+            />
+          </div>
 
-          {/* Section 2: Single Plain Image */}
-          <div className="relative overflow-hidden lg:col-span-1">
-            <Link href="/categories/home-garden" className="block">
-              <div className="h-64 relative group cursor-pointer overflow-hidden">
-                {/* Background Image */}
-                <div 
-                  className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-                  style={{ backgroundImage: `url(https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2340&q=80)` }}
-                />
-                  </div>
-            </Link>
-                </div>
+          {/* Section 2: Dynamic Right Side Banners */}
+          <div className="space-y-2">
+            <PromotionalBanner 
+              position="homepage_middle" 
+              className="h-32"
+              showTitle={true}
+              showDescription={false}
+            />
+            <PromotionalBanner 
+              position="homepage_bottom" 
+              className="h-32"
+              showTitle={true}
+              showDescription={false}
+            />
+          </div>
               </div>
       </section>
 
       {/* Limited Time Deals Section */}
-      <section className="py-6 bg-gradient-to-r from-red-50 to-orange-50 relative overflow-hidden">
-        {/* Background decoration */}
-        <div className="absolute inset-0 bg-gradient-to-r from-red-100/20 to-orange-100/20"></div>
-        <div className="absolute top-0 right-0 w-64 h-64 bg-red-200/10 rounded-full -translate-y-32 translate-x-32"></div>
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-orange-200/10 rounded-full translate-y-24 -translate-x-24"></div>
-        
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          {/* Section Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center space-x-4">
-              <div className="bg-gradient-to-r from-red-500 to-orange-500 rounded-xl p-3 shadow-lg">
-                <ZapIcon className="h-7 w-7 text-white animate-pulse" />
-                </div>
-              <div>
-                <h2 className="text-3xl font-bold bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-transparent">
-                  Limited Time Deals
-                </h2>
-                <p className="text-gray-600 font-medium">Don't miss out on these exclusive offers</p>
-            </div>
-          </div>
-
-            <Link href="/products?deals=limited" className="bg-white/80 backdrop-blur-sm text-gray-700 px-6 py-3 rounded-xl hover:bg-white transition-all duration-300 flex items-center space-x-2 border border-red-200 shadow-lg hover:shadow-xl">
-              <span className="font-medium">View All Deals</span>
-              <ChevronRightIcon className="h-4 w-4" />
-            </Link>
-                </div>
-
-          {/* Deals Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Deal 1 */}
-            <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-red-100 hover:shadow-2xl hover:scale-105 transition-all duration-300 group relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-r from-red-500/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <div className="relative p-6">
-              <div className="text-center">
-                  <div className="bg-gradient-to-r from-red-500 to-orange-500 text-white text-xs px-3 py-1 rounded-full font-bold mb-3 inline-block">
-                    FLASH SALE
-                </div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">Electronics</h3>
-                  <p className="text-2xl font-bold text-red-600 mb-2">Up to 70% OFF</p>
-                  <p className="text-sm text-gray-600 mb-4">Smartphones, Laptops & More</p>
-                  <Link href="/categories/electronics?deal=flash" className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors text-sm font-medium">
-                    Shop Now
-                  </Link>
-                  </div>
-                </div>
-              </div>
-              
-            {/* Deal 2 */}
-            <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-orange-100 hover:shadow-2xl hover:scale-105 transition-all duration-300 group relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-yellow-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <div className="relative p-6">
-              <div className="text-center">
-                  <div className="bg-gradient-to-r from-orange-500 to-yellow-500 text-white text-xs px-3 py-1 rounded-full font-bold mb-3 inline-block">
-                    WEEKEND SPECIAL
-              </div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">Fashion</h3>
-                  <p className="text-2xl font-bold text-orange-600 mb-2">50% OFF</p>
-                  <p className="text-sm text-gray-600 mb-4">Clothing & Accessories</p>
-                  <Link href="/categories/fashion?deal=weekend" className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors text-sm font-medium">
-                    Shop Now
-                  </Link>
-            </div>
-          </div>
-                </div>
-
-            {/* Deal 3 */}
-            <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-red-100 hover:shadow-2xl hover:scale-105 transition-all duration-300 group relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-r from-red-500/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <div className="relative p-6">
-              <div className="text-center">
-                  <div className="bg-gradient-to-r from-red-500 to-orange-500 text-white text-xs px-3 py-1 rounded-full font-bold mb-3 inline-block">
-                    SPRING SALE
-                </div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">Home & Garden</h3>
-                  <p className="text-2xl font-bold text-red-600 mb-2">40% OFF</p>
-                  <p className="text-sm text-gray-600 mb-4">Furniture & Decor</p>
-                  <Link href="/categories/home-garden?deal=spring" className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors text-sm font-medium">
-                    Shop Now
-                  </Link>
-                  </div>
-                </div>
-              </div>
-              
-            {/* Deal 4 */}
-            <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-orange-100 hover:shadow-2xl hover:scale-105 transition-all duration-300 group relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-yellow-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <div className="relative p-6">
-              <div className="text-center">
-                  <div className="bg-gradient-to-r from-orange-500 to-yellow-500 text-white text-xs px-3 py-1 rounded-full font-bold mb-3 inline-block">
-                    MEMBER EXCLUSIVE
-                  </div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">Beauty</h3>
-                  <p className="text-2xl font-bold text-orange-600 mb-2">30% OFF</p>
-                  <p className="text-sm text-gray-600 mb-4">Skincare & Makeup</p>
-                  <Link href="/categories/beauty?deal=member" className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors text-sm font-medium">
-                    Shop Now
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <LimitedTimeDeals />
 
       {/* Recommended Products Section */}
       <section className="py-6 bg-white">
@@ -1059,67 +854,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Hero Carousel Section */}
-      <section className="py-4 bg-white relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="relative">
-            {/* Carousel Container */}
-            <div className="relative h-56 rounded-lg overflow-hidden">
-              {/* Slides */}
-              <div 
-                className="flex transition-transform duration-500 ease-in-out h-full"
-                style={{ transform: `translateX(-${currentSlide * 100}%)` }}
-              >
-                {heroSlides.map((slide) => (
-                  <Link
-                    key={slide.id}
-                    href={slide.href}
-                    className="w-full flex-shrink-0 relative"
-                  >
-                    <div className="h-full relative group cursor-pointer overflow-hidden">
-                      {/* Background Image */}
-                      <div 
-                        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-                        style={{ backgroundImage: `url(${slide.image})` }}
-                      />
-                    </div>
-                  </Link>
-                ))}
-          </div>
-          
-              {/* Navigation Arrows */}
-              <button
-                onClick={() => setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length)}
-                className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg transition-all duration-300"
-              >
-                <ChevronLeftIcon className="h-5 w-5 text-gray-600" />
-              </button>
-              
-              <button
-                onClick={() => setCurrentSlide((prev) => (prev + 1) % heroSlides.length)}
-                className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg transition-all duration-300"
-              >
-                <ChevronRightIcon className="h-5 w-5 text-gray-600" />
-              </button>
-                  </div>
-            
-            {/* Dots Indicator */}
-            <div className="flex justify-center mt-4 space-x-2">
-              {heroSlides.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentSlide(index)}
-                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                    index === currentSlide 
-                      ? 'bg-orange-500 scale-125' 
-                      : 'bg-gray-300 hover:bg-gray-400'
-                  }`}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Homepage Middle Slider Section */}
+      <HomepageMiddleSlider />
 
       {/* All Products Section */}
       <section className="py-6 bg-white">

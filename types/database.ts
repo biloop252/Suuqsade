@@ -3,6 +3,9 @@ export type OrderStatus = 'pending' | 'confirmed' | 'processing' | 'shipped' | '
 export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded';
 export type DeliveryStatus = 'pending' | 'in_transit' | 'delivered' | 'failed';
 export type ReturnStatus = 'pending' | 'approved' | 'rejected' | 'completed';
+export type PromotionalMediaType = 'slider' | 'banner' | 'popup' | 'video' | 'custom';
+export type PromotionalMediaPosition = 'homepage_top' | 'homepage_middle' | 'homepage_bottom' | 'homepage_middle_slider' | 'category_page' | 'product_page' | 'sidebar' | 'footer' | 'popup' | 'header' | 'checkout_page' | 'cart_page' | 'limited_time_deals';
+export type PromotionalMediaTarget = '_self' | '_blank' | '_parent' | '_top';
 
 export interface Profile {
   id: string;
@@ -355,6 +358,39 @@ export interface StaffRolePermission {
   created_at: string;
 }
 
+export interface PromotionalMedia {
+  id: string;
+  title: string;
+  subtitle?: string;
+  description?: string;
+  media_type: PromotionalMediaType;
+  image_url?: string;
+  mobile_image_url?: string;
+  video_url?: string;
+  link_url?: string;
+  button_text?: string;
+  target: PromotionalMediaTarget;
+  banner_position: PromotionalMediaPosition;
+  display_order: number;
+  background_color: string;
+  text_color: string;
+  is_active: boolean;
+  start_date?: string;
+  end_date?: string;
+  language_code: string;
+  store_id?: string;
+  created_by?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PromotionalMediaCategory {
+  id: string;
+  promotional_media_id: string;
+  category_id: string;
+  created_at: string;
+}
+
 // Extended types with relationships
 export interface AttributeValueWithDetails extends AttributeValue {
   attribute?: ProductAttribute;
@@ -411,6 +447,16 @@ export interface OrderWithDetails extends Order {
 export interface CartItemWithProduct extends CartItem {
   product?: Product;
   variant?: ProductVariant;
+}
+
+export interface PromotionalMediaWithDetails extends PromotionalMedia {
+  categories?: Category[];
+  created_by_profile?: Profile;
+}
+
+export interface PromotionalMediaCategoryWithDetails extends PromotionalMediaCategory {
+  promotional_media?: PromotionalMedia;
+  category?: Category;
 }
 
 

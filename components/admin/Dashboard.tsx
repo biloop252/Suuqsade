@@ -64,11 +64,14 @@ export default function Dashboard() {
         .lt('stock_quantity', 10)
         .eq('is_active', true);
 
-      // Fetch total revenue
+      // Fetch total revenue from paid orders only
       const { data: revenueData } = await supabase
         .from('orders')
-        .select('total_amount')
-        .eq('status', 'delivered');
+        .select(`
+          total_amount,
+          payments!inner(status)
+        `)
+        .eq('payments.status', 'paid');
 
       const totalRevenue = revenueData?.reduce((sum, order) => sum + (order.total_amount || 0), 0) || 0;
 

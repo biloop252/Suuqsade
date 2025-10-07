@@ -27,7 +27,8 @@ import {
   Building2,
   CreditCard,
   MapPin,
-  RefreshCw
+  RefreshCw,
+  Image
 } from 'lucide-react';
 
 interface AdminLayoutWrapperProps {
@@ -76,6 +77,7 @@ export default function AdminLayoutWrapper({ children }: AdminLayoutWrapperProps
     { name: 'Variants', href: '/admin/variants', icon: Layers },
     { name: 'Vendors', href: '/admin/vendors', icon: Building2 },
     { name: 'Locations', href: '/admin/locations', icon: MapPin },
+    { name: 'Promotional Media', href: '/admin/promotional-media', icon: Image },
     { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
     { name: 'Shipments', href: '/admin/deliveries', icon: Truck },
     { name: 'Payments', href: '/admin/payments', icon: CreditCard },
@@ -107,7 +109,6 @@ export default function AdminLayoutWrapper({ children }: AdminLayoutWrapperProps
     console.log('Current pathname:', pathname);
     console.log('Will navigate to:', href);
   };
-
 
   // Auto-open dropdowns if on relevant pages
   useEffect(() => {
@@ -423,3 +424,5 @@ export default function AdminLayoutWrapper({ children }: AdminLayoutWrapperProps
     </div>
   );
 }
+
+

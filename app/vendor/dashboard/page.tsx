@@ -64,11 +64,28 @@ export default function VendorDashboard() {
         .select('*', { count: 'exact', head: true })
         .eq('vendor_id', user.id);
 
-      // Get orders count (this would need to be implemented based on your orders table structure)
+      // Get orders count for this vendor
       const { count: ordersCountResult, error: ordersError } = await supabase
         .from('orders')
         .select('*', { count: 'exact', head: true })
         .eq('vendor_id', user.id);
+
+      // Get total revenue from paid orders for this vendor
+      const { data: revenueData, error: revenueError } = await supabase
+        .from('orders')
+        .select(`
+          total_amount,
+          payments!inner(status)
+        `)
+        .eq('vendor_id', user.id)
+        .eq('payments.status', 'paid');
+
+      // Get pending orders count for this vendor
+      const { count: pendingOrdersCount, error: pendingOrdersError } = await supabase
+        .from('orders')
+        .select('*', { count: 'exact', head: true })
+        .eq('vendor_id', user.id)
+        .in('status', ['pending', 'confirmed', 'processing']);
 
       if (productsError) {
         console.error('Error loading products count:', productsError);
@@ -76,12 +93,20 @@ export default function VendorDashboard() {
       if (ordersError) {
         console.error('Error loading orders count:', ordersError);
       }
+      if (revenueError) {
+        console.error('Error loading revenue data:', revenueError);
+      }
+      if (pendingOrdersError) {
+        console.error('Error loading pending orders count:', pendingOrdersError);
+      }
+
+      const totalRevenue = revenueData?.reduce((sum, order) => sum + (order.total_amount || 0), 0) || 0;
 
       setStats({
         total_products: typeof productsCountResult === 'number' ? productsCountResult : 0,
         total_orders: typeof ordersCountResult === 'number' ? ordersCountResult : 0,
-        total_revenue: 0, // This would need to be calculated from actual orders
-        pending_orders: 0 // This would need to be calculated from actual orders
+        total_revenue: totalRevenue,
+        pending_orders: typeof pendingOrdersCount === 'number' ? pendingOrdersCount : 0
       });
     } catch (error) {
       console.error('Error loading vendor stats:', error);

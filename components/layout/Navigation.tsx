@@ -2,8 +2,11 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { useCart } from '@/lib/cart-context';
+import { supabase } from '@/lib/supabase';
+import { Category } from '@/types/database';
 import CategoriesDropdown from './CategoriesDropdown';
 import { 
   ShoppingCartIcon, 
@@ -38,14 +41,45 @@ import {
 export default function Navigation() {
   const { user, profile, signOut } = useAuth();
   const { cartCount } = useCart();
+  const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const handleSignOut = async () => {
     await signOut();
     setIsUserDropdownOpen(false);
   };
+
+  // Fetch categories
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setCategoriesLoading(true);
+        const { data, error } = await supabase
+          .from('categories')
+          .select('*')
+          .eq('is_active', true)
+          .is('parent_id', null)
+          .order('sort_order')
+          .order('name');
+
+        if (error) {
+          console.error('Error fetching categories:', error);
+        } else {
+          setCategories(data || []);
+        }
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      } finally {
+        setCategoriesLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -261,40 +295,40 @@ export default function Navigation() {
       {/* Category Navigation */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-12">
+          <div className="flex items-center h-12">
             <CategoriesDropdown />
             
-            <div className="flex items-center space-x-6">
-              <Link href="/categories/mother-child" className="text-gray-700 hover:text-orange-500 transition-colors text-sm">
-                Mother & Child
-              </Link>
+            <div className="flex items-center space-x-4 ml-6 overflow-x-auto scrollbar-hide flex-1">
+              {categoriesLoading ? (
+                // Loading skeleton for categories - show 8 skeleton items
+                [...Array(8)].map((_, index) => (
+                  <div key={index} className="h-4 w-20 bg-gray-200 rounded animate-pulse flex-shrink-0"></div>
+                ))
+              ) : (
+                categories.map((category, index) => {
+                  const isActive = pathname === `/categories/${category.slug}`;
+                  return (
+                    <Link 
+                      key={category.id}
+                      href={`/categories/${category.slug}`} 
+                      className={`transition-colors text-sm flex-shrink-0 px-2 py-1 ${
+                        isActive 
+                          ? 'text-orange-500 border-b-2 border-orange-500 font-medium' 
+                          : 'text-gray-700 hover:text-orange-500'
+                      }`}
+                    >
+                      {category.name}
+                    </Link>
+                  );
+                })
+              )}
               
-              <Link href="/categories/home-living" className="text-gray-700 hover:text-orange-500 transition-colors text-sm">
-                Home & Living
-              </Link>
-              
-              <Link href="/categories/supermarket" className="text-gray-700 hover:text-orange-500 transition-colors text-sm">
-                Supermarket
-              </Link>
-              
-              <Link href="/categories/beauty" className="text-orange-500 border-b-2 border-orange-500 text-sm font-medium">
-                Beauty
-              </Link>
-              
-              <Link href="/categories/shoes-bags" className="text-gray-700 hover:text-orange-500 transition-colors text-sm">
-                Shoes & Bags
-              </Link>
-              
-              <Link href="/categories/electronics" className="text-gray-700 hover:text-orange-500 transition-colors text-sm">
-                Electronic
-              </Link>
-              
-              <Link href="/products?sort=bestsellers" className="flex items-center space-x-2 text-gray-700 hover:text-orange-500 transition-colors">
+              <Link href="/products?sort=bestsellers" className="flex items-center space-x-2 text-gray-700 hover:text-orange-500 transition-colors flex-shrink-0 px-2 py-1">
                 <span className="text-sm">Best Sellers</span>
                 <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">New</span>
               </Link>
               
-              <Link href="/products?sort=flash" className="flex items-center space-x-2 text-gray-700 hover:text-orange-500 transition-colors">
+              <Link href="/products?sort=flash" className="flex items-center space-x-2 text-gray-700 hover:text-orange-500 transition-colors flex-shrink-0 px-2 py-1">
                 <span className="text-sm">Flash Products</span>
                 <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">New</span>
               </Link>
