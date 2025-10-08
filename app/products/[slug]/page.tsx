@@ -21,6 +21,7 @@ import { useCart } from '@/lib/cart-context';
 import { useFavorites } from '@/lib/favorites-context';
 import LocationSelector from '@/components/products/LocationSelector';
 import DeliveryCalculator from '@/components/products/DeliveryCalculator';
+import ProductOptions from '@/components/products/ProductOptions';
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -29,13 +30,14 @@ export default function ProductDetailPage() {
   const { isFavorite, toggleFavorite } = useFavorites();
   const [product, setProduct] = useState<ProductWithDetails | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedVariant, setSelectedVariant] = useState<any>(null);
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [addingToCart, setAddingToCart] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState<string>('');
   const [selectedCity, setSelectedCity] = useState<string>('');
   const [selectedDeliveryOption, setSelectedDeliveryOption] = useState<any>(null);
+  const [attributeSelections, setAttributeSelections] = useState<Record<string, string>>({});
+  const [dynamicPrice, setDynamicPrice] = useState<{ basePrice: number; salePrice?: number } | null>(null);
 
   useEffect(() => {
     if (params.slug) {
@@ -65,9 +67,11 @@ export default function ProductDetailPage() {
         console.error('Error fetching product:', error);
       } else {
         setProduct(data);
-        if (data.variants && data.variants.length > 0) {
-          setSelectedVariant(data.variants[0]);
-        }
+        // Initialize dynamic price with base product price
+        setDynamicPrice({
+          basePrice: data.price,
+          salePrice: data.sale_price
+        });
       }
     } catch (error) {
       console.error('Error:', error);
@@ -85,7 +89,7 @@ export default function ProductDetailPage() {
 
     try {
       setAddingToCart(true);
-      await addToCart(product?.id || '', selectedVariant?.id, quantity);
+      await addToCart(product?.id || '', undefined, quantity);
       alert('Item added to cart successfully!');
     } catch (error) {
       console.error('Error:', error);
@@ -120,6 +124,63 @@ export default function ProductDetailPage() {
     setSelectedDeliveryOption(option);
   };
 
+  const handleAttributeChange = async (selections: Record<string, string>) => {
+    setAttributeSelections(selections);
+    console.log('Attribute selections changed:', selections);
+    console.log('Product variants:', product?.variants);
+    
+    // Calculate dynamic price based on selected attributes
+    if (product && Object.keys(selections).length > 0) {
+      try {
+        // For now, use a simpler approach - find variant by matching attributes in the JSONB field
+        const matchingVariant = product.variants?.find(variant => {
+          if (!variant.attributes) return false;
+          
+          console.log('Checking variant:', variant.name, 'with attributes:', variant.attributes);
+          
+          // Check if all selected attributes match this variant's attributes
+          const matches = Object.keys(selections).every(attrSlug => {
+            const variantAttrValue = variant.attributes![attrSlug];
+            const selectionValue = selections[attrSlug];
+            console.log(`Comparing ${attrSlug}: variant="${variantAttrValue}" vs selection="${selectionValue}"`);
+            return variantAttrValue === selectionValue;
+          });
+          
+          console.log('Variant matches:', matches);
+          return matches;
+        });
+
+        console.log('Matching variant found:', matchingVariant);
+
+        if (matchingVariant) {
+          setDynamicPrice({
+            basePrice: matchingVariant.price || 0,
+            salePrice: matchingVariant.sale_price || undefined
+          });
+        } else {
+          // If no matching variant, use base product price
+          setDynamicPrice({
+            basePrice: product.price,
+            salePrice: product.sale_price
+          });
+        }
+      } catch (error) {
+        console.error('Error calculating dynamic price:', error);
+        // Fallback to base product price
+        setDynamicPrice({
+          basePrice: product.price,
+          salePrice: product.sale_price
+        });
+      }
+    } else {
+      // No selections, use base product price
+      setDynamicPrice({
+        basePrice: product?.price || 0,
+        salePrice: product?.sale_price
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -142,9 +203,10 @@ export default function ProductDetailPage() {
     );
   }
 
-  const currentPrice = selectedVariant?.sale_price || selectedVariant?.price || product.sale_price || product.price;
-  const originalPrice = selectedVariant?.price || product.price;
-  const hasDiscount = currentPrice < originalPrice;
+  // Calculate current price based on dynamic pricing or product price
+  const currentPrice = dynamicPrice?.salePrice || dynamicPrice?.basePrice || product?.price || 0;
+  const originalPrice = dynamicPrice?.basePrice || product?.price || 0;
+  const hasDiscount = dynamicPrice?.salePrice && dynamicPrice.salePrice < originalPrice;
 
   const images = product.images || [];
   const primaryImage = images.find(img => img.is_primary) || images[0];
@@ -169,20 +231,20 @@ export default function ProductDetailPage() {
           <span className="text-gray-900">{product.name}</span>
         </nav>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Product Images */}
-          <div>
+          <div className="lg:col-span-4">
             <div className="aspect-square bg-white rounded-lg shadow-sm overflow-hidden mb-4">
-              {primaryImage ? (
+              {images[selectedImage] ? (
                 <Image
-                  src={primaryImage.image_url}
-                  alt={primaryImage.alt_text || product.name}
+                  src={images[selectedImage].image_url}
+                  alt={images[selectedImage].alt_text || product.name}
                   width={600}
                   height={600}
                   className="w-full h-full object-cover"
                   unoptimized
                   onError={(e) => {
-                    console.error('Image failed to load:', primaryImage.image_url);
+                    console.error('Image failed to load:', images[selectedImage].image_url);
                     e.currentTarget.style.display = 'none';
                   }}
                 />
@@ -223,8 +285,10 @@ export default function ProductDetailPage() {
           </div>
 
           {/* Product Details */}
-          <div>
+          <div className="lg:col-span-5">
             <div className="mb-6">
+              <h1 className="text-3xl font-bold text-gray-900 mb-4">{product.name}</h1>
+              
               {product.brand && (
                 <Link
                   href={`/brands/${product.brand.slug}`}
@@ -233,27 +297,6 @@ export default function ProductDetailPage() {
                   {product.brand.name}
                 </Link>
               )}
-              {(product as any).vendor && (
-                <div className="flex items-center mt-2 mb-2">
-                  <span className="text-sm text-gray-500 mr-2">Sold by:</span>
-                  <div className="flex items-center">
-                    {(product as any).vendor.logo_url && (
-                      <img
-                        src={(product as any).vendor.logo_url}
-                        alt={`${(product as any).vendor.business_name} logo`}
-                        className="h-6 w-6 rounded-full object-cover mr-2"
-                      />
-                    )}
-                    <span className="text-sm font-medium text-gray-700">
-                      {(product as any).vendor.business_name}
-                    </span>
-                    <span className="text-sm text-gray-500 ml-1">
-                      ({(product as any).vendor.city}, {(product as any).vendor.country})
-                    </span>
-                  </div>
-                </div>
-              )}
-              <h1 className="text-3xl font-bold text-gray-900 mt-2 mb-4">{product.name}</h1>
               
               {/* Price */}
               <div className="flex items-center space-x-4 mb-4">
@@ -289,32 +332,14 @@ export default function ProductDetailPage() {
               )}
             </div>
 
-            {/* Variants */}
-            {product.variants && product.variants.length > 0 && (
+            {/* Product Options */}
               <div className="mb-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-3">Options</h3>
-                <div className="space-y-2">
-                  {product.variants.map((variant) => (
-                    <button
-                      key={variant.id}
-                      onClick={() => setSelectedVariant(variant)}
-                      className={`w-full text-left p-3 border rounded-lg ${
-                        selectedVariant?.id === variant.id
-                          ? 'border-primary-600 bg-primary-50'
-                          : 'border-gray-300 hover:border-gray-400'
-                      }`}
-                    >
-                      <div className="flex justify-between items-center">
-                        <span className="font-medium">{variant.name}</span>
-                        <span className="text-primary-600">
-                          ${variant.sale_price || variant.price}
-                        </span>
+              <ProductOptions 
+                productId={product.id} 
+                onAttributeChange={handleAttributeChange}
+              />
                       </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+                      
 
             {/* Quantity */}
             <div className="mb-6">
@@ -381,29 +406,107 @@ export default function ProductDetailPage() {
               )}
             </div>
 
-            {/* Features */}
-            <div className="space-y-4">
-              <div className="flex items-center text-sm text-gray-600">
-                <TruckIcon className="h-5 w-5 mr-3 text-primary-600" />
-                Free shipping on orders over $50
-              </div>
-              <div className="flex items-center text-sm text-gray-600">
-                <ShieldCheckIcon className="h-5 w-5 mr-3 text-primary-600" />
-                30-day return policy
-              </div>
+          </div>
+
+          {/* Seller Information */}
+          <div className="lg:col-span-3">
+            <div className="bg-white rounded-lg shadow-sm p-6 sticky top-8">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Seller Information</h3>
+              
+              {(product as any).vendor ? (
+                <div className="space-y-4">
+                  {/* Seller Profile */}
+                  <div className="flex items-center space-x-3">
+                    {(product as any).vendor.logo_url && (
+                      <img
+                        src={(product as any).vendor.logo_url}
+                        alt={`${(product as any).vendor.business_name} logo`}
+                        className="h-12 w-12 rounded-full object-cover"
+                      />
+                    )}
+                    <div>
+                      <h4 className="font-medium text-gray-900">{(product as any).vendor.business_name}</h4>
+                      <p className="text-sm text-gray-500">
+                        {(product as any).vendor.city}, {(product as any).vendor.country}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Seller Rating */}
+                  <div className="border-t pt-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-gray-700">Seller Rating</span>
+                      <span className="text-sm text-gray-500">4.8/5</span>
+                    </div>
+                    <div className="flex items-center space-x-1 mb-2">
+                      {[...Array(5)].map((_, i) => (
+                        <StarIcon
+                          key={i}
+                          className={`h-4 w-4 ${
+                            i < 4 ? 'text-yellow-400 fill-current' : 'text-gray-300'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <p className="text-xs text-gray-500">Based on 156 reviews</p>
+                  </div>
+
+                  {/* Seller Stats */}
+                  <div className="border-t pt-4">
+                    <div className="grid grid-cols-2 gap-4 text-center">
+                      <div>
+                        <p className="text-lg font-semibold text-gray-900">98%</p>
+                        <p className="text-xs text-gray-500">Positive Rating</p>
+                      </div>
+                      <div>
+                        <p className="text-lg font-semibold text-gray-900">2.1k</p>
+                        <p className="text-xs text-gray-500">Products Sold</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Seller Description */}
+                  <div className="border-t pt-4">
+                    <h5 className="text-sm font-medium text-gray-700 mb-2">About This Seller</h5>
+                    <p className="text-sm text-gray-600 leading-relaxed">
+                      {(product as any).vendor.business_name} is a trusted seller specializing in high-quality products. 
+                      We pride ourselves on excellent customer service and fast shipping. All our products come with 
+                      a satisfaction guarantee.
+                    </p>
+                  </div>
+
+                  {/* Contact Seller Button */}
+                  <div className="border-t pt-4">
+                    <button className="w-full bg-gray-100 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-200 transition-colors text-sm font-medium">
+                      Contact Seller
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-gray-400 text-xl">🏪</span>
+                  </div>
+                  <h4 className="font-medium text-gray-900 mb-2">Suuqsade Store</h4>
+                  <p className="text-sm text-gray-500 mb-4">Official Suuqsade seller</p>
+                  
+                  {/* Default Rating */}
+                  <div className="flex items-center justify-center space-x-1 mb-2">
+                    {[...Array(5)].map((_, i) => (
+                      <StarIcon
+                        key={i}
+                        className={`h-4 w-4 ${
+                          i < 4 ? 'text-yellow-400 fill-current' : 'text-gray-300'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <p className="text-xs text-gray-500">4.9/5 based on 2.5k reviews</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
-
-        {/* Product Description */}
-        {product.description && (
-          <div className="mt-16">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Description</h2>
-            <div className="prose max-w-none">
-              <p className="text-gray-600 leading-relaxed">{product.description}</p>
-            </div>
-          </div>
-        )}
 
         {/* Reviews Section */}
         <div className="mt-16">

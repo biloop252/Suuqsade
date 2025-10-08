@@ -220,38 +220,6 @@ export default function CategoryPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Breadcrumb */}
-        <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-8">
-          <Link href="/" className="hover:text-primary-600">Home</Link>
-          <span>/</span>
-          <Link href="/categories" className="hover:text-primary-600">Categories</Link>
-          <span>/</span>
-          <span className="text-gray-900">{category.name}</span>
-        </nav>
-
-        {/* Category Header */}
-        <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
-          <div className="flex items-center space-x-6">
-            <div className="w-20 h-20 bg-primary-100 rounded-lg flex items-center justify-center">
-              {category.image_url ? (
-                <img
-                  src={category.image_url}
-                  alt={category.name}
-                  className="w-16 h-16 object-cover rounded-lg"
-                />
-              ) : (
-                <PackageIcon className="h-12 w-12 text-primary-600" />
-              )}
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">{category.name}</h1>
-              {category.description && (
-                <p className="text-gray-600 text-lg">{category.description}</p>
-              )}
-            </div>
-          </div>
-        </div>
-
         {/* Category Page Promotional Banner */}
         <div className="mb-8">
           <PromotionalBanner 
@@ -261,6 +229,15 @@ export default function CategoryPage() {
             showDescription={true}
           />
         </div>
+
+        {/* Breadcrumb */}
+        <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-8">
+          <Link href="/" className="hover:text-primary-600">Home</Link>
+          <span>/</span>
+          <Link href="/categories" className="hover:text-primary-600">Categories</Link>
+          <span>/</span>
+          <span className="text-gray-900">{category.name}</span>
+        </nav>
 
         {/* Mobile Filter Toggle */}
         <div className="lg:hidden mb-4">
@@ -430,7 +407,7 @@ export default function CategoryPage() {
             {products.length > 0 ? (
               <div className={
                 viewMode === 'grid'
-                  ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
+                  ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'
                   : 'space-y-4'
               }>
                 {products.map((product) => (

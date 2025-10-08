@@ -222,7 +222,7 @@ export default function ProductsPage() {
           {/* Products Grid/List */}
           <div className="flex-1">
             {loading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
                 {[...Array(6)].map((_, i) => (
                   <div key={i} className="bg-white rounded-lg shadow-sm p-6 animate-pulse">
                     <div className="w-full h-48 bg-gray-200 rounded-md mb-4"></div>
@@ -235,7 +235,7 @@ export default function ProductsPage() {
             ) : products.length > 0 ? (
               <div className={
                 viewMode === 'grid'
-                  ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
+                  ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6'
                   : 'space-y-4'
               }>
                 {products.map((product) => (
@@ -262,12 +262,6 @@ export default function ProductsPage() {
               </div>
             )}
 
-            {/* Results Count */}
-            {!loading && products.length > 0 && (
-              <div className="mt-8 text-center text-gray-600">
-                Showing {products.length} product{products.length !== 1 ? 's' : ''}
-              </div>
-            )}
           </div>
         </div>
       </div>

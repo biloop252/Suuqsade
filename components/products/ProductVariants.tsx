@@ -3,6 +3,13 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { ProductVariant, ProductAttribute, ProductVariantAttribute } from '@/types/database';
+import { 
+  getColorHex, 
+  isValidHexColor, 
+  getAttributeDisplayName, 
+  getAttributeType, 
+  getSizeCategory 
+} from './AttributeUtils';
 
 interface ProductVariantsProps {
   productId: string;
@@ -132,10 +139,12 @@ export default function ProductVariants({ productId, onVariantSelect }: ProductV
         const availableOptions = getAvailableOptions(attribute.slug);
         if (availableOptions.length === 0) return null;
 
+        const attributeType = getAttributeType(attribute.slug, availableOptions[0]);
+        
         return (
           <div key={attribute.id} className="space-y-2">
             <label className="text-sm font-medium text-gray-700">
-              {attribute.name}
+              {getAttributeDisplayName(attribute.slug)}
               {attribute.is_required && <span className="text-red-500 ml-1">*</span>}
             </label>
             
@@ -144,25 +153,76 @@ export default function ProductVariants({ productId, onVariantSelect }: ProductV
                 const isSelected = selectedVariant && 
                   getVariantAttributeValue(selectedVariant.id, attribute.slug) === option;
                 
-                return (
-                  <button
-                    key={option}
-                    onClick={() => {
-                      // Find variant with this option
-                      const variant = variants.find(v => 
-                        getVariantAttributeValue(v.id, attribute.slug) === option
-                      );
-                      if (variant) handleVariantSelect(variant);
-                    }}
-                    className={`px-3 py-2 text-sm border rounded-md transition-colors ${
-                      isSelected
-                        ? 'border-orange-500 bg-orange-50 text-orange-700'
-                        : 'border-gray-300 hover:border-gray-400 text-gray-700'
-                    }`}
-                  >
-                    {option}
-                  </button>
-                );
+                // Render based on attribute type
+                if (attributeType === 'color') {
+                  const colorHex = isValidHexColor(option) ? option : getColorHex(option);
+                  return (
+                    <button
+                      key={option}
+                      onClick={() => {
+                        const variant = variants.find(v => 
+                          getVariantAttributeValue(v.id, attribute.slug) === option
+                        );
+                        if (variant) handleVariantSelect(variant);
+                      }}
+                      className={`relative w-12 h-12 rounded-full border-2 transition-all duration-200 hover:scale-110 ${
+                        isSelected
+                          ? 'border-gray-800 ring-2 ring-gray-300 shadow-lg'
+                          : 'border-gray-300 hover:border-gray-500'
+                      }`}
+                      style={{ backgroundColor: colorHex }}
+                      title={option}
+                    >
+                      {isSelected && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
+                            <svg className="w-4 h-4 text-gray-800" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        </div>
+                      )}
+                    </button>
+                  );
+                } else if (attributeType === 'size') {
+                  return (
+                    <button
+                      key={option}
+                      onClick={() => {
+                        const variant = variants.find(v => 
+                          getVariantAttributeValue(v.id, attribute.slug) === option
+                        );
+                        if (variant) handleVariantSelect(variant);
+                      }}
+                      className={`relative px-4 py-2 text-sm font-medium border rounded-md transition-all duration-200 ${
+                        isSelected
+                          ? 'border-primary-600 bg-primary-50 text-primary-700 ring-2 ring-primary-200'
+                          : 'border-gray-300 hover:border-gray-400 text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      {option}
+                    </button>
+                  );
+                } else {
+                  return (
+                    <button
+                      key={option}
+                      onClick={() => {
+                        const variant = variants.find(v => 
+                          getVariantAttributeValue(v.id, attribute.slug) === option
+                        );
+                        if (variant) handleVariantSelect(variant);
+                      }}
+                      className={`px-4 py-2 text-sm border rounded-md transition-all duration-200 ${
+                        isSelected
+                          ? 'border-primary-600 bg-primary-50 text-primary-700 ring-2 ring-primary-200'
+                          : 'border-gray-300 hover:border-gray-400 text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      {option}
+                    </button>
+                  );
+                }
               })}
             </div>
           </div>

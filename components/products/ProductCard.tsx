@@ -95,11 +95,6 @@ export default function ProductCard({ product, viewMode }: ProductCardProps) {
                     <span className="text-gray-400 text-sm">No image</span>
                   </div>
                 )}
-                {hasDiscount && (
-                  <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
-                    {Math.round(((originalPrice - currentPrice) / originalPrice) * 100)}% OFF
-                  </div>
-                )}
               </div>
             </Link>
           </div>
@@ -206,13 +201,6 @@ export default function ProductCard({ product, viewMode }: ProductCardProps) {
             </div>
           )}
           
-          {/* Discount Badge */}
-          {hasDiscount && (
-            <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
-              {Math.round(((originalPrice - currentPrice) / originalPrice) * 100)}% OFF
-            </div>
-          )}
-
           {/* Quick Actions */}
           <div className={`absolute top-2 right-2 flex flex-col space-y-2 transition-opacity duration-300 ${
             isHovered ? 'opacity-100' : 'opacity-0'

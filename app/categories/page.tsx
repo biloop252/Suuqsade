@@ -47,7 +47,7 @@ export default function CategoriesPage() {
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {[...Array(6)].map((_, i) => (
               <div key={i} className="bg-white rounded-lg shadow-sm p-6 animate-pulse">
                 <div className="w-16 h-16 bg-gray-200 rounded-lg mb-4"></div>
@@ -57,7 +57,7 @@ export default function CategoriesPage() {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {categories.map((category) => (
               <Link
                 key={category.id}
@@ -81,11 +81,6 @@ export default function CategoriesPage() {
                       <h3 className="text-lg font-semibold text-gray-900 group-hover:text-primary-600 transition-colors duration-300">
                         {category.name}
                       </h3>
-                      {category.description && (
-                        <p className="text-gray-600 text-sm mt-1 line-clamp-2">
-                          {category.description}
-                        </p>
-                      )}
                     </div>
                   </div>
                 </div>

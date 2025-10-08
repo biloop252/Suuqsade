@@ -63,3 +63,5 @@ WHERE tablename = 'objects' AND policyname LIKE '%promotional%';
 
 
 
+
+

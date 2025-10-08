@@ -48,3 +48,5 @@ CREATE INDEX IF NOT EXISTS idx_wishlist_items_product_id ON wishlist_items(produ
 
 
 
+
+
