@@ -40,3 +40,4 @@ WHERE NOT EXISTS (
 SELECT 'Storage bucket created successfully' as status, * FROM storage.buckets WHERE id = 'promotional-media';
 
 
+

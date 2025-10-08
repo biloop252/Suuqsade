@@ -64,3 +64,4 @@ COMMENT ON POLICY "Admins can update promotional media files" ON storage.objects
 COMMENT ON POLICY "Admins can delete promotional media files" ON storage.objects IS 'Allows admins to delete promotional media files';
 
 
+

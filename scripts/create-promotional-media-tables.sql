@@ -309,3 +309,4 @@ SELECT 'promotional_media table created successfully' as status, COUNT(*) as rec
 SELECT 'promotional_media_categories table created successfully' as status, COUNT(*) as record_count FROM promotional_media_categories;
 
 
+

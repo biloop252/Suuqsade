@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import ProfileSidebar from '@/components/profile/ProfileSidebar';
 import ProfileContent from '@/components/profile/ProfileContent';
@@ -8,7 +9,16 @@ import { useAuth } from '@/lib/auth-context';
 
 export default function ProfilePage() {
   const { loading } = useAuth();
-  const [activeTab, setActiveTab] = useState('user-information');
+  const searchParams = useSearchParams();
+  const [activeTab, setActiveTab] = useState('dashboard');
+
+  // Handle tab parameter from URL
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab) {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
 
   const handleTabChange = useCallback((tab: string) => {
     setActiveTab(tab);

@@ -195,7 +195,7 @@ export default function Navigation() {
                       {/* Menu Items */}
                       <div className="py-2">
                         <Link 
-                          href="/orders" 
+                          href="/profile?tab=all-orders" 
                           className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                           onClick={() => setIsUserDropdownOpen(false)}
                         >
@@ -204,7 +204,7 @@ export default function Navigation() {
                         </Link>
 
                         <Link 
-                          href="/reviews" 
+                          href="/profile?tab=reviews" 
                           className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                           onClick={() => setIsUserDropdownOpen(false)}
                         >
@@ -213,16 +213,7 @@ export default function Navigation() {
                         </Link>
 
                         <Link 
-                          href="/loans" 
-                          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                          onClick={() => setIsUserDropdownOpen(false)}
-                        >
-                          <CreditCardIcon className="h-4 w-4 mr-3" />
-                          Loans
-                        </Link>
-
-                        <Link 
-                          href="/coupons" 
+                          href="/profile?tab=discount-coupons" 
                           className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                           onClick={() => setIsUserDropdownOpen(false)}
                         >
@@ -231,7 +222,7 @@ export default function Navigation() {
                         </Link>
 
                         <Link 
-                          href="/profile" 
+                          href="/profile?tab=user-information" 
                           className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                           onClick={() => setIsUserDropdownOpen(false)}
                         >

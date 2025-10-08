@@ -57,3 +57,4 @@ echo "2. Run: node scripts/check-promotional-media-db.js"
 echo "3. Verify your Supabase connection in .env.local"
 
 
+

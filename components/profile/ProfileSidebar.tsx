@@ -18,7 +18,8 @@ import {
   ShieldIcon,
   HelpCircleIcon,
   SparklesIcon,
-  BanknoteIcon
+  BanknoteIcon,
+  LayoutDashboardIcon
 } from 'lucide-react';
 
 interface ProfileSidebarProps {
@@ -29,27 +30,17 @@ interface ProfileSidebarProps {
 const ProfileSidebar = memo(function ProfileSidebar({ activeTab, onTabChange }: ProfileSidebarProps) {
   const menuSections = useMemo(() => [
     {
+      title: "Dashboard",
+      items: [
+        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboardIcon },
+      ]
+    },
+    {
       title: "My Orders",
       items: [
         { id: 'all-orders', label: 'All My Orders', icon: PackageIcon },
         { id: 'reviews', label: 'My Reviews', icon: StarIcon },
-        { id: 'seller-messages', label: 'My Seller Messages', icon: MessageSquareIcon },
-        { id: 'buy-again', label: 'Buy Again', icon: RotateCcwIcon },
-        { id: 'special-for-you', label: 'Special for You', icon: GiftIcon },
         { id: 'discount-coupons', label: 'My Discount Coupons', icon: TicketIcon },
-        { id: 'visited-before', label: "Things I've Visited Before", icon: EyeIcon },
-        { id: 'stores-follow', label: 'Stores I Follow', icon: HeartIcon },
-        { id: 'suuqsade-elite', label: 'Suuqsade Elite', icon: CrownIcon },
-        { id: 'my-services', label: 'My Services', icon: SettingsIcon },
-      ]
-    },
-    {
-      title: "Loans",
-      items: [
-        { id: 'loans', label: 'Loans', icon: BanknoteIcon },
-        { id: 'zero-interest', label: '0% Interest Opportunity', icon: GiftIcon },
-        { id: 'lucky-draw', label: 'Lucky Draw', icon: SparklesIcon, badge: 'NEW' },
-        { id: 'qnb-suuqsade', label: 'QNB Suuqsade', icon: BanknoteIcon, badge: 'NEW' },
       ]
     },
     {
@@ -58,8 +49,6 @@ const ProfileSidebar = memo(function ProfileSidebar({ activeTab, onTabChange }: 
         { id: 'user-information', label: 'My User Information', icon: SettingsIcon },
         { id: 'address-information', label: 'My Address Information', icon: MapPinIcon },
         { id: 'saved-cards', label: 'My Saved Cards', icon: CreditCardIcon },
-        { id: 'announcement-preferences', label: 'My Announcement Preferences', icon: BellIcon },
-        { id: 'active-sessions', label: 'My Active Sessions', icon: ShieldIcon },
         { id: 'help', label: 'Help', icon: HelpCircleIcon },
       ]
     }

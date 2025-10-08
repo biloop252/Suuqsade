@@ -291,3 +291,4 @@ COMMENT ON FUNCTION get_active_promotional_media(promotional_media_position, TEX
 COMMENT ON FUNCTION get_promotional_media_by_category(UUID, promotional_media_position, TEXT) IS 'Returns promotional media associated with a specific category';
 
 
+
