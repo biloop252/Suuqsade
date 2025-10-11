@@ -9,6 +9,7 @@ import {
   getAttributeDisplayName, 
   getAttributeType, 
   getSizeCategory,
+  formatAttributeValue,
   COLOR_MAPPINGS 
 } from './AttributeUtils';
 
@@ -40,7 +41,7 @@ export default function ProductOptions({ productId, onAttributeChange }: Product
     try {
       setLoading(true);
       
-      // For now, let's use a simpler approach - fetch variants and extract unique attributes
+      // Fetch variants and extract unique attributes
       const { data: variantsData, error: variantsError } = await supabase
         .from('product_variants')
         .select('*')
@@ -54,33 +55,61 @@ export default function ProductOptions({ productId, onAttributeChange }: Product
 
       console.log('Fetched variants:', variantsData);
 
-      // Extract unique attributes from variants
+      // Extract unique attribute IDs from variants
+      const attributeIds = new Set<string>();
+      variantsData?.forEach((variant: any) => {
+        if (variant.attributes) {
+          Object.keys(variant.attributes).forEach(attrId => {
+            attributeIds.add(attrId);
+          });
+        }
+      });
+
+      // Fetch attribute metadata from product_attributes table
+      const { data: attributesData, error: attributesError } = await supabase
+        .from('product_attributes')
+        .select('*')
+        .in('id', Array.from(attributeIds))
+        .eq('is_active', true);
+
+      if (attributesError) {
+        console.error('Error fetching attributes:', attributesError);
+        return;
+      }
+
+      console.log('Fetched attributes metadata:', attributesData);
+
+      // Create attribute mapping
       const attributeMap = new Map<string, AttributeSelection>();
       
       variantsData?.forEach((variant: any) => {
         if (!variant.attributes) return;
         
-        Object.entries(variant.attributes).forEach(([attrSlug, attrValue]) => {
-          if (!attributeMap.has(attrSlug)) {
-            attributeMap.set(attrSlug, {
-              attributeId: attrSlug, // Use slug as ID for simplicity
-              attributeName: getAttributeDisplayName(attrSlug),
-              attributeSlug: attrSlug,
-              attributeType: 'select', // Default type
+        Object.entries(variant.attributes).forEach(([attrId, attrValue]) => {
+          // Find the attribute metadata
+          const attributeMeta = attributesData?.find(attr => attr.id === attrId);
+          
+          if (!attributeMap.has(attrId)) {
+            attributeMap.set(attrId, {
+              attributeId: attrId,
+              attributeName: attributeMeta?.name || getAttributeDisplayName(attrId),
+              attributeSlug: attributeMeta?.slug || attrId,
+              attributeType: attributeMeta?.type || 'select',
               selectedValue: '',
               availableValues: []
             });
           }
           
-          const selection = attributeMap.get(attrSlug)!;
+          const selection = attributeMap.get(attrId)!;
           const existingValue = selection.availableValues.find(v => v.value === attrValue);
           
           if (!existingValue) {
+            const formattedValue = formatAttributeValue(attrValue as string, attributeMeta?.type);
             selection.availableValues.push({
-              id: `${attrSlug}-${attrValue}`,
-              attribute_id: attrSlug,
+              id: `${attrId}-${attrValue}`,
+              attribute_id: attrId,
               value: attrValue as string,
-              display_value: attrValue as string,
+              display_value: formattedValue,
               sort_order: 0,
               is_active: true,
               created_at: new Date().toISOString(),
@@ -93,9 +122,11 @@ export default function ProductOptions({ productId, onAttributeChange }: Product
       // Convert map to array and sort
       const selections = Array.from(attributeMap.values());
       selections.forEach(selection => {
-        // Determine attribute type based on slug and values
+        // Use the attribute type from metadata, fallback to detection if needed
         const firstValue = selection.availableValues[0]?.value;
-        selection.attributeType = getAttributeType(selection.attributeSlug, firstValue);
+        if (!selection.attributeType || selection.attributeType === 'select') {
+          selection.attributeType = getAttributeType(selection.attributeSlug, firstValue);
+        }
         
         // Sort values appropriately based on type
         if (selection.attributeType === 'size') {

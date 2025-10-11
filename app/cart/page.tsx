@@ -5,6 +5,8 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth-context';
 import { useCart } from '@/lib/cart-context';
 import { ProductWithDetails } from '@/types/database';
+import { getBatchProductDiscounts, calculateBestDiscount, ProductDiscount } from '@/lib/discount-utils';
+import { DiscountCalculator } from '@/lib/discount-calculator';
 import { 
   ShoppingCartIcon, 
   PlusIcon, 
@@ -25,11 +27,32 @@ interface CartItem {
 
 export default function CartPage() {
   const { user } = useAuth();
-  const { cartItems: contextCartItems, updateQuantity: contextUpdateQuantity, removeFromCart: contextRemoveFromCart } = useCart();
+  const { 
+    cartItems: contextCartItems, 
+    updateQuantity: contextUpdateQuantity, 
+    removeFromCart: contextRemoveFromCart,
+    appliedCoupon,
+    discountAmount,
+    applyCoupon,
+    removeCoupon
+  } = useCart();
   const router = useRouter();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
+  
+  // Discount states
+  const [productDiscounts, setProductDiscounts] = useState<Record<string, ProductDiscount[]>>({});
+  const [productDiscountAmounts, setProductDiscountAmounts] = useState<Record<string, number>>({});
+  const [totalProductDiscounts, setTotalProductDiscounts] = useState(0);
+  const [availableAutomaticDiscounts, setAvailableAutomaticDiscounts] = useState<any[]>([]);
+  const [appliedAutomaticDiscount, setAppliedAutomaticDiscount] = useState<any>(null);
+  const [automaticDiscountAmount, setAutomaticDiscountAmount] = useState(0);
+  
+  // Coupon states
+  const [couponCode, setCouponCode] = useState('');
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponError, setCouponError] = useState('');
 
   useEffect(() => {
     if (user) {
@@ -38,6 +61,14 @@ export default function CartPage() {
       router.push('/auth/signin');
     }
   }, [user, router]);
+
+  // Fetch discounts when cart items change
+  useEffect(() => {
+    if (cartItems.length > 0) {
+      fetchProductDiscounts();
+      fetchAutomaticDiscounts();
+    }
+  }, [cartItems]);
 
   const fetchCartItems = async () => {
     try {
@@ -68,10 +99,86 @@ export default function CartPage() {
     }
   };
 
+  const fetchProductDiscounts = async () => {
+    try {
+      const products = cartItems.map(item => item.product).filter(Boolean) as ProductWithDetails[];
+      
+      if (products.length === 0) return;
+      
+      // Get batch discounts for all products
+      const discountMap = await getBatchProductDiscounts(products);
+      setProductDiscounts(discountMap);
+      
+      // Calculate discount amounts for each product
+      const discountAmounts: Record<string, number> = {};
+      let totalDiscounts = 0;
+      
+      cartItems.forEach(item => {
+        if (item.product) {
+          const itemDiscounts = discountMap[item.product.id] || [];
+          const { discount_amount } = calculateBestDiscount(item.product, itemDiscounts);
+          const totalDiscountForItem = discount_amount * item.quantity;
+          discountAmounts[item.product.id] = totalDiscountForItem;
+          totalDiscounts += totalDiscountForItem;
+        }
+      });
+      
+      setProductDiscountAmounts(discountAmounts);
+      setTotalProductDiscounts(totalDiscounts);
+    } catch (error) {
+      console.error('Error fetching product discounts:', error);
+    }
+  };
+
+  const fetchAutomaticDiscounts = async () => {
+    try {
+      const subtotal = calculateSubtotalWithProductDiscounts();
+      
+      // Fetch available automatic discounts
+      const { data: discounts, error } = await supabase
+        .from('discounts')
+        .select('*')
+        .eq('is_active', true)
+        .eq('status', 'active')
+        .eq('is_global', true) // Only global discounts for automatic application
+        .lte('start_date', new Date().toISOString())
+        .or(`end_date.is.null,end_date.gte.${new Date().toISOString()}`)
+        .lte('minimum_order_amount', subtotal)
+        .order('value', { ascending: false }); // Best discount first
+
+      if (error) {
+        console.error('Error fetching automatic discounts:', error);
+        return;
+      }
+
+      if (discounts && discounts.length > 0) {
+        setAvailableAutomaticDiscounts(discounts);
+        
+        // Apply the best automatic discount
+        const bestDiscount = discounts[0];
+        const discountAmount = DiscountCalculator.calculateDiscountAmount(bestDiscount, subtotal);
+        
+        if (discountAmount > 0) {
+          setAppliedAutomaticDiscount(bestDiscount);
+          setAutomaticDiscountAmount(discountAmount);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching automatic discounts:', error);
+    }
+  };
+
   const updateQuantity = async (itemId: string, newQuantity: number) => {
+    // Prevent quantity from going below 1
+    if (newQuantity < 1) {
+      return;
+    }
+    
     try {
       setUpdating(itemId);
       await contextUpdateQuantity(itemId, newQuantity);
+      // Refresh cart items after update
+      await fetchCartItems();
     } catch (error) {
       console.error('Error:', error);
     } finally {
@@ -80,9 +187,16 @@ export default function CartPage() {
   };
 
   const removeItem = async (itemId: string) => {
+    // Add confirmation dialog
+    if (!confirm('Are you sure you want to remove this item from your cart?')) {
+      return;
+    }
+    
     try {
       setUpdating(itemId);
       await contextRemoveFromCart(itemId);
+      // Refresh cart items after removal
+      await fetchCartItems();
     } catch (error) {
       console.error('Error:', error);
     } finally {
@@ -92,17 +206,111 @@ export default function CartPage() {
 
   const calculateSubtotal = () => {
     return cartItems.reduce((total, item) => {
-      const price = item.product.sale_price || item.product.price;
-      return total + (price * item.quantity);
+      if (item.product) {
+        const price = item.product.sale_price || item.product.price;
+        return total + (price * item.quantity);
+      }
+      return total;
+    }, 0);
+  };
+
+  const calculateSubtotalWithProductDiscounts = () => {
+    return cartItems.reduce((total, item) => {
+      if (item.product) {
+        const originalPrice = item.product.sale_price || item.product.price;
+        const itemDiscounts = productDiscounts[item.product.id] || [];
+        const { final_price } = calculateBestDiscount(item.product, itemDiscounts);
+        return total + (final_price * item.quantity);
+      }
+      return total;
     }, 0);
   };
 
   const calculateTax = () => {
-    return calculateSubtotal() * 0.08; // 8% tax
+    const subtotal = calculateSubtotalWithProductDiscounts();
+    return subtotal * 0.08; // 8% tax on discounted amount
   };
 
   const calculateTotal = () => {
-    return calculateSubtotal() + calculateTax();
+    const subtotal = calculateSubtotalWithProductDiscounts();
+    const tax = calculateTax();
+    const autoDiscount = automaticDiscountAmount;
+    const couponDiscount = discountAmount; // This comes from cart context
+    
+    console.log('Cart Total Calculation:', {
+      subtotal,
+      tax,
+      autoDiscount,
+      couponDiscount,
+      appliedCoupon: appliedCoupon?.name,
+      finalTotal: subtotal + tax - autoDiscount - couponDiscount
+    });
+    
+    return subtotal + tax - autoDiscount - couponDiscount;
+  };
+
+  // Coupon handling functions
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) {
+      setCouponError('Please enter a coupon code');
+      return;
+    }
+
+    setCouponLoading(true);
+    setCouponError('');
+
+    try {
+      const { data: coupon, error } = await supabase
+        .from('coupons')
+        .select('*')
+        .eq('code', couponCode.trim().toUpperCase())
+        .eq('is_active', true)
+        .eq('status', 'active')
+        .single();
+
+      if (error || !coupon) {
+        setCouponError('Invalid coupon code');
+        return;
+      }
+
+      // Check if coupon is expired
+      const now = new Date();
+      const startDate = new Date(coupon.start_date);
+      const endDate = coupon.end_date ? new Date(coupon.end_date) : null;
+
+      if (now < startDate || (endDate && now > endDate)) {
+        setCouponError('Coupon has expired');
+        return;
+      }
+
+      // Check minimum order amount
+      const subtotal = calculateSubtotalWithProductDiscounts();
+      if (coupon.minimum_order_amount > 0 && subtotal < coupon.minimum_order_amount) {
+        setCouponError(`Minimum order amount of $${coupon.minimum_order_amount} required`);
+        return;
+      }
+
+      // Apply the coupon using cart context
+      await applyCoupon(coupon);
+      console.log('Coupon applied successfully:', {
+        couponName: coupon.name,
+        couponCode: coupon.code,
+        discountAmount: discountAmount,
+        appliedCoupon: appliedCoupon
+      });
+      setCouponCode('');
+      setCouponError('');
+    } catch (error) {
+      console.error('Error applying coupon:', error);
+      setCouponError('Failed to apply coupon');
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    removeCoupon();
+    setCouponError('');
   };
 
   if (loading) {
@@ -116,18 +324,14 @@ export default function CartPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center space-x-4 mb-4">
-            <Link href="/products" className="text-primary-600 hover:text-primary-700">
-              <ArrowLeftIcon className="h-6 w-6" />
-            </Link>
-            <h1 className="text-3xl font-bold text-gray-900">Shopping Cart</h1>
-          </div>
-          <p className="text-gray-600">
-            {cartItems.length} item{cartItems.length !== 1 ? 's' : ''} in your cart
-          </p>
-        </div>
+        {/* Breadcrumb */}
+        <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-8">
+          <Link href="/" className="hover:text-primary-600">Home</Link>
+          <span>/</span>
+          <Link href="/products" className="hover:text-primary-600">Products</Link>
+          <span>/</span>
+          <span className="text-gray-900">Cart</span>
+        </nav>
 
         {cartItems.length === 0 ? (
           <div className="text-center py-12">
@@ -142,85 +346,116 @@ export default function CartPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Cart Items */}
             <div className="lg:col-span-2">
-              <div className="bg-white rounded-lg shadow-sm">
-                <div className="p-6">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-4">Cart Items</h2>
-                  <div className="space-y-4">
-                    {cartItems.map((item) => {
-                      const primaryImage = item.product.images?.find(img => img.is_primary) || item.product.images?.[0];
-                      const currentPrice = item.product.sale_price || item.product.price;
-                      
-                      return (
-                        <div key={item.id} className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg">
-                          {/* Product Image */}
-                          <div className="w-20 h-20 flex-shrink-0">
-                            {primaryImage ? (
-                              <img
-                                src={primaryImage.image_url}
-                                alt={primaryImage.alt_text || item.product.name}
-                                className="w-full h-full object-cover rounded-md"
-                              />
-                            ) : (
-                              <div className="w-full h-full bg-gray-200 rounded-md flex items-center justify-center">
-                                <span className="text-gray-400 text-xs">No image</span>
+              <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Product
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Price
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Quantity
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Total
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Action
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {cartItems.map((item) => {
+                        const primaryImage = item.product.images?.find(img => img.is_primary) || item.product.images?.[0];
+                        const originalPrice = item.product.sale_price || item.product.price;
+                        const itemDiscounts = productDiscounts[item.product.id] || [];
+                        const { final_price, discount_amount, best_discount } = calculateBestDiscount(item.product, itemDiscounts);
+                        const hasDiscount = discount_amount > 0;
+                        
+                        return (
+                          <tr key={item.id} className="hover:bg-gray-50">
+                            {/* Product */}
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="flex items-center">
+                                <div className="w-16 h-16 flex-shrink-0">
+                                  {primaryImage ? (
+                                    <img
+                                      src={primaryImage.image_url}
+                                      alt={primaryImage.alt_text || item.product.name}
+                                      className="w-full h-full object-cover rounded-md"
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full bg-gray-200 rounded-md flex items-center justify-center">
+                                      <span className="text-gray-400 text-xs">No image</span>
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="ml-4">
+                                  <Link 
+                                    href={`/products/${item.product.slug}`}
+                                    className="text-sm font-medium text-gray-900 hover:text-primary-600"
+                                  >
+                                    {item.product.name}
+                                  </Link>
+                                  {item.product.brand && (
+                                    <p className="text-sm text-gray-500">{item.product.brand.name}</p>
+                                  )}
+                                </div>
                               </div>
-                            )}
-                          </div>
+                            </td>
 
-                          {/* Product Details */}
-                          <div className="flex-1 min-w-0">
-                            <Link 
-                              href={`/products/${item.product.slug}`}
-                              className="text-lg font-medium text-gray-900 hover:text-primary-600"
-                            >
-                              {item.product.name}
-                            </Link>
-                            {item.product.brand && (
-                              <p className="text-sm text-gray-600">{item.product.brand.name}</p>
-                            )}
-                            <p className="text-lg font-semibold text-gray-900">${currentPrice}</p>
-                          </div>
+                            {/* Price */}
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                              ${final_price.toFixed(2)}
+                            </td>
 
-                          {/* Quantity Controls */}
-                          <div className="flex items-center space-x-2">
-                            <button
-                              onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                              disabled={updating === item.id}
-                              className="p-1 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50"
-                            >
-                              <MinusIcon className="h-4 w-4" />
-                            </button>
-                            <span className="px-3 py-1 border border-gray-300 rounded min-w-[40px] text-center">
-                              {item.quantity}
-                            </span>
-                            <button
-                              onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                              disabled={updating === item.id}
-                              className="p-1 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50"
-                            >
-                              <PlusIcon className="h-4 w-4" />
-                            </button>
-                          </div>
+                            {/* Quantity */}
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="flex items-center space-x-2">
+                                <button
+                                  onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                  disabled={updating === item.id || item.quantity <= 1}
+                                  className="p-1 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  <MinusIcon className="h-4 w-4" />
+                                </button>
+                                <span className="px-3 py-1 border border-gray-300 rounded min-w-[40px] text-center text-sm">
+                                  {item.quantity}
+                                </span>
+                                <button
+                                  onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                  disabled={updating === item.id}
+                                  className="p-1 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50"
+                                >
+                                  <PlusIcon className="h-4 w-4" />
+                                </button>
+                              </div>
+                            </td>
 
-                          {/* Item Total */}
-                          <div className="text-right">
-                            <p className="text-lg font-semibold text-gray-900">
-                              ${(currentPrice * item.quantity).toFixed(2)}
-                            </p>
-                          </div>
+                            {/* Total */}
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                              ${(final_price * item.quantity).toFixed(2)}
+                            </td>
 
-                          {/* Remove Button */}
-                          <button
-                            onClick={() => removeItem(item.id)}
-                            disabled={updating === item.id}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded disabled:opacity-50"
-                          >
-                            <TrashIcon className="h-5 w-5" />
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
+                            {/* Action */}
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                              <button
+                                onClick={() => removeItem(item.id)}
+                                disabled={updating === item.id}
+                                className="text-red-600 hover:text-red-900 disabled:opacity-50"
+                              >
+                                <TrashIcon className="h-5 w-5" />
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
@@ -230,21 +465,119 @@ export default function CartPage() {
               <div className="bg-white rounded-lg shadow-sm p-6 sticky top-8">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">Order Summary</h2>
                 
+                {/* Coupon Code Section */}
+                <div className="mb-6">
+                  <h3 className="text-sm font-medium text-gray-900 mb-3">Coupon Code</h3>
+                  {appliedCoupon ? (
+                    <div className="bg-green-50 border border-green-200 rounded-md p-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-green-800">
+                            {appliedCoupon.name} ({appliedCoupon.code})
+                          </p>
+                          <p className="text-xs text-green-600">
+                            {appliedCoupon.type === 'percentage' 
+                              ? `${appliedCoupon.value}% off`
+                              : appliedCoupon.type === 'fixed_amount'
+                              ? `$${appliedCoupon.value} off`
+                              : 'Free shipping'
+                            }
+                          </p>
+                        </div>
+                        <button
+                          onClick={handleRemoveCoupon}
+                          className="text-green-600 hover:text-green-800 text-sm font-medium"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={couponCode}
+                          onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                          placeholder="Enter coupon code"
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                          disabled={couponLoading}
+                        />
+                        <button
+                          onClick={handleApplyCoupon}
+                          disabled={couponLoading || !couponCode.trim()}
+                          className="px-4 py-2 bg-orange-600 text-white text-sm font-medium rounded-md hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {couponLoading ? 'Applying...' : 'Apply'}
+                        </button>
+                      </div>
+                      {couponError && (
+                        <p className="text-sm text-red-600">{couponError}</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+
                 <div className="space-y-3 mb-6">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Subtotal</span>
                     <span className="font-medium">${calculateSubtotal().toFixed(2)}</span>
                   </div>
+                  
+                  {/* Product Discounts */}
+                  {totalProductDiscounts > 0 && (
+                    <div className="flex justify-between text-green-600">
+                      <span className="text-gray-600">Product Discounts</span>
+                      <span className="font-medium">-${totalProductDiscounts.toFixed(2)}</span>
+                    </div>
+                  )}
+                  
+                  {/* Coupon Discount - Show prominently */}
+                  {discountAmount > 0 && appliedCoupon && (
+                    <div className="flex justify-between text-green-600 bg-green-50 px-3 py-2 rounded-md">
+                      <span className="text-gray-600 font-medium">🎟️ Coupon Discount ({appliedCoupon.name})</span>
+                      <span className="font-bold">-${discountAmount.toFixed(2)}</span>
+                    </div>
+                  )}
+                  
+                  {/* Automatic Discount */}
+                  {automaticDiscountAmount > 0 && (
+                    <div className="flex justify-between text-green-600">
+                      <span className="text-gray-600">Automatic Discount ({appliedAutomaticDiscount?.name})</span>
+                      <span className="font-medium">-${automaticDiscountAmount.toFixed(2)}</span>
+                    </div>
+                  )}
+                  
                   <div className="flex justify-between">
                     <span className="text-gray-600">Tax</span>
                     <span className="font-medium">${calculateTax().toFixed(2)}</span>
                   </div>
+                  
                   <div className="border-t pt-3">
                     <div className="flex justify-between">
                       <span className="text-lg font-semibold text-gray-900">Total</span>
                       <span className="text-lg font-semibold text-gray-900">${calculateTotal().toFixed(2)}</span>
                     </div>
                   </div>
+                  
+                  {/* Savings Summary */}
+                  {(totalProductDiscounts > 0 || automaticDiscountAmount > 0 || discountAmount > 0) && (
+                    <div className="bg-green-50 border border-green-200 rounded-md p-3 mt-3">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0">
+                          <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <div className="ml-3">
+                          <h3 className="text-sm font-medium text-green-800">You're saving money!</h3>
+                          <p className="text-sm text-green-700 mt-1">
+                            Total savings: ${(totalProductDiscounts + automaticDiscountAmount + discountAmount).toFixed(2)}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <button 

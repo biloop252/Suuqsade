@@ -166,3 +166,41 @@ export const getSizeCategory = (value: string): string => {
   if (SIZE_CATEGORIES.rings.includes(value)) return 'rings';
   return 'general';
 };
+
+// Format attribute value for display
+export const formatAttributeValue = (value: string, attributeType?: string): string => {
+  if (!value) return value;
+  
+  // Handle different attribute types
+  switch (attributeType) {
+    case 'size':
+      // For sizes, capitalize appropriately
+      const upperValue = value.toUpperCase();
+      if (SIZE_CATEGORIES.clothing.includes(upperValue)) {
+        return upperValue; // XS, S, M, L, XL, etc.
+      }
+      if (SIZE_CATEGORIES.shoes.includes(value) || SIZE_CATEGORIES.rings.includes(value)) {
+        return value; // Keep shoe sizes and ring sizes as numbers
+      }
+      return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+    
+    case 'color':
+      // For colors, capitalize first letter of each word
+      return value.split(' ').map(word => 
+        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+      ).join(' ');
+    
+    case 'material':
+    case 'fabric':
+      // For materials, capitalize first letter of each word
+      return value.split(' ').map(word => 
+        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+      ).join(' ');
+    
+    default:
+      // For other types, capitalize first letter of each word
+      return value.split(' ').map(word => 
+        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+      ).join(' ');
+  }
+};

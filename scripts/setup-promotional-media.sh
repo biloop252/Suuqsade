@@ -60,3 +60,7 @@ echo "3. Verify your Supabase connection in .env.local"
 
 
 
+
+
+
+

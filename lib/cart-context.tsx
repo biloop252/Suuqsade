@@ -3,12 +3,16 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from './supabase';
 import { useAuth } from './auth-context';
+import { Coupon, ProductWithDetails } from '@/types/database';
+import { DiscountCalculator } from './discount-calculator';
+import { getBatchProductDiscounts, calculateBestDiscount } from './discount-utils';
 
 interface CartItem {
   id: string;
   product_id: string;
   variant_id?: string;
   quantity: number;
+  product?: ProductWithDetails;
 }
 
 interface CartContextType {
@@ -19,6 +23,14 @@ interface CartContextType {
   updateQuantity: (itemId: string, quantity: number) => Promise<void>;
   clearCart: () => Promise<void>;
   loading: boolean;
+  // Coupon functionality
+  appliedCoupon: Coupon | null;
+  discountAmount: number;
+  applyCoupon: (coupon: Coupon) => Promise<void>;
+  removeCoupon: () => void;
+  calculateTotal: () => { subtotal: number; discount: number; total: number };
+  calculateSubtotal: () => number;
+  calculateSubtotalWithDiscounts: () => Promise<number>;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -27,6 +39,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
+  const [discountAmount, setDiscountAmount] = useState(0);
 
   const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
 
@@ -43,7 +57,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
       setLoading(true);
       const { data, error } = await supabase
         .from('cart_items')
-        .select('*')
+        .select(`
+          *,
+          product:products(
+            *,
+            category:categories(*),
+            brand:brands(*),
+            images:product_images(*),
+            variants:product_variants(*)
+          )
+        `)
         .eq('user_id', user?.id);
 
       if (error) {
@@ -196,6 +219,85 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const applyCoupon = async (coupon: Coupon) => {
+    try {
+      // Calculate subtotal with product discounts applied
+      const subtotalWithDiscounts = await calculateSubtotalWithDiscounts();
+      
+      // Validate coupon
+      const validation = DiscountCalculator.isCouponValidForOrder(coupon, subtotalWithDiscounts);
+      
+      if (!validation.valid) {
+        throw new Error(validation.reason || 'Invalid coupon');
+      }
+
+      // Calculate discount based on discounted subtotal
+      const discount = DiscountCalculator.calculateCouponDiscount(coupon, subtotalWithDiscounts);
+      
+      setAppliedCoupon(coupon);
+      setDiscountAmount(discount);
+    } catch (error: any) {
+      throw error;
+    }
+  };
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    setDiscountAmount(0);
+  };
+
+  const calculateSubtotal = (): number => {
+    return cartItems.reduce((total, item) => {
+      if (item.product) {
+        const price = item.product.sale_price || item.product.price;
+        return total + (price * item.quantity);
+      }
+      return total;
+    }, 0);
+  };
+
+  const calculateSubtotalWithDiscounts = async (): Promise<number> => {
+    if (cartItems.length === 0) return 0;
+    
+    try {
+      // Get products with their discount information
+      const products = cartItems.map(item => item.product).filter(Boolean) as ProductWithDetails[];
+      
+      if (products.length === 0) return calculateSubtotal();
+      
+      // Get batch discounts for all products
+      const discountMap = await getBatchProductDiscounts(products);
+      
+      // Calculate total with discounts applied
+      let totalWithDiscounts = 0;
+      
+      cartItems.forEach(item => {
+        if (item.product) {
+          const productDiscounts = discountMap[item.product.id] || [];
+          const { final_price } = calculateBestDiscount(item.product, productDiscounts);
+          totalWithDiscounts += final_price * item.quantity;
+        }
+      });
+      
+      return totalWithDiscounts;
+    } catch (error) {
+      console.error('Error calculating subtotal with discounts:', error);
+      return calculateSubtotal();
+    }
+  };
+
+  const calculateTotal = () => {
+    const subtotal = calculateSubtotal();
+    const discount = discountAmount; // Use the stored discount amount
+    const total = Math.max(0, subtotal - discount);
+    
+    return {
+      subtotal,
+      discount,
+      total
+    };
+  };
+
   return (
     <CartContext.Provider value={{
       cartItems,
@@ -204,7 +306,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
       removeFromCart,
       updateQuantity,
       clearCart,
-      loading
+      loading,
+      appliedCoupon,
+      discountAmount,
+      applyCoupon,
+      removeCoupon,
+      calculateTotal,
+      calculateSubtotal,
+      calculateSubtotalWithDiscounts
     }}>
       {children}
     </CartContext.Provider>

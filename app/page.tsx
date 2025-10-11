@@ -9,6 +9,8 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { useCart } from '@/lib/cart-context';
 import { useFavorites } from '@/lib/favorites-context';
+import { ProductDiscount, getProductDiscounts, calculateBestDiscount, getBatchProductDiscounts } from '@/lib/discount-utils';
+import DiscountBadge from '@/components/ui/DiscountBadge';
 import PromotionalMediaDisplay from '@/components/promotional/PromotionalMediaDisplay';
 import PromotionalBanner from '@/components/promotional/PromotionalBanner';
 import LimitedTimeDeals from '@/components/promotional/LimitedTimeDeals';
@@ -35,6 +37,93 @@ export default function HomePage() {
   });
   const [heroSlide, setHeroSlide] = useState(0);
   const [addingToCart, setAddingToCart] = useState<string | null>(null);
+  
+  // Discount states for each product section
+  const [flashProductDiscounts, setFlashProductDiscounts] = useState<Record<string, {
+    discounts: ProductDiscount[];
+    discountInfo: { final_price: number; discount_amount: number; has_discount: boolean };
+  }>>({});
+  const [recommendedProductDiscounts, setRecommendedProductDiscounts] = useState<Record<string, {
+    discounts: ProductDiscount[];
+    discountInfo: { final_price: number; discount_amount: number; has_discount: boolean };
+  }>>({});
+  const [bestSellingProductDiscounts, setBestSellingProductDiscounts] = useState<Record<string, {
+    discounts: ProductDiscount[];
+    discountInfo: { final_price: number; discount_amount: number; has_discount: boolean };
+  }>>({});
+  const [homeLivingProductDiscounts, setHomeLivingProductDiscounts] = useState<Record<string, {
+    discounts: ProductDiscount[];
+    discountInfo: { final_price: number; discount_amount: number; has_discount: boolean };
+  }>>({});
+
+  // Discount fetching function
+  const fetchProductDiscounts = async (products: ProductWithDetails[], setDiscountState: React.Dispatch<React.SetStateAction<Record<string, {
+    discounts: ProductDiscount[];
+    discountInfo: { final_price: number; discount_amount: number; has_discount: boolean };
+  }>>>) => {
+    try {
+      // Use batch discount fetching for better performance
+      const discountMap = await getBatchProductDiscounts(products);
+      
+      const processedDiscountMap: Record<string, {
+        discounts: ProductDiscount[];
+        discountInfo: { final_price: number; discount_amount: number; has_discount: boolean };
+      }> = {};
+
+      // Calculate discount info for each product
+      products.forEach(product => {
+        const productDiscounts = discountMap[product.id] || [];
+        const discountCalculation = calculateBestDiscount(product, productDiscounts);
+        
+        processedDiscountMap[product.id] = {
+          discounts: productDiscounts,
+          discountInfo: {
+            final_price: discountCalculation.final_price,
+            discount_amount: discountCalculation.discount_amount,
+            has_discount: discountCalculation.discount_amount > 0
+          }
+        };
+      });
+
+      setDiscountState(processedDiscountMap);
+    } catch (error) {
+      console.error('Error fetching batch discounts:', error);
+      
+      // Fallback to individual fetching if batch fails
+      const discountMap: Record<string, {
+        discounts: ProductDiscount[];
+        discountInfo: { final_price: number; discount_amount: number; has_discount: boolean };
+      }> = {};
+
+      for (const product of products) {
+        try {
+          const productDiscounts = await getProductDiscounts(product.id);
+          const discountCalculation = calculateBestDiscount(product, productDiscounts);
+          
+          discountMap[product.id] = {
+            discounts: productDiscounts,
+            discountInfo: {
+              final_price: discountCalculation.final_price,
+              discount_amount: discountCalculation.discount_amount,
+              has_discount: discountCalculation.discount_amount > 0
+            }
+          };
+        } catch (error) {
+          console.error(`Error fetching discounts for product ${product.id}:`, error);
+          discountMap[product.id] = {
+            discounts: [],
+            discountInfo: {
+              final_price: product.sale_price || product.price,
+              discount_amount: 0,
+              has_discount: false
+            }
+          };
+        }
+      }
+
+      setDiscountState(discountMap);
+    }
+  };
 
   // Handler functions
   const handleAddToCart = async (product: ProductWithDetails, event: React.MouseEvent) => {
@@ -269,6 +358,10 @@ export default function HomePage() {
           setFlashProducts([]);
         } else {
           setFlashProducts(flashData || []);
+          // Fetch discounts for flash products
+          if (flashData && flashData.length > 0) {
+            fetchProductDiscounts(flashData, setFlashProductDiscounts);
+          }
         }
 
         if (recommendedError) {
@@ -276,6 +369,10 @@ export default function HomePage() {
           setRecommendedProducts([]);
         } else {
           setRecommendedProducts(recommendedData || []);
+          // Fetch discounts for recommended products
+          if (recommendedData && recommendedData.length > 0) {
+            fetchProductDiscounts(recommendedData, setRecommendedProductDiscounts);
+          }
         }
 
         if (bestSellingError) {
@@ -283,6 +380,10 @@ export default function HomePage() {
           setBestSellingProducts([]);
         } else {
           setBestSellingProducts(bestSellingData || []);
+          // Fetch discounts for best selling products
+          if (bestSellingData && bestSellingData.length > 0) {
+            fetchProductDiscounts(bestSellingData, setBestSellingProductDiscounts);
+          }
         }
 
         if (homeLivingError) {
@@ -290,6 +391,10 @@ export default function HomePage() {
           setHomeLivingProducts([]);
         } else {
           setHomeLivingProducts(homeLivingData || []);
+          // Fetch discounts for home living products
+          if (homeLivingData && homeLivingData.length > 0) {
+            fetchProductDiscounts(homeLivingData, setHomeLivingProductDiscounts);
+          }
         }
 
         // Fetch initial batch of all products
@@ -408,7 +513,18 @@ export default function HomePage() {
                   const primaryImage = product.images?.[0];
                   const hasSalePrice = product.sale_price && product.sale_price < product.price;
                   const discountPercentage = hasSalePrice ? Math.round(((product.price - product.sale_price!) / product.price) * 100) : 0;
-                  const displayPrice = hasSalePrice ? product.sale_price! : product.price;
+                  
+                  // Get discount information
+                  const productDiscountData = recommendedProductDiscounts[product.id];
+                  const hasDiscount = productDiscountData?.discountInfo.has_discount || false;
+                  const discountInfo = productDiscountData?.discountInfo;
+                  const discounts = productDiscountData?.discounts || [];
+                  
+                  // Calculate display price considering discounts
+                  const basePrice = product.sale_price || product.price;
+                  const displayPrice = hasDiscount ? discountInfo?.final_price || basePrice : basePrice;
+                  const originalPrice = hasDiscount ? basePrice : (hasSalePrice ? product.price : basePrice);
+                  
                   const averageRating = product.reviews?.length ? 
                     product.reviews.reduce((sum, review) => sum + review.rating, 0) / product.reviews.length : 4.5;
                   const reviewCount = product.reviews?.length || 0;
@@ -432,6 +548,17 @@ export default function HomePage() {
                             </div>
                           )}
                         </div>
+                        
+                        {/* Discount Badge */}
+                        {hasDiscount && (
+                          <div className="absolute top-3 left-3 z-10">
+                            <DiscountBadge
+                              discountAmount={discountInfo?.discount_amount || 0}
+                              discountType={discounts[0]?.type || 'percentage'}
+                              discountValue={discounts[0]?.value || 0}
+                            />
+                          </div>
+                        )}
                         
                         {/* Heart Icon */}
                         <div className="absolute top-3 right-3">
@@ -467,10 +594,10 @@ export default function HomePage() {
                         {/* Price and Add to Cart */}
                         <div className="flex items-center justify-between">
                           <div className="flex flex-col">
-                            {hasSalePrice ? (
+                            {(hasSalePrice || hasDiscount) ? (
                               <>
                                 <span className="text-lg font-bold text-gray-900">${displayPrice.toFixed(2)}</span>
-                                <span className="text-sm text-gray-500 line-through">${product.price.toFixed(2)}</span>
+                                <span className="text-sm text-gray-500 line-through">${originalPrice.toFixed(2)}</span>
                               </>
                             ) : (
                               <span className="text-lg font-bold text-gray-900">${displayPrice.toFixed(2)}</span>
@@ -571,7 +698,18 @@ export default function HomePage() {
                   const primaryImage = product.images?.[0];
                   const hasSalePrice = product.sale_price && product.sale_price < product.price;
                   const discountPercentage = hasSalePrice ? Math.round(((product.price - product.sale_price!) / product.price) * 100) : 0;
-                  const displayPrice = hasSalePrice ? product.sale_price! : product.price;
+                  
+                  // Get discount information
+                  const productDiscountData = bestSellingProductDiscounts[product.id];
+                  const hasDiscount = productDiscountData?.discountInfo.has_discount || false;
+                  const discountInfo = productDiscountData?.discountInfo;
+                  const discounts = productDiscountData?.discounts || [];
+                  
+                  // Calculate display price considering discounts
+                  const basePrice = product.sale_price || product.price;
+                  const displayPrice = hasDiscount ? discountInfo?.final_price || basePrice : basePrice;
+                  const originalPrice = hasDiscount ? basePrice : (hasSalePrice ? product.price : basePrice);
+                  
                   const averageRating = product.reviews?.length ? 
                     product.reviews.reduce((sum, review) => sum + review.rating, 0) / product.reviews.length : 4.5;
                   const reviewCount = product.reviews?.length || 0;
@@ -595,6 +733,17 @@ export default function HomePage() {
                             </div>
                           )}
                         </div>
+                        
+                        {/* Discount Badge */}
+                        {hasDiscount && (
+                          <div className="absolute top-3 left-3 z-10">
+                            <DiscountBadge
+                              discountAmount={discountInfo?.discount_amount || 0}
+                              discountType={discounts[0]?.type || 'percentage'}
+                              discountValue={discounts[0]?.value || 0}
+                            />
+                          </div>
+                        )}
                         
                         {/* Heart Icon */}
                         <div className="absolute top-3 right-3">
@@ -630,10 +779,10 @@ export default function HomePage() {
                         {/* Price and Add to Cart */}
                         <div className="flex items-center justify-between">
                           <div className="flex flex-col">
-                            {hasSalePrice ? (
+                            {(hasSalePrice || hasDiscount) ? (
                               <>
                                 <span className="text-lg font-bold text-gray-900">${displayPrice.toFixed(2)}</span>
-                                <span className="text-sm text-gray-500 line-through">${product.price.toFixed(2)}</span>
+                                <span className="text-sm text-gray-500 line-through">${originalPrice.toFixed(2)}</span>
                               </>
                             ) : (
                               <span className="text-lg font-bold text-gray-900">${displayPrice.toFixed(2)}</span>
@@ -734,7 +883,18 @@ export default function HomePage() {
                   const primaryImage = product.images?.[0];
                   const hasSalePrice = product.sale_price && product.sale_price < product.price;
                   const discountPercentage = hasSalePrice ? Math.round(((product.price - product.sale_price!) / product.price) * 100) : 0;
-                  const displayPrice = hasSalePrice ? product.sale_price! : product.price;
+                  
+                  // Get discount information
+                  const productDiscountData = homeLivingProductDiscounts[product.id];
+                  const hasDiscount = productDiscountData?.discountInfo.has_discount || false;
+                  const discountInfo = productDiscountData?.discountInfo;
+                  const discounts = productDiscountData?.discounts || [];
+                  
+                  // Calculate display price considering discounts
+                  const basePrice = product.sale_price || product.price;
+                  const displayPrice = hasDiscount ? discountInfo?.final_price || basePrice : basePrice;
+                  const originalPrice = hasDiscount ? basePrice : (hasSalePrice ? product.price : basePrice);
+                  
                   const averageRating = product.reviews?.length ? 
                     product.reviews.reduce((sum, review) => sum + review.rating, 0) / product.reviews.length : 4.5;
                   const reviewCount = product.reviews?.length || 0;
@@ -758,6 +918,17 @@ export default function HomePage() {
                             </div>
                           )}
                         </div>
+                        
+                        {/* Discount Badge */}
+                        {hasDiscount && (
+                          <div className="absolute top-3 left-3 z-10">
+                            <DiscountBadge
+                              discountAmount={discountInfo?.discount_amount || 0}
+                              discountType={discounts[0]?.type || 'percentage'}
+                              discountValue={discounts[0]?.value || 0}
+                            />
+                          </div>
+                        )}
                         
                         {/* Heart Icon */}
                         <div className="absolute top-3 right-3">
@@ -793,10 +964,10 @@ export default function HomePage() {
                         {/* Price and Add to Cart */}
                         <div className="flex items-center justify-between">
                           <div className="flex flex-col">
-                            {hasSalePrice ? (
+                            {(hasSalePrice || hasDiscount) ? (
                               <>
                                 <span className="text-lg font-bold text-gray-900">${displayPrice.toFixed(2)}</span>
-                                <span className="text-sm text-gray-500 line-through">${product.price.toFixed(2)}</span>
+                                <span className="text-sm text-gray-500 line-through">${originalPrice.toFixed(2)}</span>
                               </>
                             ) : (
                               <span className="text-lg font-bold text-gray-900">${displayPrice.toFixed(2)}</span>

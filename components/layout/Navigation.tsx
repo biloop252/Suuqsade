@@ -2,12 +2,14 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { useCart } from '@/lib/cart-context';
 import { supabase } from '@/lib/supabase';
 import { Category } from '@/types/database';
 import CategoriesDropdown from './CategoriesDropdown';
+import SearchSuggestions from '@/components/ui/SearchSuggestions';
+import { useSearchSuggestions } from '@/hooks/useSearchSuggestions';
 import { 
   ShoppingCartIcon, 
   UserIcon, 
@@ -42,15 +44,24 @@ export default function Navigation() {
   const { user, profile, signOut } = useAuth();
   const { cartCount } = useCart();
   const pathname = usePathname();
+  const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { suggestions, loading } = useSearchSuggestions(searchTerm);
 
   const handleSignOut = async () => {
     await signOut();
     setIsUserDropdownOpen(false);
+  };
+
+  const handleSearch = (searchQuery: string) => {
+    if (searchQuery.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+    }
   };
 
   // Fetch categories
@@ -135,17 +146,16 @@ export default function Navigation() {
 
             {/* Search Bar */}
             <div className="flex-1 max-w-2xl mx-8">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Write the product, category or brand you are looking for"
-                  className="w-full px-4 py-2.5 pr-12 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
-                />
-                <button className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-orange-500 text-white p-1.5 rounded hover:bg-orange-600">
-                  <SearchIcon className="h-4 w-4" />
-                </button>
+              <SearchSuggestions
+                value={searchTerm}
+                onChange={setSearchTerm}
+                onSubmit={handleSearch}
+                placeholder="Write the product, category or brand you are looking for"
+                suggestions={suggestions}
+                loading={loading}
+                className="w-full"
+              />
             </div>
-          </div>
 
             {/* User Actions */}
             <div className="flex items-center space-x-6">

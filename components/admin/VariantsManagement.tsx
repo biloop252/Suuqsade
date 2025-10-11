@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { ProductVariant, Product, ProductAttribute } from '@/types/database';
+import { formatAttributeValue } from '../products/AttributeUtils';
 import { 
   Plus, 
   Edit, 
@@ -222,11 +223,17 @@ export default function VariantsManagement() {
                       <div className="max-w-xs truncate">
                         {variant.attributes && Object.keys(variant.attributes).length > 0 ? (
                           <div className="flex flex-wrap gap-1">
-                            {Object.entries(variant.attributes).slice(0, 2).map(([key, value]) => (
-                              <span key={key} className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
-                                {key}: {Array.isArray(value) ? value.join(', ') : value}
-                              </span>
-                            ))}
+                            {Object.entries(variant.attributes).slice(0, 2).map(([key, value]) => {
+                              const attribute = attributes.find(attr => attr.id === key);
+                              const formattedValue = Array.isArray(value) 
+                                ? value.map(v => formatAttributeValue(v, attribute?.type)).join(', ')
+                                : formatAttributeValue(value, attribute?.type);
+                              return (
+                                <span key={key} className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                                  {attribute?.name || key}: {formattedValue}
+                                </span>
+                              );
+                            })}
                             {Object.keys(variant.attributes).length > 2 && (
                               <span className="text-xs text-gray-500">
                                 +{Object.keys(variant.attributes).length - 2} more

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { Category, ProductWithDetails, Brand } from '@/types/database';
+import { ProductDiscount, getBatchProductDiscounts, calculateBestDiscount } from '@/lib/discount-utils';
 import ProductCard from '@/components/products/ProductCard';
 import { ArrowLeftIcon, PackageIcon, FilterIcon, SortAscIcon, SortDescIcon, XIcon } from 'lucide-react';
 import Link from 'next/link';
@@ -31,6 +32,10 @@ export default function CategoryPage() {
   // Sort state
   const [sortBy, setSortBy] = useState('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [productDiscounts, setProductDiscounts] = useState<Record<string, {
+    discounts: ProductDiscount[];
+    discountInfo: { final_price: number; discount_amount: number; has_discount: boolean };
+  }>>({});
 
   useEffect(() => {
     if (params.slug) {
@@ -186,6 +191,37 @@ export default function CategoryPage() {
           .filter((brand, index, self) => brand && self.findIndex(b => b?.id === brand.id) === index)
           .filter(Boolean) as Brand[];
         setBrands(uniqueBrands);
+        
+        // Fetch discounts for all products in batch
+        if (products.length > 0) {
+          try {
+            const discountMap = await getBatchProductDiscounts(products);
+            
+            const processedDiscountMap: Record<string, {
+              discounts: ProductDiscount[];
+              discountInfo: { final_price: number; discount_amount: number; has_discount: boolean };
+            }> = {};
+
+            // Calculate discount info for each product
+            products.forEach(product => {
+              const productDiscounts = discountMap[product.id] || [];
+              const discountCalculation = calculateBestDiscount(product, productDiscounts);
+              
+              processedDiscountMap[product.id] = {
+                discounts: productDiscounts,
+                discountInfo: {
+                  final_price: discountCalculation.final_price,
+                  discount_amount: discountCalculation.discount_amount,
+                  has_discount: discountCalculation.discount_amount > 0
+                }
+              };
+            });
+
+            setProductDiscounts(processedDiscountMap);
+          } catch (discountError) {
+            console.error('Error fetching batch discounts:', discountError);
+          }
+        }
       }
     } catch (error) {
       console.error('Error:', error);
@@ -415,6 +451,7 @@ export default function CategoryPage() {
                     key={product.id}
                     product={product}
                     viewMode={viewMode}
+                    discountData={productDiscounts[product.id]}
                   />
                 ))}
               </div>

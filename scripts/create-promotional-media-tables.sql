@@ -312,3 +312,7 @@ SELECT 'promotional_media_categories table created successfully' as status, COUN
 
 
 
+
+
+
+

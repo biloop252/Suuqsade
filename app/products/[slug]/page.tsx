@@ -19,6 +19,8 @@ import Image from 'next/image';
 import { useAuth } from '@/lib/auth-context';
 import { useCart } from '@/lib/cart-context';
 import { useFavorites } from '@/lib/favorites-context';
+import { ProductDiscount, getBatchProductDiscounts, calculateBestDiscount } from '@/lib/discount-utils';
+import DiscountBadge from '@/components/ui/DiscountBadge';
 import LocationSelector from '@/components/products/LocationSelector';
 import DeliveryCalculator from '@/components/products/DeliveryCalculator';
 import ProductOptions from '@/components/products/ProductOptions';
@@ -38,12 +40,23 @@ export default function ProductDetailPage() {
   const [selectedDeliveryOption, setSelectedDeliveryOption] = useState<any>(null);
   const [attributeSelections, setAttributeSelections] = useState<Record<string, string>>({});
   const [dynamicPrice, setDynamicPrice] = useState<{ basePrice: number; salePrice?: number } | null>(null);
+  const [discounts, setDiscounts] = useState<ProductDiscount[]>([]);
+  const [discountInfo, setDiscountInfo] = useState<{
+    final_price: number;
+    discount_amount: number;
+    has_discount: boolean;
+  }>({
+    final_price: 0,
+    discount_amount: 0,
+    has_discount: false
+  });
 
   useEffect(() => {
     if (params.slug) {
       fetchProduct();
     }
   }, [params.slug]);
+
 
   const fetchProduct = async () => {
     try {
@@ -72,6 +85,23 @@ export default function ProductDetailPage() {
           basePrice: data.price,
           salePrice: data.sale_price
         });
+        
+        // Fetch discounts immediately after product is loaded
+        try {
+          const discountMap = await getBatchProductDiscounts([data]);
+          const productDiscounts = discountMap[data.id] || [];
+          
+          setDiscounts(productDiscounts);
+          
+          const discountCalculation = calculateBestDiscount(data, productDiscounts);
+          setDiscountInfo({
+            final_price: discountCalculation.final_price,
+            discount_amount: discountCalculation.discount_amount,
+            has_discount: discountCalculation.discount_amount > 0
+          });
+        } catch (discountError) {
+          console.error('Error fetching discounts:', discountError);
+        }
       }
     } catch (error) {
       console.error('Error:', error);
@@ -132,7 +162,26 @@ export default function ProductDetailPage() {
     // Calculate dynamic price based on selected attributes
     if (product && Object.keys(selections).length > 0) {
       try {
-        // For now, use a simpler approach - find variant by matching attributes in the JSONB field
+        // Create a mapping from attribute slugs to IDs by fetching attribute metadata
+        const attributeIds = new Set<string>();
+        product.variants?.forEach(variant => {
+          if (variant.attributes) {
+            Object.keys(variant.attributes).forEach(id => attributeIds.add(id));
+          }
+        });
+
+        // Fetch attribute metadata to create slug-to-ID mapping
+        const { data: attributesData } = await supabase
+          .from('product_attributes')
+          .select('id, slug')
+          .in('id', Array.from(attributeIds));
+
+        const slugToIdMap = new Map<string, string>();
+        attributesData?.forEach(attr => {
+          slugToIdMap.set(attr.slug, attr.id);
+        });
+
+        // Find variant by matching attributes in the JSONB field
         const matchingVariant = product.variants?.find(variant => {
           if (!variant.attributes) return false;
           
@@ -140,9 +189,16 @@ export default function ProductDetailPage() {
           
           // Check if all selected attributes match this variant's attributes
           const matches = Object.keys(selections).every(attrSlug => {
-            const variantAttrValue = variant.attributes![attrSlug];
+            const attributeId = slugToIdMap.get(attrSlug);
+            
+            if (!attributeId) {
+              console.log(`No attribute ID found for slug: ${attrSlug}`);
+              return false;
+            }
+            
+            const variantAttrValue = variant.attributes![attributeId];
             const selectionValue = selections[attrSlug];
-            console.log(`Comparing ${attrSlug}: variant="${variantAttrValue}" vs selection="${selectionValue}"`);
+            console.log(`Comparing ${attrSlug} (ID: ${attributeId}): variant="${variantAttrValue}" vs selection="${selectionValue}"`);
             return variantAttrValue === selectionValue;
           });
           
@@ -203,10 +259,15 @@ export default function ProductDetailPage() {
     );
   }
 
-  // Calculate current price based on dynamic pricing or product price
-  const currentPrice = dynamicPrice?.salePrice || dynamicPrice?.basePrice || product?.price || 0;
-  const originalPrice = dynamicPrice?.basePrice || product?.price || 0;
-  const hasDiscount = dynamicPrice?.salePrice && dynamicPrice.salePrice < originalPrice;
+  // Calculate current price based on dynamic pricing, discounts, or product price
+  const basePrice = dynamicPrice?.basePrice || product?.price || 0;
+  const salePrice = dynamicPrice?.salePrice || product?.sale_price;
+  const discountedPrice = discountInfo.has_discount ? discountInfo.final_price : (salePrice || basePrice);
+  
+  const currentPrice = discountedPrice;
+  const originalPrice = salePrice || basePrice;
+  const hasSalePrice = salePrice && salePrice < basePrice;
+  const hasDiscount = discountInfo.has_discount;
 
   const images = product.images || [];
   const primaryImage = images.find(img => img.is_primary) || images[0];
@@ -282,6 +343,20 @@ export default function ProductDetailPage() {
                 ))}
               </div>
             )}
+
+            {/* Product Description */}
+            {product.description && (
+              <div className="mt-6">
+                <div className="p-6">
+                  <h2 className="text-lg font-semibold text-gray-900 mb-3">Product Description</h2>
+                  <div className="prose prose-gray max-w-none">
+                    <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
+                      {product.description}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Product Details */}
@@ -300,11 +375,18 @@ export default function ProductDetailPage() {
               
               {/* Price */}
               <div className="flex items-center space-x-4 mb-4">
-                <span className="text-3xl font-bold text-gray-900">${currentPrice}</span>
-                {hasDiscount && (
-                  <span className="text-xl text-gray-500 line-through">${originalPrice}</span>
+                <span className="text-3xl font-bold text-gray-900">${currentPrice.toFixed(2)}</span>
+                {(hasSalePrice || hasDiscount) && (
+                  <span className="text-xl text-gray-500 line-through">${originalPrice.toFixed(2)}</span>
                 )}
                 {hasDiscount && (
+                  <DiscountBadge
+                    discountAmount={discountInfo.discount_amount}
+                    discountType={discounts[0]?.type || 'percentage'}
+                    discountValue={discounts[0]?.value || 0}
+                  />
+                )}
+                {hasSalePrice && !hasDiscount && (
                   <span className="bg-red-100 text-red-800 text-sm font-medium px-2 py-1 rounded">
                     {Math.round(((originalPrice - currentPrice) / originalPrice) * 100)}% OFF
                   </span>
@@ -329,6 +411,31 @@ export default function ProductDetailPage() {
               {/* Short Description */}
               {product.short_description && (
                 <p className="text-gray-600 mb-6">{product.short_description}</p>
+              )}
+
+              {/* Discount Information */}
+              {hasDiscount && discounts.length > 0 && (
+                <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <h3 className="text-sm font-semibold text-green-800 mb-2">🎉 Special Offers Available!</h3>
+                  <div className="space-y-2">
+                    {discounts.map((discount, index) => (
+                      <div key={discount.id} className="flex items-center justify-between text-sm">
+                        <span className="text-green-700 font-medium">{discount.name}</span>
+                        <span className="text-green-600">
+                          {discount.type === 'percentage' 
+                            ? `${discount.value}% OFF` 
+                            : discount.type === 'fixed_amount' 
+                            ? `$${discount.value} OFF`
+                            : 'FREE SHIPPING'
+                          }
+                        </span>
+                      </div>
+                    ))}
+                    <div className="text-xs text-green-600 mt-2">
+                      💰 You save ${discountInfo.discount_amount.toFixed(2)} on this item!
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
 

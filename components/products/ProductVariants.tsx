@@ -8,7 +8,8 @@ import {
   isValidHexColor, 
   getAttributeDisplayName, 
   getAttributeType, 
-  getSizeCategory 
+  getSizeCategory,
+  formatAttributeValue
 } from './AttributeUtils';
 
 interface ProductVariantsProps {
@@ -171,7 +172,7 @@ export default function ProductVariants({ productId, onVariantSelect }: ProductV
                           : 'border-gray-300 hover:border-gray-500'
                       }`}
                       style={{ backgroundColor: colorHex }}
-                      title={option}
+                      title={formatAttributeValue(option, attributeType)}
                     >
                       {isSelected && (
                         <div className="absolute inset-0 flex items-center justify-center">
@@ -200,7 +201,7 @@ export default function ProductVariants({ productId, onVariantSelect }: ProductV
                           : 'border-gray-300 hover:border-gray-400 text-gray-700 hover:bg-gray-50'
                       }`}
                     >
-                      {option}
+                      {formatAttributeValue(option, attributeType)}
                     </button>
                   );
                 } else {
@@ -219,7 +220,7 @@ export default function ProductVariants({ productId, onVariantSelect }: ProductV
                           : 'border-gray-300 hover:border-gray-400 text-gray-700 hover:bg-gray-50'
                       }`}
                     >
-                      {option}
+                      {formatAttributeValue(option, attributeType)}
                     </button>
                   );
                 }

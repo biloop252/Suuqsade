@@ -1,30 +1,84 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { ProductWithDetails } from '@/types/database';
+import { ProductWithDetails, Category, Brand } from '@/types/database';
+import { ProductDiscount, getBatchProductDiscounts, calculateBestDiscount } from '@/lib/discount-utils';
 import ProductCard from '@/components/products/ProductCard';
 import ProductFilters from '@/components/products/ProductFilters';
-import { SearchIcon, FilterIcon, GridIcon, ListIcon } from 'lucide-react';
+import { SortAscIcon, SortDescIcon, SearchIcon } from 'lucide-react';
 
 export default function ProductsPage() {
+  const searchParams = useSearchParams();
   const [products, setProducts] = useState<ProductWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [showFilters, setShowFilters] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [brands, setBrands] = useState<Brand[]>([]);
   const [filters, setFilters] = useState({
-    category: '',
-    brand: '',
+    categories: [] as string[],
+    brands: [] as string[],
     minPrice: '',
-    maxPrice: '',
-    search: '',
-    sortBy: 'name',
-    sortOrder: 'asc'
+    maxPrice: ''
   });
+  const [sortBy, setSortBy] = useState('name');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [productDiscounts, setProductDiscounts] = useState<Record<string, {
+    discounts: ProductDiscount[];
+    discountInfo: { final_price: number; discount_amount: number; has_discount: boolean };
+  }>>({});
+
+  // Initialize filters from URL parameters
+  useEffect(() => {
+    const brandParam = searchParams.get('brand');
+    const categoryParam = searchParams.get('category');
+    
+    if (brandParam || categoryParam) {
+      setFilters(prev => ({
+        ...prev,
+        brands: brandParam ? [brandParam] : [],
+        categories: categoryParam ? [categoryParam] : []
+      }));
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     fetchProducts();
-  }, [filters]);
+    fetchFiltersData();
+  }, [filters, sortBy, sortOrder]);
+
+  const fetchFiltersData = async () => {
+    try {
+      // Fetch categories
+      const { data: categoriesData, error: categoriesError } = await supabase
+        .from('categories')
+        .select('*')
+        .eq('is_active', true)
+        .order('sort_order')
+        .order('name');
+
+      // Fetch brands
+      const { data: brandsData, error: brandsError } = await supabase
+        .from('brands')
+        .select('*')
+        .eq('is_active', true)
+        .order('name');
+
+      if (categoriesError) {
+        console.error('Error fetching categories:', categoriesError);
+      } else {
+        setCategories(categoriesData || []);
+      }
+
+      if (brandsError) {
+        console.error('Error fetching brands:', brandsError);
+      } else {
+        setBrands(brandsData || []);
+      }
+    } catch (error) {
+      console.error('Error fetching filters data:', error);
+    }
+  };
 
   const fetchProducts = async () => {
     try {
@@ -42,11 +96,11 @@ export default function ProductsPage() {
         .eq('is_active', true);
 
       // Apply filters
-      if (filters.category) {
-        query = query.eq('category_id', filters.category);
+      if (filters.categories.length > 0) {
+        query = query.in('category_id', filters.categories);
       }
-      if (filters.brand) {
-        query = query.eq('brand_id', filters.brand);
+      if (filters.brands.length > 0) {
+        query = query.in('brand_id', filters.brands);
       }
       if (filters.minPrice) {
         query = query.gte('price', parseFloat(filters.minPrice));
@@ -54,13 +108,10 @@ export default function ProductsPage() {
       if (filters.maxPrice) {
         query = query.lte('price', parseFloat(filters.maxPrice));
       }
-      if (filters.search) {
-        query = query.or(`name.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
-      }
 
       // Apply sorting
-      const sortColumn = filters.sortBy === 'price' ? 'price' : 'name';
-      query = query.order(sortColumn, { ascending: filters.sortOrder === 'asc' });
+      const sortColumn = sortBy === 'price' ? 'price' : 'name';
+      query = query.order(sortColumn, { ascending: sortOrder === 'asc' });
 
       const { data, error } = await query;
 
@@ -68,6 +119,37 @@ export default function ProductsPage() {
         console.error('Error fetching products:', error);
       } else {
         setProducts(data || []);
+        
+        // Fetch discounts for all products in batch
+        if (data && data.length > 0) {
+          try {
+            const discountMap = await getBatchProductDiscounts(data);
+            
+            const processedDiscountMap: Record<string, {
+              discounts: ProductDiscount[];
+              discountInfo: { final_price: number; discount_amount: number; has_discount: boolean };
+            }> = {};
+
+            // Calculate discount info for each product
+            data.forEach(product => {
+              const productDiscounts = discountMap[product.id] || [];
+              const discountCalculation = calculateBestDiscount(product, productDiscounts);
+              
+              processedDiscountMap[product.id] = {
+                discounts: productDiscounts,
+                discountInfo: {
+                  final_price: discountCalculation.final_price,
+                  discount_amount: discountCalculation.discount_amount,
+                  has_discount: discountCalculation.discount_amount > 0
+                }
+              };
+            });
+
+            setProductDiscounts(processedDiscountMap);
+          } catch (discountError) {
+            console.error('Error fetching batch discounts:', discountError);
+          }
+        }
       }
     } catch (error) {
       console.error('Error:', error);
@@ -82,142 +164,64 @@ export default function ProductsPage() {
 
   const clearFilters = () => {
     setFilters({
-      category: '',
-      brand: '',
+      categories: [],
+      brands: [],
       minPrice: '',
-      maxPrice: '',
-      search: '',
-      sortBy: 'name',
-      sortOrder: 'asc'
+      maxPrice: ''
     });
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">Products</h1>
-          <p className="text-gray-600">Discover our wide selection of quality products</p>
-        </div>
 
-        {/* Search and Controls */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
-            {/* Search */}
-            <div className="relative flex-1 max-w-md">
-              <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search products..."
-                value={filters.search}
-                onChange={(e) => handleFilterChange({ search: e.target.value })}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              />
-            </div>
-
+        {/* Controls */}
+        <div className="mb-6">
+          <div className="flex flex-col lg:flex-row gap-4 items-center justify-end">
             {/* Controls */}
             <div className="flex items-center gap-4">
               {/* Sort */}
-              <select
-                value={`${filters.sortBy}-${filters.sortOrder}`}
-                onChange={(e) => {
-                  const [sortBy, sortOrder] = e.target.value.split('-');
-                  handleFilterChange({ sortBy, sortOrder });
-                }}
-                className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              >
-                <option value="name-asc">Name A-Z</option>
-                <option value="name-desc">Name Z-A</option>
-                <option value="price-asc">Price Low-High</option>
-                <option value="price-desc">Price High-Low</option>
-              </select>
-
-              {/* View Mode */}
-              <div className="flex border border-gray-300 rounded-md">
-                <button
-                  onClick={() => setViewMode('grid')}
-                  className={`p-2 ${viewMode === 'grid' ? 'bg-primary-600 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
+              <div className="flex items-center space-x-2">
+                <label className="text-sm text-gray-700">Sort by:</label>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
                 >
-                  <GridIcon className="h-5 w-5" />
-                </button>
-                <button
-                  onClick={() => setViewMode('list')}
-                  className={`p-2 ${viewMode === 'list' ? 'bg-primary-600 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
-                >
-                  <ListIcon className="h-5 w-5" />
-                </button>
+                  <option value="name">Name</option>
+                  <option value="price">Price</option>
+                  <option value="newest">Newest</option>
+                  <option value="rating">Rating</option>
+                </select>
               </div>
-
-              {/* Filters Toggle */}
+              
               <button
-                onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+                onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                className="p-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                title={`Sort ${sortOrder === 'asc' ? 'Descending' : 'Ascending'}`}
               >
-                <FilterIcon className="h-5 w-5" />
-                Filters
+                {sortOrder === 'asc' ? (
+                  <SortAscIcon className="h-4 w-4 text-gray-600" />
+                ) : (
+                  <SortDescIcon className="h-4 w-4 text-gray-600" />
+                )}
               </button>
+
+
             </div>
           </div>
 
-          {/* Active Filters */}
-          {(filters.category || filters.brand || filters.minPrice || filters.maxPrice) && (
-            <div className="mt-4 flex flex-wrap gap-2">
-              <span className="text-sm text-gray-600">Active filters:</span>
-              {filters.category && (
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-primary-100 text-primary-800">
-                  Category: {filters.category}
-                  <button
-                    onClick={() => handleFilterChange({ category: '' })}
-                    className="ml-2 text-primary-600 hover:text-primary-800"
-                  >
-                    ×
-                  </button>
-                </span>
-              )}
-              {filters.brand && (
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-primary-100 text-primary-800">
-                  Brand: {filters.brand}
-                  <button
-                    onClick={() => handleFilterChange({ brand: '' })}
-                    className="ml-2 text-primary-600 hover:text-primary-800"
-                  >
-                    ×
-                  </button>
-                </span>
-              )}
-              {(filters.minPrice || filters.maxPrice) && (
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-primary-100 text-primary-800">
-                  Price: ${filters.minPrice || '0'} - ${filters.maxPrice || '∞'}
-                  <button
-                    onClick={() => handleFilterChange({ minPrice: '', maxPrice: '' })}
-                    className="ml-2 text-primary-600 hover:text-primary-800"
-                  >
-                    ×
-                  </button>
-                </span>
-              )}
-              <button
-                onClick={clearFilters}
-                className="text-sm text-primary-600 hover:text-primary-800 underline"
-              >
-                Clear all
-              </button>
-            </div>
-          )}
         </div>
 
         <div className="flex gap-6">
           {/* Filters Sidebar */}
-          {showFilters && (
-            <div className="w-64 flex-shrink-0">
-              <ProductFilters
-                filters={filters}
-                onFilterChange={handleFilterChange}
-                onClearFilters={clearFilters}
-              />
-            </div>
-          )}
+          <div className="w-64 flex-shrink-0">
+            <ProductFilters
+              filters={filters}
+              onFilterChange={handleFilterChange}
+              onClearFilters={clearFilters}
+            />
+          </div>
 
           {/* Products Grid/List */}
           <div className="flex-1">
@@ -233,16 +237,12 @@ export default function ProductsPage() {
                 ))}
               </div>
             ) : products.length > 0 ? (
-              <div className={
-                viewMode === 'grid'
-                  ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6'
-                  : 'space-y-4'
-              }>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
                 {products.map((product) => (
                   <ProductCard
                     key={product.id}
                     product={product}
-                    viewMode={viewMode}
+                    discountData={productDiscounts[product.id]}
                   />
                 ))}
               </div>

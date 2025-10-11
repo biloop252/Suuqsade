@@ -5,7 +5,9 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth-context';
 import { useCart } from '@/lib/cart-context';
-import { ProductWithDetails } from '@/types/database';
+import { ProductWithDetails, Coupon } from '@/types/database';
+import { getBatchProductDiscounts, calculateBestDiscount, ProductDiscount } from '@/lib/discount-utils';
+import { DiscountCalculator } from '@/lib/discount-calculator';
 import AddressForm from '@/components/profile/AddressForm';
 import { 
   ArrowLeftIcon,
@@ -51,7 +53,17 @@ interface Address {
 
 export default function CheckoutPage() {
   const { user } = useAuth();
-  const { cartItems: contextCartItems, clearCart } = useCart();
+  const { 
+    cartItems: contextCartItems, 
+    clearCart, 
+    appliedCoupon, 
+    discountAmount, 
+    applyCoupon, 
+    removeCoupon, 
+    calculateTotal: calculateCartTotal,
+    calculateSubtotal: calculateCartSubtotal,
+    calculateSubtotalWithDiscounts
+  } = useCart();
   const router = useRouter();
   
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -73,6 +85,21 @@ export default function CheckoutPage() {
   // AddressForm modal states
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [editingAddress, setEditingAddress] = useState<any>(null);
+  
+  // Coupon/Discount states
+  const [couponCode, setCouponCode] = useState('');
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponError, setCouponError] = useState('');
+  
+  // Product discount states
+  const [productDiscounts, setProductDiscounts] = useState<Record<string, ProductDiscount[]>>({});
+  const [productDiscountAmounts, setProductDiscountAmounts] = useState<Record<string, number>>({});
+  const [totalProductDiscounts, setTotalProductDiscounts] = useState(0);
+  
+  // Automatic discount states
+  const [availableAutomaticDiscounts, setAvailableAutomaticDiscounts] = useState<any[]>([]);
+  const [appliedAutomaticDiscount, setAppliedAutomaticDiscount] = useState<any>(null);
+  const [automaticDiscountAmount, setAutomaticDiscountAmount] = useState(0);
 
   useEffect(() => {
     if (user) {
@@ -82,6 +109,14 @@ export default function CheckoutPage() {
       router.push('/auth/signin');
     }
   }, [user, router]);
+
+  // Fetch product discounts when cart items change
+  useEffect(() => {
+    if (cartItems.length > 0) {
+      fetchProductDiscounts();
+      fetchAutomaticDiscounts();
+    }
+  }, [cartItems]);
 
   // Calculate shipping when shipping address or cart items change
   useEffect(() => {
@@ -132,6 +167,75 @@ export default function CheckoutPage() {
       console.error('Error:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchProductDiscounts = async () => {
+    try {
+      const products = cartItems.map(item => item.product).filter(Boolean) as ProductWithDetails[];
+      
+      if (products.length === 0) return;
+      
+      // Get batch discounts for all products
+      const discountMap = await getBatchProductDiscounts(products);
+      setProductDiscounts(discountMap);
+      
+      // Calculate discount amounts for each product
+      const discountAmounts: Record<string, number> = {};
+      let totalDiscounts = 0;
+      
+      cartItems.forEach(item => {
+        if (item.product) {
+          const productDiscounts = discountMap[item.product.id] || [];
+          const { discount_amount } = calculateBestDiscount(item.product, productDiscounts);
+          const totalDiscountForItem = discount_amount * item.quantity;
+          discountAmounts[item.product.id] = totalDiscountForItem;
+          totalDiscounts += totalDiscountForItem;
+        }
+      });
+      
+      setProductDiscountAmounts(discountAmounts);
+      setTotalProductDiscounts(totalDiscounts);
+    } catch (error) {
+      console.error('Error fetching product discounts:', error);
+    }
+  };
+
+  const fetchAutomaticDiscounts = async () => {
+    try {
+      const subtotal = calculateSubtotalWithProductDiscounts();
+      
+      // Fetch available automatic discounts
+      const { data: discounts, error } = await supabase
+        .from('discounts')
+        .select('*')
+        .eq('is_active', true)
+        .eq('status', 'active')
+        .eq('is_global', true) // Only global discounts for automatic application
+        .lte('start_date', new Date().toISOString())
+        .or(`end_date.is.null,end_date.gte.${new Date().toISOString()}`)
+        .gte('minimum_order_amount', subtotal)
+        .order('value', { ascending: false }); // Best discount first
+
+      if (error) {
+        console.error('Error fetching automatic discounts:', error);
+        return;
+      }
+
+      if (discounts && discounts.length > 0) {
+        setAvailableAutomaticDiscounts(discounts);
+        
+        // Apply the best automatic discount
+        const bestDiscount = discounts[0];
+        const discountAmount = DiscountCalculator.calculateDiscountAmount(bestDiscount, subtotal);
+        
+        if (discountAmount > 0) {
+          setAppliedAutomaticDiscount(bestDiscount);
+          setAutomaticDiscountAmount(discountAmount);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching automatic discounts:', error);
     }
   };
 
@@ -202,13 +306,30 @@ export default function CheckoutPage() {
 
   const calculateSubtotal = () => {
     return cartItems.reduce((total, item) => {
-      const price = item.product.sale_price || item.product.price;
-      return total + (price * item.quantity);
+      if (item.product) {
+        const price = item.product.sale_price || item.product.price;
+        return total + (price * item.quantity);
+      }
+      return total;
+    }, 0);
+  };
+
+  const calculateSubtotalWithProductDiscounts = () => {
+    return cartItems.reduce((total, item) => {
+      if (item.product) {
+        const originalPrice = item.product.sale_price || item.product.price;
+        const itemDiscounts = productDiscounts[item.product.id] || [];
+        const { final_price } = calculateBestDiscount(item.product, itemDiscounts);
+        return total + (final_price * item.quantity);
+      }
+      return total;
     }, 0);
   };
 
   const calculateTax = () => {
-    return calculateSubtotal() * 0.08; // 8% tax
+    const subtotal = calculateSubtotalWithProductDiscounts();
+    const discountedSubtotal = subtotal - discountAmount; // discountAmount is coupon discount
+    return discountedSubtotal * 0.08; // 8% tax on discounted amount
   };
 
   const [shippingCost, setShippingCost] = useState(0);
@@ -308,7 +429,14 @@ export default function CheckoutPage() {
             }
 
             // Get pickup locations for the matching cities
-            const pickupCities = [...new Set(options?.map(opt => opt.delivery_rate?.pickup_city).filter(Boolean) || [])];
+            const pickupCitiesSet = new Set<string>();
+            (options || []).forEach(opt => {
+              const pickupCity = (opt.delivery_rate as any)?.pickup_city;
+              if (pickupCity) {
+                pickupCitiesSet.add(pickupCity);
+              }
+            });
+            const pickupCities = Array.from(pickupCitiesSet);
             
             let pickupLocations: any[] = [];
             if (pickupCities.length > 0) {
@@ -327,17 +455,18 @@ export default function CheckoutPage() {
             const transformedOptions = (options || [])
               .filter(opt => opt.delivery_rate)
               .map(opt => {
-                const pickupLocation = pickupLocations.find(pl => pl.city === opt.delivery_rate?.pickup_city);
+                const deliveryRate = opt.delivery_rate as any;
+                const pickupLocation = pickupLocations.find(pl => pl.city === deliveryRate?.pickup_city);
                 return {
                   pickup_location_id: pickupLocation?.id || '',
                   pickup_location_name: pickupLocation?.name || 'Unknown Location',
-                  pickup_city: opt.delivery_rate?.pickup_city || '',
-                  delivery_method_id: opt.delivery_rate?.delivery_method?.id || '',
-                  delivery_method_name: opt.delivery_rate?.delivery_method?.name || 'Unknown Method',
+                  pickup_city: deliveryRate?.pickup_city || '',
+                  delivery_method_id: deliveryRate?.delivery_method?.id || '',
+                  delivery_method_name: deliveryRate?.delivery_method?.name || 'Unknown Method',
                   is_free_delivery: opt.is_free_delivery,
-                  delivery_price: opt.delivery_rate?.price || 0,
-                  estimated_min_days: opt.delivery_rate?.estimated_min_days || 0,
-                  estimated_max_days: opt.delivery_rate?.estimated_max_days || 0
+                  delivery_price: deliveryRate?.price || 0,
+                  estimated_min_days: deliveryRate?.estimated_min_days || 0,
+                  estimated_max_days: deliveryRate?.estimated_max_days || 0
                 };
               })
               .filter(opt => opt.pickup_location_id); // Only include options with valid pickup locations
@@ -448,7 +577,141 @@ export default function CheckoutPage() {
   };
 
   const calculateTotal = () => {
-    return calculateSubtotal() + calculateTax() + calculateShipping();
+    const subtotal = calculateSubtotalWithProductDiscounts();
+    const tax = calculateTax();
+    const shipping = calculateShipping();
+    const couponDiscount = discountAmount; // This is the coupon discount
+    const autoDiscount = automaticDiscountAmount; // This is the automatic discount
+    
+    return subtotal + tax + shipping - couponDiscount - autoDiscount;
+  };
+
+  // Coupon handling functions
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) {
+      setCouponError('Please enter a coupon code');
+      return;
+    }
+
+    setCouponLoading(true);
+    setCouponError('');
+
+    try {
+      const { data: coupon, error } = await supabase
+        .from('coupons')
+        .select('*')
+        .eq('code', couponCode.trim().toUpperCase())
+        .eq('is_active', true)
+        .eq('status', 'active')
+        .single();
+
+      if (error || !coupon) {
+        setCouponError('Invalid coupon code');
+        return;
+      }
+
+      // Check if coupon is expired
+      const now = new Date();
+      const startDate = new Date(coupon.start_date);
+      const endDate = coupon.end_date ? new Date(coupon.end_date) : null;
+
+      if (now < startDate || (endDate && now > endDate)) {
+        setCouponError('Coupon has expired');
+        return;
+      }
+
+      // Check minimum order amount
+      const subtotal = calculateSubtotal();
+      if (coupon.minimum_order_amount > 0 && subtotal < coupon.minimum_order_amount) {
+        setCouponError(`Minimum order amount of $${coupon.minimum_order_amount} required`);
+        return;
+      }
+
+      // Apply the coupon
+      await applyCoupon(coupon);
+      setCouponCode('');
+      setCouponError('');
+    } catch (error) {
+      console.error('Error applying coupon:', error);
+      setCouponError('Failed to apply coupon');
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    removeCoupon();
+    setCouponError('');
+  };
+
+  const trackDiscountUsage = async (orderId: string) => {
+    try {
+      const discountUsageRecords = [];
+
+      // Track coupon usage if applied
+      if (appliedCoupon && discountAmount > 0) {
+        discountUsageRecords.push({
+          user_id: user?.id,
+          coupon_id: appliedCoupon.id,
+          order_id: orderId,
+          discount_amount: discountAmount,
+          used_at: new Date().toISOString()
+        });
+
+        // Update coupon usage count
+        await supabase.rpc('increment_coupon_usage', { coupon_id: appliedCoupon.id });
+      }
+
+      // Track automatic discount usage if applied
+      if (appliedAutomaticDiscount && automaticDiscountAmount > 0) {
+        discountUsageRecords.push({
+          user_id: user?.id,
+          discount_id: appliedAutomaticDiscount.id,
+          order_id: orderId,
+          discount_amount: automaticDiscountAmount,
+          used_at: new Date().toISOString()
+        });
+
+        // Update discount usage count
+        await supabase.rpc('increment_discount_usage', { discount_id: appliedAutomaticDiscount.id });
+      }
+
+      // Track product discount usage for each product
+      for (const [productId, itemDiscountAmount] of Object.entries(productDiscountAmounts)) {
+        if (itemDiscountAmount > 0) {
+          const itemDiscounts = productDiscounts[productId] || [];
+          const bestDiscount = itemDiscounts[0]; // Get the best discount applied
+          
+          if (bestDiscount) {
+            discountUsageRecords.push({
+              user_id: user?.id,
+              discount_id: bestDiscount.id,
+              order_id: orderId,
+              discount_amount: itemDiscountAmount,
+              used_at: new Date().toISOString()
+            });
+
+            // Update discount usage count
+            await supabase.rpc('increment_discount_usage', { discount_id: bestDiscount.id });
+          }
+        }
+      }
+
+      // Insert all discount usage records
+      if (discountUsageRecords.length > 0) {
+        const { error: usageError } = await supabase
+          .from('discount_usage')
+          .insert(discountUsageRecords);
+
+        if (usageError) {
+          console.error('Error tracking discount usage:', usageError);
+        } else {
+          console.log('Discount usage tracked successfully');
+        }
+      }
+    } catch (error) {
+      console.error('Error in trackDiscountUsage:', error);
+    }
   };
 
   // AddressForm handlers
@@ -603,10 +866,12 @@ export default function CheckoutPage() {
           user_id: user?.id,
           status: 'pending',
           total_amount: calculateTotal(),
-          subtotal: calculateSubtotal(),
+          subtotal: calculateSubtotalWithProductDiscounts(),
           tax_amount: calculateTax(),
           shipping_amount: calculateShipping(),
-          discount_amount: 0,
+          discount_amount: discountAmount, // This is coupon discount
+          product_discount_amount: totalProductDiscounts, // This is product discount
+          automatic_discount_amount: automaticDiscountAmount, // This is automatic discount
           billing_address_id: finalShippingAddressId !== 'new' ? finalShippingAddressId : null,
           shipping_address_id: finalShippingAddressId !== 'new' ? finalShippingAddressId : null,
           notes: orderNotes
@@ -622,17 +887,25 @@ export default function CheckoutPage() {
 
       console.log('Order created successfully:', order.id);
 
-      // Create order items
-      const orderItems = cartItems.map(item => ({
-        order_id: order.id,
-        product_id: item.product_id,
-        variant_id: item.variant_id,
-        product_name: item.product.name,
-        product_sku: item.product.sku,
-        quantity: item.quantity,
-        unit_price: item.product.sale_price || item.product.price,
-        total_price: (item.product.sale_price || item.product.price) * item.quantity
-      }));
+      // Create order items with discount information
+      const orderItems = cartItems.map(item => {
+        const originalPrice = item.product.sale_price || item.product.price;
+        const itemDiscounts = productDiscounts[item.product.id] || [];
+        const { final_price, discount_amount } = calculateBestDiscount(item.product, itemDiscounts);
+        
+        return {
+          order_id: order.id,
+          product_id: item.product_id,
+          variant_id: item.variant_id,
+          product_name: item.product.name,
+          product_sku: item.product.sku,
+          quantity: item.quantity,
+          unit_price: originalPrice,
+          discounted_unit_price: final_price,
+          discount_amount: discount_amount * item.quantity,
+          total_price: final_price * item.quantity
+        };
+      });
 
       console.log('Creating order items:', orderItems);
 
@@ -647,6 +920,9 @@ export default function CheckoutPage() {
       }
 
       console.log('Order items created successfully');
+
+      // Track discount usage
+      await trackDiscountUsage(order.id);
 
       // Create payment record for Cash on Delivery
       const paymentData = {
@@ -794,17 +1070,16 @@ export default function CheckoutPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8">
-          <Link 
-            href="/cart" 
-            className="inline-flex items-center text-gray-600 hover:text-primary-600 mb-4"
-          >
-            <ArrowLeftIcon className="h-5 w-5 mr-2" />
-            Back to Cart
-          </Link>
-          <h1 className="text-3xl font-bold text-gray-900">Checkout</h1>
-        </div>
+        {/* Breadcrumb */}
+        <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-8">
+          <Link href="/" className="hover:text-primary-600">Home</Link>
+          <span>/</span>
+          <Link href="/products" className="hover:text-primary-600">Products</Link>
+          <span>/</span>
+          <Link href="/cart" className="hover:text-primary-600">Cart</Link>
+          <span>/</span>
+          <span className="text-gray-900">Checkout</span>
+        </nav>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
@@ -870,77 +1145,6 @@ export default function CheckoutPage() {
                     </div>
                   )}
                   
-                  {/* Real-time Shipping Preview */}
-                  {shippingAddress.city && shippingAddress.country && cartItems.length > 0 && (
-                    <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
-                      <h3 className="text-sm font-medium text-blue-900 mb-2 flex items-center">
-                        <TruckIcon className="h-4 w-4 mr-2" />
-                        Delivery Options for {shippingAddress.city}, {shippingAddress.country}
-                      </h3>
-                      <div className="text-sm text-blue-700">
-                        {shippingLoading ? (
-                          <div className="flex items-center">
-                            <LoaderIcon className="animate-spin h-4 w-4 mr-2" />
-                            <span>Calculating delivery options...</span>
-                          </div>
-                        ) : Object.keys(productDeliveryCosts).length > 0 ? (
-                          <div className="mt-2">
-                            <div className="grid grid-cols-1 gap-2">
-                              {Object.values(productDeliveryCosts).map((product: any, index) => (
-                                <div key={index} className="bg-white rounded-md p-3 border border-blue-100">
-                                  <div className="flex justify-between items-start">
-                                    <div className="flex-1 min-w-0">
-                                      <div className="font-medium text-gray-900 truncate">{product.name}</div>
-                                      {product.method && (
-                                        <div className="text-xs text-gray-500 mt-1">
-                                          {product.method}
-                                          {product.estimatedDays && product.estimatedDays > 0 && (
-                                            <span className="ml-2">
-                                              • {product.estimatedDays} day{product.estimatedDays !== 1 ? 's' : ''}
-                                            </span>
-                                          )}
-                                        </div>
-                                      )}
-                                    </div>
-                                    <div className="ml-3 flex-shrink-0">
-                                      <span className={`font-medium ${
-                                        product.isFree ? 'text-green-600' : 'text-gray-900'
-                                      }`}>
-                                        {product.isFree ? 'Free' : `$${product.cost.toFixed(2)}`}
-                                      </span>
-                                    </div>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                            <div className="mt-3 pt-3 border-t border-blue-200">
-                              <div className="flex justify-between items-center">
-                                <span className="font-medium text-blue-900">Total Delivery Cost:</span>
-                                <span className="font-bold text-lg text-blue-900">
-                                  {shippingCost === 0 ? 'Free' : `$${shippingCost.toFixed(2)}`}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="bg-orange-50 border border-orange-200 rounded-md p-3">
-                            <div className="flex items-center">
-                              <svg className="h-5 w-5 text-orange-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                              </svg>
-                              <div>
-                                <p className="font-medium text-orange-800">No delivery options found</p>
-                                <p className="text-orange-700 text-xs mt-1">
-                                  We don't currently deliver to {shippingAddress.city}, {shippingAddress.country}. 
-                                  Please try a different address or contact support.
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
                 </div>
 
                 <button
@@ -1104,44 +1308,101 @@ export default function CheckoutPage() {
             <div className="bg-white rounded-lg shadow-sm p-6 sticky top-8">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Order Summary</h2>
               
-              {/* Cart Items */}
-              <div className="space-y-4 mb-6">
-                {cartItems.map((item) => {
-                  const primaryImage = item.product.images?.find(img => img.is_primary) || item.product.images?.[0];
-                  const price = item.product.sale_price || item.product.price;
-                  
-                  return (
-                    <div key={item.id} className="flex items-center space-x-3">
-                      <div className="w-16 h-16 bg-gray-100 rounded-md overflow-hidden flex-shrink-0">
-                        {primaryImage ? (
-                          <Image
-                            src={primaryImage.image_url}
-                            alt={item.product.name}
-                            width={64}
-                            height={64}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <span className="text-gray-400 text-xs">No Image</span>
-                          </div>
-                        )}
+              {/* Order Summary */}
+              <div className="mb-6">
+                <div className="bg-gray-50 rounded-md p-4">
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-900">
+                          {cartItems.length} item{cartItems.length !== 1 ? 's' : ''}
+                        </h3>
+                        <p className="text-sm text-gray-500">
+                          Total quantity: {cartItems.reduce((total, item) => total + item.quantity, 0)}
+                        </p>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-sm font-medium text-gray-900 truncate">{item.product.name}</h3>
-                        <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
-                        <p className="text-sm font-medium text-gray-900">${(price * item.quantity).toFixed(2)}</p>
+                      <div className="text-right">
+                        <p className="text-sm font-medium text-gray-900">
+                          ${calculateSubtotal().toFixed(2)}
+                        </p>
                       </div>
                     </div>
-                  );
-                })}
+                    
+                    {/* Product Discounts */}
+                    {totalProductDiscounts > 0 && (
+                      <div className="border-t pt-3">
+                        <div className="flex justify-between items-center text-green-600">
+                          <span className="text-sm font-medium">Product Discounts</span>
+                          <span className="text-sm font-medium">-${totalProductDiscounts.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-600">After Product Discounts</span>
+                          <span className="text-sm font-medium">${calculateSubtotalWithProductDiscounts().toFixed(2)}</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Coupon Code Section */}
+              <div className="mb-6">
+                <h3 className="text-sm font-medium text-gray-900 mb-3">Coupon Code</h3>
+                {appliedCoupon ? (
+                  <div className="bg-green-50 border border-green-200 rounded-md p-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-green-800">
+                          {appliedCoupon.name} ({appliedCoupon.code})
+                        </p>
+                        <p className="text-xs text-green-600">
+                          {appliedCoupon.type === 'percentage' 
+                            ? `${appliedCoupon.value}% off`
+                            : appliedCoupon.type === 'fixed_amount'
+                            ? `$${appliedCoupon.value} off`
+                            : 'Free shipping'
+                          }
+                        </p>
+                      </div>
+                      <button
+                        onClick={handleRemoveCoupon}
+                        className="text-green-600 hover:text-green-800 text-sm font-medium"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={couponCode}
+                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                        placeholder="Enter coupon code"
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        disabled={couponLoading}
+                      />
+                      <button
+                        onClick={handleApplyCoupon}
+                        disabled={couponLoading || !couponCode.trim()}
+                        className="px-4 py-2 bg-orange-600 text-white text-sm font-medium rounded-md hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {couponLoading ? 'Applying...' : 'Apply'}
+                      </button>
+                    </div>
+                    {couponError && (
+                      <p className="text-sm text-red-600">{couponError}</p>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Totals */}
               <div className="space-y-3 mb-6">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Subtotal</span>
-                  <span className="font-medium">${calculateSubtotal().toFixed(2)}</span>
+                  <span className="font-medium">${calculateSubtotalWithProductDiscounts().toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Tax</span>
@@ -1159,66 +1420,19 @@ export default function CheckoutPage() {
                     </span>
                   </div>
                   
-                  {/* Shipping status message */}
-                  {!shippingLoading && shippingAddress.city && shippingAddress.country && (
-                    <div className="text-xs text-gray-500 ml-4">
-                      {Object.values(productDeliveryCosts).some((p: any) => p.method === 'Not Available') ? (
-                        <div className="flex items-center text-orange-600">
-                          <svg className="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                          </svg>
-                          Some products may not be available for delivery to this location
-                        </div>
-                      ) : Object.values(productDeliveryCosts).some((p: any) => p.method === 'Default') ? (
-                        <div className="flex items-center text-blue-600">
-                          <svg className="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                          </svg>
-                          Using default shipping rates
-                        </div>
-                      ) : (
-                        <div className="flex items-center text-green-600">
-                          <svg className="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                          </svg>
-                          Delivery options available for all products
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  
-                  {/* Product delivery breakdown */}
-                  {!shippingLoading && Object.keys(productDeliveryCosts).length > 0 && (
-                    <div className="ml-4 space-y-2 text-sm">
-                      {Object.values(productDeliveryCosts).map((product: any, index) => (
-                        <div key={index} className="bg-gray-50 rounded-md p-3">
-                          <div className="flex justify-between items-start">
-                            <div className="flex-1 min-w-0">
-                              <div className="font-medium text-gray-900 truncate">{product.name}</div>
-                              {product.method && (
-                                <div className="text-xs text-gray-500 mt-1">
-                                  {product.method}
-                                  {product.estimatedDays && product.estimatedDays > 0 && (
-                                    <span className="ml-2">
-                                      • {product.estimatedDays} day{product.estimatedDays !== 1 ? 's' : ''}
-                                    </span>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                            <div className="ml-3 flex-shrink-0">
-                              <span className={`font-medium ${
-                                product.isFree ? 'text-green-600' : 'text-gray-900'
-                              }`}>
-                                {product.isFree ? 'Free' : `$${product.cost.toFixed(2)}`}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
                 </div>
+                {automaticDiscountAmount > 0 && (
+                  <div className="flex justify-between text-green-600">
+                    <span className="text-gray-600">Automatic Discount ({appliedAutomaticDiscount?.name})</span>
+                    <span className="font-medium">-${automaticDiscountAmount.toFixed(2)}</span>
+                  </div>
+                )}
+                {discountAmount > 0 && appliedCoupon && (
+                  <div className="flex justify-between text-green-600 bg-green-50 px-3 py-2 rounded-md">
+                    <span className="text-gray-600 font-medium">🎟️ Coupon Discount ({appliedCoupon.name})</span>
+                    <span className="font-bold">-${discountAmount.toFixed(2)}</span>
+                  </div>
+                )}
                 <div className="border-t pt-3">
                   <div className="flex justify-between">
                     <span className="text-lg font-semibold text-gray-900">Total</span>

@@ -6,6 +6,9 @@ export type ReturnStatus = 'pending' | 'approved' | 'rejected' | 'completed';
 export type PromotionalMediaType = 'slider' | 'banner' | 'popup' | 'video' | 'custom';
 export type PromotionalMediaPosition = 'homepage_top' | 'homepage_middle' | 'homepage_bottom' | 'homepage_middle_slider' | 'category_page' | 'product_page' | 'sidebar' | 'footer' | 'popup' | 'header' | 'checkout_page' | 'cart_page' | 'limited_time_deals';
 export type PromotionalMediaTarget = '_self' | '_blank' | '_parent' | '_top';
+export type DiscountType = 'percentage' | 'fixed_amount' | 'free_shipping';
+export type DiscountStatus = 'active' | 'inactive' | 'expired';
+export type CouponStatus = 'active' | 'inactive' | 'expired' | 'used_up';
 
 export interface Profile {
   id: string;
@@ -457,6 +460,136 @@ export interface PromotionalMediaWithDetails extends PromotionalMedia {
 export interface PromotionalMediaCategoryWithDetails extends PromotionalMediaCategory {
   promotional_media?: PromotionalMedia;
   category?: Category;
+}
+
+// Discount and Coupon System Interfaces
+export interface Discount {
+  id: string;
+  name: string;
+  description?: string;
+  code: string;
+  type: DiscountType;
+  value: number;
+  minimum_order_amount: number;
+  maximum_discount_amount?: number;
+  usage_limit?: number;
+  usage_limit_per_user: number;
+  used_count: number;
+  status: DiscountStatus;
+  start_date: string;
+  end_date?: string;
+  is_active: boolean;
+  vendor_id?: string; // Vendor who created this discount
+  is_global: boolean; // Global discounts vs vendor-specific
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Coupon {
+  id: string;
+  code: string;
+  name: string;
+  description?: string;
+  type: DiscountType;
+  value: number;
+  minimum_order_amount: number;
+  maximum_discount_amount?: number;
+  usage_limit?: number;
+  usage_limit_per_user: number;
+  used_count: number;
+  status: CouponStatus;
+  start_date: string;
+  end_date?: string;
+  is_active: boolean;
+  vendor_id?: string; // Vendor who created this coupon
+  is_global: boolean; // Global coupons vs vendor-specific
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DiscountUsage {
+  id: string;
+  user_id: string;
+  discount_id?: string;
+  coupon_id?: string;
+  order_id: string;
+  discount_amount: number;
+  used_at: string;
+}
+
+export interface ProductDiscount {
+  id: string;
+  discount_id?: string;
+  coupon_id?: string;
+  product_id: string;
+  created_at: string;
+}
+
+export interface CategoryDiscount {
+  id: string;
+  discount_id?: string;
+  coupon_id?: string;
+  category_id: string;
+  created_at: string;
+}
+
+export interface BrandDiscount {
+  id: string;
+  discount_id?: string;
+  coupon_id?: string;
+  brand_id: string;
+  created_at: string;
+}
+
+export interface UserCoupon {
+  id: string;
+  user_id: string;
+  coupon_id: string;
+  is_used: boolean;
+  used_at?: string;
+  created_at: string;
+}
+
+export interface DiscountWithDetails extends Discount {
+  products?: Product[];
+  categories?: Category[];
+  brands?: Brand[];
+  vendor?: Profile; // Vendor who created this discount
+}
+
+export interface CouponWithDetails extends Coupon {
+  products?: Product[];
+  categories?: Category[];
+  brands?: Brand[];
+  vendor?: Profile; // Vendor who created this coupon
+}
+
+// Vendor-specific discount associations
+export interface VendorProductDiscount {
+  id: string;
+  discount_id?: string;
+  coupon_id?: string;
+  vendor_id: string;
+  product_id: string;
+  created_at: string;
+}
+
+export interface VendorCategoryDiscount {
+  id: string;
+  discount_id?: string;
+  coupon_id?: string;
+  vendor_id: string;
+  category_id: string;
+  created_at: string;
+}
+
+export interface VendorBrandDiscount {
+  id: string;
+  discount_id?: string;
+  coupon_id?: string;
+  vendor_id: string;
+  brand_id: string;
+  created_at: string;
 }
 
 

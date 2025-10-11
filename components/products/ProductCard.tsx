@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ProductWithDetails } from '@/types/database';
@@ -8,27 +8,74 @@ import {
   HeartIcon, 
   ShoppingCartIcon, 
   StarIcon,
-  EyeIcon
+  EyeIcon,
+  PercentIcon
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { useCart } from '@/lib/cart-context';
 import { useFavorites } from '@/lib/favorites-context';
+import { ProductDiscount, calculateBestDiscount } from '@/lib/discount-utils';
+import DiscountBadge from '@/components/ui/DiscountBadge';
 
 interface ProductCardProps {
   product: ProductWithDetails;
-  viewMode: 'grid' | 'list';
+  viewMode?: 'grid' | 'list';
+  discountData?: {
+    discounts: ProductDiscount[];
+    discountInfo: { final_price: number; discount_amount: number; has_discount: boolean };
+  };
 }
 
-export default function ProductCard({ product, viewMode }: ProductCardProps) {
+export default function ProductCard({ product, viewMode = 'grid', discountData }: ProductCardProps) {
   const { user } = useAuth();
   const { addToCart } = useCart();
   const { isFavorite, toggleFavorite } = useFavorites();
   const [isHovered, setIsHovered] = useState(false);
   const [addingToCart, setAddingToCart] = useState(false);
+  const [discounts, setDiscounts] = useState<ProductDiscount[]>([]);
+  const [discountInfo, setDiscountInfo] = useState<{
+    final_price: number;
+    discount_amount: number;
+    has_discount: boolean;
+  }>({
+    final_price: product.sale_price || product.price,
+    discount_amount: 0,
+    has_discount: false
+  });
 
-  const currentPrice = product.sale_price || product.price;
-  const originalPrice = product.price;
-  const hasDiscount = currentPrice < originalPrice;
+  // Use passed discount data or fetch individually as fallback
+  useEffect(() => {
+    if (discountData) {
+      // Use pre-calculated discount data
+      setDiscounts(discountData.discounts);
+      setDiscountInfo(discountData.discountInfo);
+    } else {
+      // Fallback to individual fetching (for backward compatibility)
+      const fetchDiscounts = async () => {
+        try {
+          const { getProductDiscounts } = await import('@/lib/discount-utils');
+          const productDiscounts = await getProductDiscounts(product.id);
+          setDiscounts(productDiscounts);
+          
+          const discountCalculation = calculateBestDiscount(product, productDiscounts);
+          setDiscountInfo({
+            final_price: discountCalculation.final_price,
+            discount_amount: discountCalculation.discount_amount,
+            has_discount: discountCalculation.discount_amount > 0
+          });
+        } catch (error) {
+          console.error('Error fetching discounts:', error);
+        }
+      };
+
+      fetchDiscounts();
+    }
+  }, [product.id, product.price, product.sale_price, discountData]);
+
+  const currentPrice = discountInfo.final_price;
+  const originalPrice = product.sale_price || product.price;
+  const hasSalePrice = product.sale_price && product.sale_price < product.price;
+  const hasDiscount = discountInfo.has_discount;
 
   const primaryImage = product.images?.find(img => img.is_primary) || product.images?.[0];
 
@@ -95,6 +142,17 @@ export default function ProductCard({ product, viewMode }: ProductCardProps) {
                     <span className="text-gray-400 text-sm">No image</span>
                   </div>
                 )}
+                
+                {/* Discount Badge Overlay */}
+                {hasDiscount && (
+                  <div className="absolute top-2 left-2 z-10">
+                    <DiscountBadge
+                      discountAmount={discountInfo.discount_amount}
+                      discountType={discounts.find(d => d.id === discounts[0]?.id)?.type || 'percentage'}
+                      discountValue={discounts.find(d => d.id === discounts[0]?.id)?.value || 0}
+                    />
+                  </div>
+                )}
               </div>
             </Link>
           </div>
@@ -139,9 +197,9 @@ export default function ProductCard({ product, viewMode }: ProductCardProps) {
 
                 {/* Price */}
                 <div className="flex items-center space-x-2">
-                  <span className="text-xl font-bold text-gray-900">${currentPrice}</span>
-                  {hasDiscount && (
-                    <span className="text-lg text-gray-500 line-through">${originalPrice}</span>
+                  <span className="text-xl font-bold text-gray-900">${currentPrice.toFixed(2)}</span>
+                  {(hasSalePrice || hasDiscount) && (
+                    <span className="text-lg text-gray-500 line-through">${originalPrice.toFixed(2)}</span>
                   )}
                 </div>
               </div>
@@ -198,6 +256,17 @@ export default function ProductCard({ product, viewMode }: ProductCardProps) {
           ) : (
             <div className="w-full h-full bg-gray-100 flex items-center justify-center">
               <span className="text-gray-400 text-sm">No image</span>
+            </div>
+          )}
+          
+          {/* Discount Badge Overlay */}
+          {hasDiscount && (
+            <div className="absolute top-2 left-2 z-10">
+              <DiscountBadge
+                discountAmount={discountInfo.discount_amount}
+                discountType={discounts.find(d => d.id === discounts[0]?.id)?.type || 'percentage'}
+                discountValue={discounts.find(d => d.id === discounts[0]?.id)?.value || 0}
+              />
             </div>
           )}
           
@@ -260,9 +329,9 @@ export default function ProductCard({ product, viewMode }: ProductCardProps) {
         {/* Price */}
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <span className="text-xl font-bold text-gray-900">${currentPrice}</span>
-            {hasDiscount && (
-              <span className="text-lg text-gray-500 line-through">${originalPrice}</span>
+            <span className="text-xl font-bold text-gray-900">${currentPrice.toFixed(2)}</span>
+            {(hasSalePrice || hasDiscount) && (
+              <span className="text-lg text-gray-500 line-through">${originalPrice.toFixed(2)}</span>
             )}
           </div>
           
