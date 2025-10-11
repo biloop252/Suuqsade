@@ -7,7 +7,7 @@ import { ProductWithDetails } from '@/types/database';
 import ProductCard from '@/components/products/ProductCard';
 import SearchSuggestions from '@/components/ui/SearchSuggestions';
 import { useSearchSuggestions } from '@/hooks/useSearchSuggestions';
-import { FilterIcon, GridIcon, ListIcon, XIcon } from 'lucide-react';
+import { Filter, Grid, List, X } from 'lucide-react';
 import Link from 'next/link';
 
 export default function SearchPage() {
@@ -174,7 +174,7 @@ export default function SearchPage() {
                   onClick={() => setShowFilters(!showFilters)}
                   className="flex items-center px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
                 >
-                  <FilterIcon className="h-4 w-4 mr-2" />
+                  <Filter className="h-4 w-4 mr-2" />
                   Filters
                 </button>
                 
@@ -183,13 +183,13 @@ export default function SearchPage() {
                     onClick={() => setViewMode('grid')}
                     className={`p-2 ${viewMode === 'grid' ? 'bg-primary-600 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
                   >
-                    <GridIcon className="h-4 w-4" />
+                    <Grid className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => setViewMode('list')}
                     className={`p-2 ${viewMode === 'list' ? 'bg-primary-600 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
                   >
-                    <ListIcon className="h-4 w-4" />
+                    <List className="h-4 w-4" />
                   </button>
                 </div>
               </div>

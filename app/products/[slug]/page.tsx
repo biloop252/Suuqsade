@@ -5,14 +5,14 @@ import { useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { ProductWithDetails } from '@/types/database';
 import { 
-  ShoppingCartIcon, 
-  HeartIcon, 
-  StarIcon, 
-  TruckIcon, 
-  ShieldCheckIcon,
-  ArrowLeftIcon,
-  MinusIcon,
-  PlusIcon
+  ShoppingCart, 
+  Heart, 
+  Star, 
+  Truck, 
+  ShieldCheck,
+  ArrowLeft,
+  Minus,
+  Plus
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -24,6 +24,7 @@ import DiscountBadge from '@/components/ui/DiscountBadge';
 import LocationSelector from '@/components/products/LocationSelector';
 import DeliveryCalculator from '@/components/products/DeliveryCalculator';
 import ProductOptions from '@/components/products/ProductOptions';
+import ReviewDisplay from '@/components/reviews/ReviewDisplay';
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -39,7 +40,7 @@ export default function ProductDetailPage() {
   const [selectedCity, setSelectedCity] = useState<string>('');
   const [selectedDeliveryOption, setSelectedDeliveryOption] = useState<any>(null);
   const [attributeSelections, setAttributeSelections] = useState<Record<string, string>>({});
-  const [dynamicPrice, setDynamicPrice] = useState<{ basePrice: number; salePrice?: number } | null>(null);
+  const [dynamicPrice, setDynamicPrice] = useState<{ basePrice: number } | null>(null);
   const [discounts, setDiscounts] = useState<ProductDiscount[]>([]);
   const [discountInfo, setDiscountInfo] = useState<{
     final_price: number;
@@ -49,6 +50,13 @@ export default function ProductDetailPage() {
     final_price: 0,
     discount_amount: 0,
     has_discount: false
+  });
+  const [reviewStats, setReviewStats] = useState<{
+    averageRating: number;
+    totalReviews: number;
+  }>({
+    averageRating: 0,
+    totalReviews: 0
   });
 
   useEffect(() => {
@@ -101,6 +109,28 @@ export default function ProductDetailPage() {
           });
         } catch (discountError) {
           console.error('Error fetching discounts:', discountError);
+        }
+        
+        // Fetch review statistics
+        try {
+          const { data: reviewData, error: reviewError } = await supabase
+            .from('reviews')
+            .select('rating')
+            .eq('product_id', data.id)
+            .eq('is_approved', true);
+            
+          if (reviewError) {
+            console.error('Error fetching reviews:', reviewError);
+          } else if (reviewData && reviewData.length > 0) {
+            const totalRating = reviewData.reduce((sum, review) => sum + review.rating, 0);
+            const averageRating = totalRating / reviewData.length;
+            setReviewStats({
+              averageRating,
+              totalReviews: reviewData.length
+            });
+          }
+        } catch (reviewError) {
+          console.error('Error fetching review stats:', reviewError);
         }
       }
     } catch (error) {
@@ -210,29 +240,25 @@ export default function ProductDetailPage() {
 
         if (matchingVariant) {
           setDynamicPrice({
-            basePrice: matchingVariant.price || 0,
-            salePrice: matchingVariant.sale_price || undefined
+            basePrice: matchingVariant.price || 0
           });
         } else {
           // If no matching variant, use base product price
           setDynamicPrice({
-            basePrice: product.price,
-            salePrice: product.sale_price
+            basePrice: product.price
           });
         }
       } catch (error) {
         console.error('Error calculating dynamic price:', error);
         // Fallback to base product price
         setDynamicPrice({
-          basePrice: product.price,
-          salePrice: product.sale_price
+          basePrice: product.price
         });
       }
     } else {
       // No selections, use base product price
       setDynamicPrice({
-        basePrice: product?.price || 0,
-        salePrice: product?.sale_price
+        basePrice: product?.price || 0
       });
     }
   };
@@ -251,7 +277,7 @@ export default function ProductDetailPage() {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Product not found</h1>
           <Link href="/products" className="btn-primary">
-            <ArrowLeftIcon className="h-5 w-5 mr-2" />
+            <ArrowLeft className="h-5 w-5 mr-2" />
             Back to Products
           </Link>
         </div>
@@ -259,15 +285,11 @@ export default function ProductDetailPage() {
     );
   }
 
-  // Calculate current price based on dynamic pricing, discounts, or product price
+  // Calculate current price based on dynamic pricing and discounts only
   const basePrice = dynamicPrice?.basePrice || product?.price || 0;
-  const salePrice = dynamicPrice?.salePrice || product?.sale_price;
-  const discountedPrice = discountInfo.has_discount ? discountInfo.final_price : (salePrice || basePrice);
-  
-  const currentPrice = discountedPrice;
-  const originalPrice = salePrice || basePrice;
-  const hasSalePrice = salePrice && salePrice < basePrice;
-  const hasDiscount = discountInfo.has_discount;
+  const currentPrice = discountInfo.has_discount ? discountInfo.final_price : basePrice;
+  const originalPrice = basePrice;
+  const hasDiscount = discountInfo.has_discount && discountInfo.discount_amount > 0;
 
   const images = product.images || [];
   const primaryImage = images.find(img => img.is_primary) || images[0];
@@ -376,7 +398,7 @@ export default function ProductDetailPage() {
               {/* Price */}
               <div className="flex items-center space-x-4 mb-4">
                 <span className="text-3xl font-bold text-gray-900">${currentPrice.toFixed(2)}</span>
-                {(hasSalePrice || hasDiscount) && (
+                {hasDiscount && currentPrice < originalPrice && (
                   <span className="text-xl text-gray-500 line-through">${originalPrice.toFixed(2)}</span>
                 )}
                 {hasDiscount && (
@@ -386,26 +408,26 @@ export default function ProductDetailPage() {
                     discountValue={discounts[0]?.value || 0}
                   />
                 )}
-                {hasSalePrice && !hasDiscount && (
-                  <span className="bg-red-100 text-red-800 text-sm font-medium px-2 py-1 rounded">
-                    {Math.round(((originalPrice - currentPrice) / originalPrice) * 100)}% OFF
-                  </span>
-                )}
               </div>
 
               {/* Rating */}
               <div className="flex items-center space-x-2 mb-4">
                 <div className="flex items-center">
                   {[...Array(5)].map((_, i) => (
-                    <StarIcon
+                    <Star
                       key={i}
                       className={`h-5 w-5 ${
-                        i < 4 ? 'text-yellow-400 fill-current' : 'text-gray-300'
+                        i < Math.round(reviewStats.averageRating) ? 'text-yellow-400 fill-current' : 'text-gray-300'
                       }`}
                     />
                   ))}
                 </div>
-                <span className="text-sm text-gray-600">(4.2) • 128 reviews</span>
+                <span className="text-sm text-gray-600">
+                  {reviewStats.totalReviews > 0 
+                    ? `(${reviewStats.averageRating.toFixed(1)}) • ${reviewStats.totalReviews} review${reviewStats.totalReviews !== 1 ? 's' : ''}`
+                    : 'No reviews yet'
+                  }
+                </span>
               </div>
 
               {/* Short Description */}
@@ -456,7 +478,7 @@ export default function ProductDetailPage() {
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
                   className="p-2 border border-gray-300 rounded-md hover:bg-gray-50"
                 >
-                  <MinusIcon className="h-4 w-4" />
+                  <Minus className="h-4 w-4" />
                 </button>
                 <span className="px-4 py-2 border border-gray-300 rounded-md min-w-[60px] text-center">
                   {quantity}
@@ -465,7 +487,7 @@ export default function ProductDetailPage() {
                   onClick={() => setQuantity(quantity + 1)}
                   className="p-2 border border-gray-300 rounded-md hover:bg-gray-50"
                 >
-                  <PlusIcon className="h-4 w-4" />
+                  <Plus className="h-4 w-4" />
                 </button>
               </div>
             </div>
@@ -477,7 +499,7 @@ export default function ProductDetailPage() {
                 disabled={addingToCart}
                 className="flex-1 bg-primary-600 text-white px-6 py-3 rounded-md font-medium hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               >
-                <ShoppingCartIcon className="h-5 w-5 mr-2" />
+                <ShoppingCart className="h-5 w-5 mr-2" />
                 {addingToCart ? 'Adding...' : 'Add to Cart'}
               </button>
               <button
@@ -488,7 +510,7 @@ export default function ProductDetailPage() {
                     : 'border-gray-300 text-gray-600'
                 }`}
               >
-                <HeartIcon className={`h-5 w-5 ${product && isFavorite(product.id) ? 'fill-current' : ''}`} />
+                <Heart className={`h-5 w-5 ${product && isFavorite(product.id) ? 'fill-current' : ''}`} />
               </button>
             </div>
 
@@ -547,7 +569,7 @@ export default function ProductDetailPage() {
                     </div>
                     <div className="flex items-center space-x-1 mb-2">
                       {[...Array(5)].map((_, i) => (
-                        <StarIcon
+                        <Star
                           key={i}
                           className={`h-4 w-4 ${
                             i < 4 ? 'text-yellow-400 fill-current' : 'text-gray-300'
@@ -600,7 +622,7 @@ export default function ProductDetailPage() {
                   {/* Default Rating */}
                   <div className="flex items-center justify-center space-x-1 mb-2">
                     {[...Array(5)].map((_, i) => (
-                      <StarIcon
+                      <Star
                         key={i}
                         className={`h-4 w-4 ${
                           i < 4 ? 'text-yellow-400 fill-current' : 'text-gray-300'
@@ -617,14 +639,10 @@ export default function ProductDetailPage() {
 
         {/* Reviews Section */}
         <div className="mt-16">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Reviews</h2>
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <div className="text-center py-8">
-              <StarIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No reviews yet</h3>
-              <p className="text-gray-600">Be the first to review this product!</p>
-            </div>
-          </div>
+          <ReviewDisplay 
+            productId={product.id} 
+            productName={product.name} 
+          />
         </div>
       </div>
     </div>

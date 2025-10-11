@@ -5,17 +5,18 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ProductWithDetails } from '@/types/database';
 import { 
-  HeartIcon, 
-  ShoppingCartIcon, 
-  StarIcon,
-  EyeIcon,
-  PercentIcon
+  Heart, 
+  ShoppingCart, 
+  Star,
+  Eye,
+  Percent
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { useCart } from '@/lib/cart-context';
 import { useFavorites } from '@/lib/favorites-context';
 import { ProductDiscount, calculateBestDiscount } from '@/lib/discount-utils';
 import DiscountBadge from '@/components/ui/DiscountBadge';
+import { getProductReviewStats, formatRatingText, getStarDisplay } from '@/lib/review-utils';
 
 interface ProductCardProps {
   product: ProductWithDetails;
@@ -41,6 +42,13 @@ export default function ProductCard({ product, viewMode = 'grid', discountData }
     final_price: product.sale_price || product.price,
     discount_amount: 0,
     has_discount: false
+  });
+  const [reviewStats, setReviewStats] = useState<{
+    averageRating: number;
+    totalReviews: number;
+  }>({
+    averageRating: 0,
+    totalReviews: 0
   });
 
   // Use passed discount data or fetch individually as fallback
@@ -72,10 +80,23 @@ export default function ProductCard({ product, viewMode = 'grid', discountData }
     }
   }, [product.id, product.price, product.sale_price, discountData]);
 
-  const currentPrice = discountInfo.final_price;
-  const originalPrice = product.sale_price || product.price;
-  const hasSalePrice = product.sale_price && product.sale_price < product.price;
-  const hasDiscount = discountInfo.has_discount;
+  // Fetch review stats
+  useEffect(() => {
+    const fetchReviewStats = async () => {
+      try {
+        const stats = await getProductReviewStats(product.id);
+        setReviewStats(stats);
+      } catch (error) {
+        console.error('Error fetching review stats:', error);
+      }
+    };
+
+    fetchReviewStats();
+  }, [product.id]);
+
+  const currentPrice = discountInfo.has_discount ? discountInfo.final_price : product.price;
+  const originalPrice = product.price;
+  const hasDiscount = discountInfo.has_discount && discountInfo.discount_amount > 0;
 
   const primaryImage = product.images?.find(img => img.is_primary) || product.images?.[0];
 
@@ -144,7 +165,7 @@ export default function ProductCard({ product, viewMode = 'grid', discountData }
                 )}
                 
                 {/* Discount Badge Overlay */}
-                {hasDiscount && (
+                {hasDiscount && discountInfo.discount_amount > 0 && (
                   <div className="absolute top-2 left-2 z-10">
                     <DiscountBadge
                       discountAmount={discountInfo.discount_amount}
@@ -184,21 +205,28 @@ export default function ProductCard({ product, viewMode = 'grid', discountData }
                 <div className="flex items-center space-x-2 mb-3">
                   <div className="flex items-center">
                     {[...Array(5)].map((_, i) => (
-                      <StarIcon
+                      <Star
                         key={i}
                         className={`h-4 w-4 ${
-                          i < 4 ? 'text-yellow-400 fill-current' : 'text-gray-300'
+                          i < getStarDisplay(reviewStats.averageRating).filledStars 
+                            ? 'text-yellow-400 fill-current' 
+                            : 'text-gray-300'
                         }`}
                       />
                     ))}
                   </div>
-                  <span className="text-sm text-gray-600">(4.2)</span>
+                  <span className="text-sm text-gray-600">
+                    {reviewStats.totalReviews > 0 
+                      ? `(${reviewStats.averageRating.toFixed(1)})` 
+                      : 'No reviews'
+                    }
+                  </span>
                 </div>
 
                 {/* Price */}
                 <div className="flex items-center space-x-2">
                   <span className="text-xl font-bold text-gray-900">${currentPrice.toFixed(2)}</span>
-                  {(hasSalePrice || hasDiscount) && (
+                  {hasDiscount && currentPrice < originalPrice && (
                     <span className="text-lg text-gray-500 line-through">${originalPrice.toFixed(2)}</span>
                   )}
                 </div>
@@ -211,7 +239,7 @@ export default function ProductCard({ product, viewMode = 'grid', discountData }
                   disabled={addingToCart}
                   className="flex items-center justify-center px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
                 >
-                  <ShoppingCartIcon className="h-4 w-4 mr-2" />
+                  <ShoppingCart className="h-4 w-4 mr-2" />
                   {addingToCart ? 'Adding...' : 'Add to Cart'}
                 </button>
                 <button
@@ -222,7 +250,7 @@ export default function ProductCard({ product, viewMode = 'grid', discountData }
                       : 'border-gray-300 text-gray-600'
                   }`}
                 >
-                  <HeartIcon className={`h-4 w-4 ${isFavorite(product.id) ? 'fill-current' : ''}`} />
+                  <Heart className={`h-4 w-4 ${isFavorite(product.id) ? 'fill-current' : ''}`} />
                 </button>
               </div>
             </div>
@@ -260,7 +288,7 @@ export default function ProductCard({ product, viewMode = 'grid', discountData }
           )}
           
           {/* Discount Badge Overlay */}
-          {hasDiscount && (
+          {hasDiscount && discountInfo.discount_amount > 0 && (
             <div className="absolute top-2 left-2 z-10">
               <DiscountBadge
                 discountAmount={discountInfo.discount_amount}
@@ -280,10 +308,10 @@ export default function ProductCard({ product, viewMode = 'grid', discountData }
                 isFavorite(product.id) ? 'text-red-600' : 'text-gray-600'
               }`}
             >
-              <HeartIcon className={`h-4 w-4 ${isFavorite(product.id) ? 'fill-current' : ''}`} />
+              <Heart className={`h-4 w-4 ${isFavorite(product.id) ? 'fill-current' : ''}`} />
             </button>
             <button className="p-2 bg-white rounded-full shadow-md hover:bg-gray-50">
-              <EyeIcon className="h-4 w-4 text-gray-600" />
+              <Eye className="h-4 w-4 text-gray-600" />
             </button>
           </div>
         </div>
@@ -315,22 +343,29 @@ export default function ProductCard({ product, viewMode = 'grid', discountData }
         <div className="flex items-center space-x-2 mb-3">
           <div className="flex items-center">
             {[...Array(5)].map((_, i) => (
-              <StarIcon
+              <Star
                 key={i}
                 className={`h-4 w-4 ${
-                  i < 4 ? 'text-yellow-400 fill-current' : 'text-gray-300'
+                  i < getStarDisplay(reviewStats.averageRating).filledStars 
+                    ? 'text-yellow-400 fill-current' 
+                    : 'text-gray-300'
                 }`}
               />
             ))}
           </div>
-          <span className="text-sm text-gray-600">(4.2)</span>
+          <span className="text-sm text-gray-600">
+            {reviewStats.totalReviews > 0 
+              ? `(${reviewStats.averageRating.toFixed(1)})` 
+              : 'No reviews'
+            }
+          </span>
         </div>
 
         {/* Price */}
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <span className="text-xl font-bold text-gray-900">${currentPrice.toFixed(2)}</span>
-            {(hasSalePrice || hasDiscount) && (
+            {hasDiscount && currentPrice < originalPrice && (
               <span className="text-lg text-gray-500 line-through">${originalPrice.toFixed(2)}</span>
             )}
           </div>
@@ -340,7 +375,7 @@ export default function ProductCard({ product, viewMode = 'grid', discountData }
             disabled={addingToCart}
             className="p-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <ShoppingCartIcon className="h-4 w-4" />
+            <ShoppingCart className="h-4 w-4" />
           </button>
         </div>
       </div>

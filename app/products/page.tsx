@@ -7,7 +7,7 @@ import { ProductWithDetails, Category, Brand } from '@/types/database';
 import { ProductDiscount, getBatchProductDiscounts, calculateBestDiscount } from '@/lib/discount-utils';
 import ProductCard from '@/components/products/ProductCard';
 import ProductFilters from '@/components/products/ProductFilters';
-import { SortAscIcon, SortDescIcon, SearchIcon } from 'lucide-react';
+import { SortAsc, SortDesc, Search } from 'lucide-react';
 
 export default function ProductsPage() {
   const searchParams = useSearchParams();
@@ -201,9 +201,9 @@ export default function ProductsPage() {
                 title={`Sort ${sortOrder === 'asc' ? 'Descending' : 'Ascending'}`}
               >
                 {sortOrder === 'asc' ? (
-                  <SortAscIcon className="h-4 w-4 text-gray-600" />
+                  <SortAsc className="h-4 w-4 text-gray-600" />
                 ) : (
-                  <SortDescIcon className="h-4 w-4 text-gray-600" />
+                  <SortDesc className="h-4 w-4 text-gray-600" />
                 )}
               </button>
 
@@ -249,7 +249,7 @@ export default function ProductsPage() {
             ) : (
               <div className="text-center py-12">
                 <div className="text-gray-400 mb-4">
-                  <SearchIcon className="h-16 w-16 mx-auto" />
+                  <Search className="h-16 w-16 mx-auto" />
                 </div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No products found</h3>
                 <p className="text-gray-600 mb-4">Try adjusting your search or filter criteria</p>

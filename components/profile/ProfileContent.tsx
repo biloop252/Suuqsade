@@ -6,6 +6,7 @@ import ProfileForm from './ProfileForm';
 import AddressList from './AddressList';
 import DashboardContent from './DashboardContent';
 import OrdersContent from './OrdersContent';
+import ReviewsContent from './ReviewsContent';
 
 interface ProfileContentProps {
   activeTab: string;
@@ -29,12 +30,7 @@ const ProfileContent = memo(function ProfileContent({ activeTab }: ProfileConten
         return <OrdersContent />;
       
       case 'reviews':
-        return (
-          <div className="text-center py-12">
-            <h3 className="text-lg font-medium text-gray-900 mb-2">My Reviews</h3>
-            <p className="text-gray-600">Your product reviews will appear here.</p>
-          </div>
-        );
+        return <ReviewsContent />;
       
       case 'discount-coupons':
         return (

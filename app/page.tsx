@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ShoppingBagIcon, StarIcon, TruckIcon, ShieldCheckIcon, SmartphoneIcon, LaptopIcon, ShirtIcon, HomeIcon, GamepadIcon, BookOpenIcon, SparklesIcon, ChevronLeftIcon, ChevronRightIcon, CreditCardIcon, ShoppingCartIcon, HeartIcon, PackageIcon, ShoppingBasketIcon, PercentIcon, CrownIcon, GiftIcon } from 'lucide-react';
+import { ShoppingBag, Star, Truck, ShieldCheck, Smartphone, Laptop, Shirt, Home, Gamepad, BookOpen, Sparkles, ChevronLeft, ChevronRight, CreditCard, ShoppingCart, Heart, Package, ShoppingBasket, Percent, Crown, Gift } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { ProductWithDetails } from '@/types/database';
 import Image from 'next/image';
@@ -11,6 +11,7 @@ import { useCart } from '@/lib/cart-context';
 import { useFavorites } from '@/lib/favorites-context';
 import { ProductDiscount, getProductDiscounts, calculateBestDiscount, getBatchProductDiscounts } from '@/lib/discount-utils';
 import DiscountBadge from '@/components/ui/DiscountBadge';
+import { getBatchProductReviewStats, formatRatingText, getStarDisplay } from '@/lib/review-utils';
 import PromotionalMediaDisplay from '@/components/promotional/PromotionalMediaDisplay';
 import PromotionalBanner from '@/components/promotional/PromotionalBanner';
 import LimitedTimeDeals from '@/components/promotional/LimitedTimeDeals';
@@ -27,6 +28,7 @@ export default function HomePage() {
   const [homeLivingProducts, setHomeLivingProducts] = useState<ProductWithDetails[]>([]);
   const [allProducts, setAllProducts] = useState<ProductWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
+  const [reviewStats, setReviewStats] = useState<Record<string, { averageRating: number; totalReviews: number }>>({});
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -52,6 +54,10 @@ export default function HomePage() {
     discountInfo: { final_price: number; discount_amount: number; has_discount: boolean };
   }>>({});
   const [homeLivingProductDiscounts, setHomeLivingProductDiscounts] = useState<Record<string, {
+    discounts: ProductDiscount[];
+    discountInfo: { final_price: number; discount_amount: number; has_discount: boolean };
+  }>>({});
+  const [allProductDiscounts, setAllProductDiscounts] = useState<Record<string, {
     discounts: ProductDiscount[];
     discountInfo: { final_price: number; discount_amount: number; has_discount: boolean };
   }>>({});
@@ -249,6 +255,11 @@ export default function HomePage() {
         
         // Check if there are more products
         setHasMore(data.length === 20);
+        
+        // Fetch discounts for the new products
+        if (data && data.length > 0) {
+          fetchProductDiscounts(data, setAllProductDiscounts);
+        }
       }
     } catch (error) {
       console.error('Error:', error);
@@ -399,6 +410,29 @@ export default function HomePage() {
 
         // Fetch initial batch of all products
         await fetchAllProducts(1, false);
+        
+        // Fetch discounts for all products
+        if (allProducts && allProducts.length > 0) {
+          fetchProductDiscounts(allProducts, setAllProductDiscounts);
+        }
+        
+        // Fetch review stats for all products
+        const allProductIds = [
+          ...flashData?.map(p => p.id) || [],
+          ...recommendedData?.map(p => p.id) || [],
+          ...bestSellingData?.map(p => p.id) || [],
+          ...homeLivingData?.map(p => p.id) || [],
+          ...allProducts?.map(p => p.id) || []
+        ];
+        
+        if (allProductIds.length > 0) {
+          try {
+            const stats = await getBatchProductReviewStats(allProductIds);
+            setReviewStats(stats);
+          } catch (error) {
+            console.error('Error fetching review stats:', error);
+          }
+        }
       } catch (error) {
         console.error('Error:', error);
         setFlashProducts([]);
@@ -477,7 +511,7 @@ export default function HomePage() {
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center space-x-3">
               <div className="bg-orange-500 rounded-lg p-2">
-                <StarIcon className="h-6 w-6 text-white" />
+                <Star className="h-6 w-6 text-white" />
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">Recommended for You</h2>
@@ -486,7 +520,7 @@ export default function HomePage() {
             </div>
             <Link href="/products?sort=recommended" className="bg-gray-100 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-200 transition-colors flex items-center space-x-2 border border-gray-200">
               <span>View All</span>
-                <ChevronRightIcon className="h-4 w-4" />
+                <ChevronRight className="h-4 w-4" />
               </Link>
           </div>
 
@@ -511,23 +545,21 @@ export default function HomePage() {
               ) : (
                 recommendedProducts.map((product) => {
                   const primaryImage = product.images?.[0];
-                  const hasSalePrice = product.sale_price && product.sale_price < product.price;
-                  const discountPercentage = hasSalePrice ? Math.round(((product.price - product.sale_price!) / product.price) * 100) : 0;
                   
                   // Get discount information
                   const productDiscountData = recommendedProductDiscounts[product.id];
-                  const hasDiscount = productDiscountData?.discountInfo.has_discount || false;
+                  const hasDiscount = productDiscountData?.discountInfo.has_discount && productDiscountData?.discountInfo.discount_amount > 0 || false;
                   const discountInfo = productDiscountData?.discountInfo;
                   const discounts = productDiscountData?.discounts || [];
                   
-                  // Calculate display price considering discounts
-                  const basePrice = product.sale_price || product.price;
+                  // Calculate display price considering discounts only
+                  const basePrice = product.price;
                   const displayPrice = hasDiscount ? discountInfo?.final_price || basePrice : basePrice;
-                  const originalPrice = hasDiscount ? basePrice : (hasSalePrice ? product.price : basePrice);
+                  const originalPrice = basePrice;
                   
-                  const averageRating = product.reviews?.length ? 
-                    product.reviews.reduce((sum, review) => sum + review.rating, 0) / product.reviews.length : 4.5;
-                  const reviewCount = product.reviews?.length || 0;
+                  const stats = reviewStats[product.id] || { averageRating: 0, totalReviews: 0 };
+                  const averageRating = stats.averageRating;
+                  const reviewCount = stats.totalReviews;
                   
                   return (
                     <Link key={product.id} href={`/products/${product.slug}`} className="flex-shrink-0 w-64 bg-white rounded-lg shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 group">
@@ -550,10 +582,10 @@ export default function HomePage() {
                         </div>
                         
                         {/* Discount Badge */}
-                        {hasDiscount && (
+                        {hasDiscount && discountInfo?.discount_amount && discountInfo.discount_amount > 0 && (
                           <div className="absolute top-3 left-3 z-10">
                             <DiscountBadge
-                              discountAmount={discountInfo?.discount_amount || 0}
+                              discountAmount={discountInfo.discount_amount}
                               discountType={discounts[0]?.type || 'percentage'}
                               discountValue={discounts[0]?.value || 0}
                             />
@@ -568,7 +600,7 @@ export default function HomePage() {
                               isFavorite(product.id) ? 'text-red-500' : 'text-gray-600 hover:text-red-500'
                             }`}
                           >
-                            <HeartIcon className={`h-4 w-4 ${isFavorite(product.id) ? 'fill-current' : ''}`} />
+                            <Heart className={`h-4 w-4 ${isFavorite(product.id) ? 'fill-current' : ''}`} />
                           </button>
                         </div>
                       </div>
@@ -583,18 +615,18 @@ export default function HomePage() {
                         <div className="flex items-center space-x-1 mb-3">
                           <div className="flex text-yellow-400">
                             {[...Array(5)].map((_, i) => (
-                              <StarIcon key={i} className={`h-3 w-3 ${i < Math.floor(averageRating) ? 'fill-current' : 'text-gray-300'}`} />
+                              <Star key={i} className={`h-3 w-3 ${i < getStarDisplay(averageRating).filledStars ? 'fill-current' : 'text-gray-300'}`} />
                             ))}
                           </div>
                           <span className="text-xs text-gray-500">
-                            {averageRating.toFixed(1)} ({reviewCount})
+                            {reviewCount > 0 ? `${averageRating.toFixed(1)} (${reviewCount})` : 'No reviews'}
                           </span>
                         </div>
                         
                         {/* Price and Add to Cart */}
                         <div className="flex items-center justify-between">
                           <div className="flex flex-col">
-                            {(hasSalePrice || hasDiscount) ? (
+                            {hasDiscount && displayPrice < originalPrice ? (
                               <>
                                 <span className="text-lg font-bold text-gray-900">${displayPrice.toFixed(2)}</span>
                                 <span className="text-sm text-gray-500 line-through">${originalPrice.toFixed(2)}</span>
@@ -611,7 +643,7 @@ export default function HomePage() {
                             {addingToCart === product.id ? (
                               <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
                             ) : (
-                              <ShoppingBasketIcon className="h-4 w-4" />
+                              <ShoppingBasket className="h-4 w-4" />
                             )}
                           </button>
                         </div>
@@ -633,7 +665,7 @@ export default function HomePage() {
                 }}
                 className="bg-white shadow-lg hover:shadow-xl rounded-full p-3 transition-all duration-300 border border-gray-200"
               >
-                <ChevronLeftIcon className="h-5 w-5 text-gray-600" />
+                <ChevronLeft className="h-5 w-5 text-gray-600" />
               </button>
             </div>
             
@@ -648,7 +680,7 @@ export default function HomePage() {
                 }}
                 className="bg-white shadow-lg hover:shadow-xl rounded-full p-3 transition-all duration-300 border border-gray-200"
               >
-                <ChevronRightIcon className="h-5 w-5 text-gray-600" />
+                <ChevronRight className="h-5 w-5 text-gray-600" />
               </button>
             </div>
           </div>
@@ -662,7 +694,7 @@ export default function HomePage() {
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center space-x-3">
               <div className="bg-orange-500 rounded-lg p-2">
-                <ShoppingBagIcon className="h-6 w-6 text-white" />
+                <ShoppingBag className="h-6 w-6 text-white" />
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">Best Selling Products</h2>
@@ -671,7 +703,7 @@ export default function HomePage() {
             </div>
             <Link href="/products?sort=bestselling" className="bg-gray-100 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-200 transition-colors flex items-center space-x-2 border border-gray-200">
               <span>View All</span>
-              <ChevronRightIcon className="h-4 w-4" />
+              <ChevronRight className="h-4 w-4" />
             </Link>
           </div>
 
@@ -696,23 +728,21 @@ export default function HomePage() {
               ) : (
                 bestSellingProducts.map((product) => {
                   const primaryImage = product.images?.[0];
-                  const hasSalePrice = product.sale_price && product.sale_price < product.price;
-                  const discountPercentage = hasSalePrice ? Math.round(((product.price - product.sale_price!) / product.price) * 100) : 0;
                   
                   // Get discount information
                   const productDiscountData = bestSellingProductDiscounts[product.id];
-                  const hasDiscount = productDiscountData?.discountInfo.has_discount || false;
+                  const hasDiscount = productDiscountData?.discountInfo.has_discount && productDiscountData?.discountInfo.discount_amount > 0 || false;
                   const discountInfo = productDiscountData?.discountInfo;
                   const discounts = productDiscountData?.discounts || [];
                   
-                  // Calculate display price considering discounts
-                  const basePrice = product.sale_price || product.price;
+                  // Calculate display price considering discounts only
+                  const basePrice = product.price;
                   const displayPrice = hasDiscount ? discountInfo?.final_price || basePrice : basePrice;
-                  const originalPrice = hasDiscount ? basePrice : (hasSalePrice ? product.price : basePrice);
+                  const originalPrice = basePrice;
                   
-                  const averageRating = product.reviews?.length ? 
-                    product.reviews.reduce((sum, review) => sum + review.rating, 0) / product.reviews.length : 4.5;
-                  const reviewCount = product.reviews?.length || 0;
+                  const stats = reviewStats[product.id] || { averageRating: 0, totalReviews: 0 };
+                  const averageRating = stats.averageRating;
+                  const reviewCount = stats.totalReviews;
                   
                   return (
                     <Link key={product.id} href={`/products/${product.slug}`} className="flex-shrink-0 w-64 bg-white rounded-lg shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 group">
@@ -735,10 +765,10 @@ export default function HomePage() {
                         </div>
                         
                         {/* Discount Badge */}
-                        {hasDiscount && (
+                        {hasDiscount && discountInfo?.discount_amount && discountInfo.discount_amount > 0 && (
                           <div className="absolute top-3 left-3 z-10">
                             <DiscountBadge
-                              discountAmount={discountInfo?.discount_amount || 0}
+                              discountAmount={discountInfo.discount_amount}
                               discountType={discounts[0]?.type || 'percentage'}
                               discountValue={discounts[0]?.value || 0}
                             />
@@ -753,7 +783,7 @@ export default function HomePage() {
                               isFavorite(product.id) ? 'text-red-500' : 'text-gray-600 hover:text-red-500'
                             }`}
                           >
-                            <HeartIcon className={`h-4 w-4 ${isFavorite(product.id) ? 'fill-current' : ''}`} />
+                            <Heart className={`h-4 w-4 ${isFavorite(product.id) ? 'fill-current' : ''}`} />
                           </button>
                         </div>
                       </div>
@@ -768,18 +798,18 @@ export default function HomePage() {
                         <div className="flex items-center space-x-1 mb-3">
                           <div className="flex text-yellow-400">
                             {[...Array(5)].map((_, i) => (
-                              <StarIcon key={i} className={`h-3 w-3 ${i < Math.floor(averageRating) ? 'fill-current' : 'text-gray-300'}`} />
+                              <Star key={i} className={`h-3 w-3 ${i < getStarDisplay(averageRating).filledStars ? 'fill-current' : 'text-gray-300'}`} />
                             ))}
                           </div>
                           <span className="text-xs text-gray-500">
-                            {averageRating.toFixed(1)} ({reviewCount})
+                            {reviewCount > 0 ? `${averageRating.toFixed(1)} (${reviewCount})` : 'No reviews'}
                           </span>
                         </div>
                         
                         {/* Price and Add to Cart */}
                         <div className="flex items-center justify-between">
                           <div className="flex flex-col">
-                            {(hasSalePrice || hasDiscount) ? (
+                            {hasDiscount && displayPrice < originalPrice ? (
                               <>
                                 <span className="text-lg font-bold text-gray-900">${displayPrice.toFixed(2)}</span>
                                 <span className="text-sm text-gray-500 line-through">${originalPrice.toFixed(2)}</span>
@@ -796,7 +826,7 @@ export default function HomePage() {
                             {addingToCart === product.id ? (
                               <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
                             ) : (
-                              <ShoppingBasketIcon className="h-4 w-4" />
+                              <ShoppingBasket className="h-4 w-4" />
                             )}
                           </button>
                         </div>
@@ -818,7 +848,7 @@ export default function HomePage() {
                 }}
                 className="bg-white shadow-lg hover:shadow-xl rounded-full p-3 transition-all duration-300 border border-gray-200"
               >
-                <ChevronLeftIcon className="h-5 w-5 text-gray-600" />
+                <ChevronLeft className="h-5 w-5 text-gray-600" />
               </button>
             </div>
             
@@ -833,7 +863,7 @@ export default function HomePage() {
                 }}
                 className="bg-white shadow-lg hover:shadow-xl rounded-full p-3 transition-all duration-300 border border-gray-200"
               >
-                <ChevronRightIcon className="h-5 w-5 text-gray-600" />
+                <ChevronRight className="h-5 w-5 text-gray-600" />
               </button>
             </div>
           </div>
@@ -847,7 +877,7 @@ export default function HomePage() {
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center space-x-3">
               <div className="bg-orange-500 rounded-lg p-2">
-                <HomeIcon className="h-6 w-6 text-white" />
+                <Home className="h-6 w-6 text-white" />
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">Trending in Home & Living</h2>
@@ -856,7 +886,7 @@ export default function HomePage() {
             </div>
             <Link href="/categories/home-garden?sort=trending" className="bg-gray-100 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-200 transition-colors flex items-center space-x-2 border border-gray-200">
               <span>View All</span>
-              <ChevronRightIcon className="h-4 w-4" />
+              <ChevronRight className="h-4 w-4" />
             </Link>
           </div>
 
@@ -881,23 +911,21 @@ export default function HomePage() {
               ) : (
                 homeLivingProducts.map((product) => {
                   const primaryImage = product.images?.[0];
-                  const hasSalePrice = product.sale_price && product.sale_price < product.price;
-                  const discountPercentage = hasSalePrice ? Math.round(((product.price - product.sale_price!) / product.price) * 100) : 0;
                   
                   // Get discount information
                   const productDiscountData = homeLivingProductDiscounts[product.id];
-                  const hasDiscount = productDiscountData?.discountInfo.has_discount || false;
+                  const hasDiscount = productDiscountData?.discountInfo.has_discount && productDiscountData?.discountInfo.discount_amount > 0 || false;
                   const discountInfo = productDiscountData?.discountInfo;
                   const discounts = productDiscountData?.discounts || [];
                   
-                  // Calculate display price considering discounts
-                  const basePrice = product.sale_price || product.price;
+                  // Calculate display price considering discounts only
+                  const basePrice = product.price;
                   const displayPrice = hasDiscount ? discountInfo?.final_price || basePrice : basePrice;
-                  const originalPrice = hasDiscount ? basePrice : (hasSalePrice ? product.price : basePrice);
+                  const originalPrice = basePrice;
                   
-                  const averageRating = product.reviews?.length ? 
-                    product.reviews.reduce((sum, review) => sum + review.rating, 0) / product.reviews.length : 4.5;
-                  const reviewCount = product.reviews?.length || 0;
+                  const stats = reviewStats[product.id] || { averageRating: 0, totalReviews: 0 };
+                  const averageRating = stats.averageRating;
+                  const reviewCount = stats.totalReviews;
                   
                   return (
                     <Link key={product.id} href={`/products/${product.slug}`} className="flex-shrink-0 w-64 bg-white rounded-lg shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 group">
@@ -920,10 +948,10 @@ export default function HomePage() {
                         </div>
                         
                         {/* Discount Badge */}
-                        {hasDiscount && (
+                        {hasDiscount && discountInfo?.discount_amount && discountInfo.discount_amount > 0 && (
                           <div className="absolute top-3 left-3 z-10">
                             <DiscountBadge
-                              discountAmount={discountInfo?.discount_amount || 0}
+                              discountAmount={discountInfo.discount_amount}
                               discountType={discounts[0]?.type || 'percentage'}
                               discountValue={discounts[0]?.value || 0}
                             />
@@ -938,7 +966,7 @@ export default function HomePage() {
                               isFavorite(product.id) ? 'text-red-500' : 'text-gray-600 hover:text-red-500'
                             }`}
                           >
-                            <HeartIcon className={`h-4 w-4 ${isFavorite(product.id) ? 'fill-current' : ''}`} />
+                            <Heart className={`h-4 w-4 ${isFavorite(product.id) ? 'fill-current' : ''}`} />
                           </button>
                         </div>
                       </div>
@@ -953,18 +981,18 @@ export default function HomePage() {
                         <div className="flex items-center space-x-1 mb-3">
                           <div className="flex text-yellow-400">
                             {[...Array(5)].map((_, i) => (
-                              <StarIcon key={i} className={`h-3 w-3 ${i < Math.floor(averageRating) ? 'fill-current' : 'text-gray-300'}`} />
+                              <Star key={i} className={`h-3 w-3 ${i < getStarDisplay(averageRating).filledStars ? 'fill-current' : 'text-gray-300'}`} />
                             ))}
                           </div>
                           <span className="text-xs text-gray-500">
-                            {averageRating.toFixed(1)} ({reviewCount})
+                            {reviewCount > 0 ? `${averageRating.toFixed(1)} (${reviewCount})` : 'No reviews'}
                           </span>
                         </div>
                         
                         {/* Price and Add to Cart */}
                         <div className="flex items-center justify-between">
                           <div className="flex flex-col">
-                            {(hasSalePrice || hasDiscount) ? (
+                            {hasDiscount && displayPrice < originalPrice ? (
                               <>
                                 <span className="text-lg font-bold text-gray-900">${displayPrice.toFixed(2)}</span>
                                 <span className="text-sm text-gray-500 line-through">${originalPrice.toFixed(2)}</span>
@@ -981,7 +1009,7 @@ export default function HomePage() {
                             {addingToCart === product.id ? (
                               <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
                             ) : (
-                              <ShoppingBasketIcon className="h-4 w-4" />
+                              <ShoppingBasket className="h-4 w-4" />
                             )}
                           </button>
                         </div>
@@ -1003,7 +1031,7 @@ export default function HomePage() {
                 }}
                 className="bg-white shadow-lg hover:shadow-xl rounded-full p-3 transition-all duration-300 border border-gray-200"
               >
-                <ChevronLeftIcon className="h-5 w-5 text-gray-600" />
+                <ChevronLeft className="h-5 w-5 text-gray-600" />
               </button>
             </div>
             
@@ -1018,7 +1046,7 @@ export default function HomePage() {
                 }}
                 className="bg-white shadow-lg hover:shadow-xl rounded-full p-3 transition-all duration-300 border border-gray-200"
               >
-                <ChevronRightIcon className="h-5 w-5 text-gray-600" />
+                <ChevronRight className="h-5 w-5 text-gray-600" />
               </button>
             </div>
           </div>
@@ -1050,11 +1078,22 @@ export default function HomePage() {
             ) : (
               allProducts.map((product) => {
                 const primaryImage = product.images?.[0];
-                const hasSalePrice = product.sale_price && product.sale_price < product.price;
-                const displayPrice = hasSalePrice ? product.sale_price! : product.price;
-                const averageRating = product.reviews?.length ? 
-                  product.reviews.reduce((sum, review) => sum + review.rating, 0) / product.reviews.length : 4.5;
-                const reviewCount = product.reviews?.length || 0;
+                
+                // Get discount information
+                const productDiscountData = allProductDiscounts[product.id];
+                const hasDiscount = productDiscountData?.discountInfo.has_discount && productDiscountData?.discountInfo.discount_amount > 0 || false;
+                const discountInfo = productDiscountData?.discountInfo;
+                const discounts = productDiscountData?.discounts || [];
+                
+                // Calculate display price considering discounts only
+                const basePrice = product.price;
+                const displayPrice = hasDiscount ? discountInfo?.final_price || basePrice : basePrice;
+                const originalPrice = basePrice;
+                
+                // Get review stats
+                const stats = reviewStats[product.id] || { averageRating: 0, totalReviews: 0 };
+                const averageRating = stats.averageRating;
+                const reviewCount = stats.totalReviews;
                 
                 return (
                   <Link key={product.id} href={`/products/${product.slug}`} className="bg-white rounded-lg shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 group">
@@ -1076,6 +1115,17 @@ export default function HomePage() {
                         )}
                       </div>
                       
+                      {/* Discount Badge */}
+                      {hasDiscount && discountInfo?.discount_amount && discountInfo.discount_amount > 0 && (
+                        <div className="absolute top-3 left-3 z-10">
+                          <DiscountBadge
+                            discountAmount={discountInfo.discount_amount}
+                            discountType={discounts[0]?.type || 'percentage'}
+                            discountValue={discounts[0]?.value || 0}
+                          />
+                        </div>
+                      )}
+                      
                       {/* Heart Icon */}
                       <div className="absolute top-3 right-3">
                         <button 
@@ -1084,7 +1134,7 @@ export default function HomePage() {
                             isFavorite(product.id) ? 'text-red-500' : 'text-gray-600 hover:text-red-500'
                           }`}
                         >
-                          <HeartIcon className={`h-4 w-4 ${isFavorite(product.id) ? 'fill-current' : ''}`} />
+                          <Heart className={`h-4 w-4 ${isFavorite(product.id) ? 'fill-current' : ''}`} />
                         </button>
                       </div>
                     </div>
@@ -1099,21 +1149,21 @@ export default function HomePage() {
                       <div className="flex items-center space-x-1 mb-3">
                         <div className="flex text-yellow-400">
                           {[...Array(5)].map((_, i) => (
-                            <StarIcon key={i} className={`h-3 w-3 ${i < Math.floor(averageRating) ? 'fill-current' : 'text-gray-300'}`} />
+                            <Star key={i} className={`h-3 w-3 ${i < getStarDisplay(averageRating).filledStars ? 'fill-current' : 'text-gray-300'}`} />
                           ))}
                         </div>
                         <span className="text-xs text-gray-500">
-                          {averageRating.toFixed(1)} ({reviewCount})
+                          {reviewCount > 0 ? `${averageRating.toFixed(1)} (${reviewCount})` : 'No reviews'}
                         </span>
                       </div>
                       
                       {/* Price and Add to Cart */}
                       <div className="flex items-center justify-between">
                         <div className="flex flex-col">
-                          {hasSalePrice ? (
+                          {hasDiscount && displayPrice < originalPrice ? (
                             <>
                               <span className="text-lg font-bold text-gray-900">${displayPrice.toFixed(2)}</span>
-                              <span className="text-sm text-gray-500 line-through">${product.price.toFixed(2)}</span>
+                              <span className="text-sm text-gray-500 line-through">${originalPrice.toFixed(2)}</span>
                             </>
                           ) : (
                             <span className="text-lg font-bold text-gray-900">${displayPrice.toFixed(2)}</span>
@@ -1127,7 +1177,7 @@ export default function HomePage() {
                           {addingToCart === product.id ? (
                             <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
                           ) : (
-                            <ShoppingBasketIcon className="h-4 w-4" />
+                            <ShoppingBasket className="h-4 w-4" />
                           )}
                         </button>
                       </div>

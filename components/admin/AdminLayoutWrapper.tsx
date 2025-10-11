@@ -30,7 +30,8 @@ import {
   RefreshCw,
   Image,
   Percent,
-  Ticket
+  Ticket,
+  Star
 } from 'lucide-react';
 
 interface AdminLayoutWrapperProps {
@@ -85,6 +86,7 @@ export default function AdminLayoutWrapper({ children }: AdminLayoutWrapperProps
     { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
     { name: 'Shipments', href: '/admin/deliveries', icon: Truck },
     { name: 'Payments', href: '/admin/payments', icon: CreditCard },
+    { name: 'Reviews', href: '/admin/reviews', icon: Star },
     { name: 'Users', href: '/admin/users', icon: Users },
     { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
     { 

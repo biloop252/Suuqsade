@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { Category, ProductWithDetails, Brand } from '@/types/database';
 import { ProductDiscount, getBatchProductDiscounts, calculateBestDiscount } from '@/lib/discount-utils';
 import ProductCard from '@/components/products/ProductCard';
-import { ArrowLeftIcon, PackageIcon, FilterIcon, SortAscIcon, SortDescIcon, XIcon } from 'lucide-react';
+import { ArrowLeft, Package, Filter, SortAsc, SortDesc, X } from 'lucide-react';
 import Link from 'next/link';
 import PromotionalBanner from '@/components/promotional/PromotionalBanner';
 import SidebarPromotional from '@/components/promotional/SidebarPromotional';
@@ -96,8 +96,9 @@ export default function CategoryPage() {
           bValue = new Date(b.created_at || 0);
           break;
         case 'rating':
-          aValue = a.average_rating || 0;
-          bValue = b.average_rating || 0;
+          // For now, sort by name since we don't have review stats in this context
+          aValue = a.name.toLowerCase();
+          bValue = b.name.toLowerCase();
           break;
         default:
           aValue = a.name.toLowerCase();
@@ -242,10 +243,10 @@ export default function CategoryPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <PackageIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+          <Package className="h-16 w-16 text-gray-300 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Category not found</h1>
           <Link href="/categories" className="btn-primary">
-            <ArrowLeftIcon className="h-5 w-5 mr-2" />
+            <ArrowLeft className="h-5 w-5 mr-2" />
             Back to Categories
           </Link>
         </div>
@@ -281,10 +282,10 @@ export default function CategoryPage() {
             onClick={() => setShowFilters(!showFilters)}
             className="flex items-center space-x-2 px-4 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
           >
-            <FilterIcon className="h-4 w-4 text-gray-600" />
+            <Filter className="h-4 w-4 text-gray-600" />
             <span className="text-sm text-gray-700">Filters</span>
             {showFilters ? (
-              <XIcon className="h-4 w-4 text-gray-600" />
+              <X className="h-4 w-4 text-gray-600" />
             ) : (
               <span className="text-xs bg-orange-100 text-orange-600 px-2 py-1 rounded-full">
                 {(filters.brands.length > 0 ? 1 : 0) + 
@@ -431,9 +432,9 @@ export default function CategoryPage() {
                   title={`Sort ${sortOrder === 'asc' ? 'Descending' : 'Ascending'}`}
                 >
                   {sortOrder === 'asc' ? (
-                    <SortAscIcon className="h-4 w-4 text-gray-600" />
+                    <SortAsc className="h-4 w-4 text-gray-600" />
                   ) : (
-                    <SortDescIcon className="h-4 w-4 text-gray-600" />
+                    <SortDesc className="h-4 w-4 text-gray-600" />
                   )}
                 </button>
               </div>
@@ -457,7 +458,7 @@ export default function CategoryPage() {
               </div>
             ) : (
               <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-                <PackageIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                <Package className="h-16 w-16 text-gray-300 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No products found</h3>
                 <p className="text-gray-600">Try adjusting your filters to see more products.</p>
               </div>
