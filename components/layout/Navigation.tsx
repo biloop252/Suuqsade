@@ -10,6 +10,7 @@ import { Category } from '@/types/database';
 import CategoriesDropdown from './CategoriesDropdown';
 import SearchSuggestions from '@/components/ui/SearchSuggestions';
 import { useSearchSuggestions } from '@/hooks/useSearchSuggestions';
+import NotificationCenter from '@/components/common/NotificationCenter';
 import { 
   ShoppingCartIcon, 
   UserIcon, 
@@ -175,6 +176,8 @@ export default function Navigation() {
                       </span>
                     )}
                 </Link>
+
+                <NotificationCenter />
                 
                 <div className="relative" ref={dropdownRef}>
                   <button 
@@ -229,6 +232,15 @@ export default function Navigation() {
                         >
                           <TicketIcon className="h-4 w-4 mr-3" />
                           My Discount Coupons
+                        </Link>
+
+                        <Link 
+                          href="/profile?tab=support-tickets" 
+                          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                          onClick={() => setIsUserDropdownOpen(false)}
+                        >
+                          <MessageSquareIcon className="h-4 w-4 mr-3" />
+                          Support Tickets
                         </Link>
 
                         <Link 

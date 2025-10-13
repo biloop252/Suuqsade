@@ -7,6 +7,7 @@ import AddressList from './AddressList';
 import DashboardContent from './DashboardContent';
 import OrdersContent from './OrdersContent';
 import ReviewsContent from './ReviewsContent';
+import SupportTicketsContent from './SupportTicketsContent';
 
 interface ProfileContentProps {
   activeTab: string;
@@ -31,6 +32,9 @@ const ProfileContent = memo(function ProfileContent({ activeTab }: ProfileConten
       
       case 'reviews':
         return <ReviewsContent />;
+      
+      case 'support-tickets':
+        return <SupportTicketsContent />;
       
       case 'discount-coupons':
         return (

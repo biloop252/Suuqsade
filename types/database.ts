@@ -9,6 +9,9 @@ export type PromotionalMediaTarget = '_self' | '_blank' | '_parent' | '_top';
 export type DiscountType = 'percentage' | 'fixed_amount' | 'free_shipping';
 export type DiscountStatus = 'active' | 'inactive' | 'expired';
 export type CouponStatus = 'active' | 'inactive' | 'expired' | 'used_up';
+export type SupportTicketStatus = 'open' | 'in_progress' | 'waiting_customer' | 'waiting_staff' | 'resolved' | 'closed';
+export type SupportTicketPriority = 'low' | 'medium' | 'high' | 'urgent';
+export type SupportNotificationType = 'ticket_update' | 'new_message' | 'status_change' | 'assignment';
 
 export interface Profile {
   id: string;
@@ -690,6 +693,108 @@ export interface VendorPayoutWithDetails extends VendorPayout {
 
 export interface AdminRevenueWithDetails extends AdminRevenue {
   transaction?: FinanceTransaction;
+}
+
+// Support System Interfaces
+export interface SupportCategory {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  is_active: boolean;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SupportTicket {
+  id: string;
+  ticket_number: string;
+  user_id: string;
+  assigned_to?: string;
+  category_id?: string;
+  subject: string;
+  description: string;
+  status: SupportTicketStatus;
+  priority: SupportTicketPriority;
+  order_id?: string;
+  product_id?: string;
+  is_urgent: boolean;
+  customer_satisfaction?: number;
+  resolution_notes?: string;
+  resolved_at?: string;
+  closed_at?: string;
+  created_at: string;
+  updated_at: string;
+  user?: Profile;
+  assigned_user?: Profile;
+  category?: SupportCategory;
+  order?: Order;
+  product?: Product;
+}
+
+export interface SupportMessage {
+  id: string;
+  ticket_id: string;
+  user_id: string;
+  message: string;
+  is_internal: boolean;
+  attachments?: string[];
+  created_at: string;
+  user?: Profile;
+}
+
+export interface SupportAttachment {
+  id: string;
+  ticket_id: string;
+  message_id?: string;
+  file_name: string;
+  file_url: string;
+  file_size?: number;
+  file_type?: string;
+  uploaded_by: string;
+  created_at: string;
+  uploaded_user?: Profile;
+}
+
+export interface SupportTag {
+  id: string;
+  name: string;
+  color: string;
+  description?: string;
+  created_at: string;
+}
+
+export interface SupportTicketTag {
+  ticket_id: string;
+  tag_id: string;
+  ticket?: SupportTicket;
+  tag?: SupportTag;
+}
+
+export interface SupportNotification {
+  id: string;
+  user_id: string;
+  type: SupportNotificationType;
+  title: string;
+  message: string;
+  ticket_id?: string;
+  ticket_number?: string;
+  is_read: boolean;
+  created_at: string;
+  user?: Profile;
+  ticket?: SupportTicket;
+}
+
+export interface SupportSlaLog {
+  id: string;
+  ticket_id: string;
+  sla_type: string;
+  target_time: string;
+  actual_time?: string;
+  is_breached: boolean;
+  created_at: string;
+  ticket?: SupportTicket;
 }
 
 

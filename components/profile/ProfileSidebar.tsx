@@ -49,6 +49,7 @@ const ProfileSidebar = memo(function ProfileSidebar({ activeTab, onTabChange }: 
         { id: 'user-information', label: 'My User Information', icon: SettingsIcon },
         { id: 'address-information', label: 'My Address Information', icon: MapPinIcon },
         { id: 'saved-cards', label: 'My Saved Cards', icon: CreditCardIcon },
+        { id: 'support-tickets', label: 'Support Tickets', icon: MessageSquareIcon },
         { id: 'help', label: 'Help', icon: HelpCircleIcon },
       ]
     }

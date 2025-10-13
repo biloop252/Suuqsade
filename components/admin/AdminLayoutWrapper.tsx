@@ -34,7 +34,8 @@ import {
   Ticket,
   Star,
   DollarSign,
-  User
+  User,
+  MessageSquare
 } from 'lucide-react';
 
 interface AdminLayoutWrapperProps {
@@ -92,6 +93,7 @@ export default function AdminLayoutWrapper({ children }: AdminLayoutWrapperProps
     { name: 'Payments', href: '/admin/payments', icon: CreditCard },
     { name: 'Reviews', href: '/admin/reviews', icon: Star },
     { name: 'Users', href: '/admin/users', icon: Users },
+    { name: 'Support', href: '/admin/support', icon: MessageSquare },
     { name: 'Finance', href: '/admin/finance', icon: DollarSign },
     { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
     { 

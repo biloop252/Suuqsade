@@ -18,7 +18,8 @@ import {
   Tag,
   Layers,
   Home,
-  DollarSign
+  DollarSign,
+  MessageSquare
 } from 'lucide-react';
 
 interface AdminLayoutProps {
@@ -53,6 +54,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     { name: 'Variants', href: '/admin/variants', icon: Layers },
     { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
     { name: 'Users', href: '/admin/users', icon: Users },
+    { name: 'Support', href: '/admin/support', icon: MessageSquare },
     { name: 'Finance', href: '/admin/finance', icon: DollarSign },
     { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
     { name: 'Settings', href: '/admin/settings', icon: Settings },
