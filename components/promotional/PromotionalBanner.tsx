@@ -44,8 +44,14 @@ export default function PromotionalBanner({
           link_url,
           button_text,
           target,
+          banner_position,
+          display_order,
           background_color,
-          text_color
+          text_color,
+          is_active,
+          language_code,
+          created_at,
+          updated_at
         `)
         .eq('banner_position', position)
         .eq('is_active', true)

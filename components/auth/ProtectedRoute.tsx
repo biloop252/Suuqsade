@@ -41,6 +41,7 @@ export default function ProtectedRoute({
     const roleHierarchy: Record<UserRole, number> = {
       customer: 0,
       staff: 1,
+      vendor: 1,
       admin: 2,
       super_admin: 3,
     };
@@ -67,6 +68,7 @@ export default function ProtectedRoute({
 
   return <>{children}</>;
 }
+
 
 
 

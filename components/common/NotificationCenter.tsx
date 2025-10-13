@@ -125,7 +125,7 @@ export default function NotificationCenter() {
     }
   };
 
-  const createNotification = async (notificationData: Partial<Notification>) => {
+  const createNotification = async (notificationData: Partial<SupportNotification>) => {
     try {
       const { data, error } = await supabase
         .from('support_notifications')

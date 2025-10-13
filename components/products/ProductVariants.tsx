@@ -238,14 +238,7 @@ export default function ProductVariants({ productId, onVariantSelect }: ProductV
             <p><span className="font-medium">Name:</span> {selectedVariant.name}</p>
             <p><span className="font-medium">SKU:</span> {selectedVariant.sku}</p>
             <p><span className="font-medium">Price:</span> 
-              {selectedVariant.sale_price ? (
-                <span>
-                  <span className="text-orange-600 font-semibold">${selectedVariant.sale_price}</span>
-                  <span className="text-gray-400 line-through ml-2">${selectedVariant.price}</span>
-                </span>
-              ) : (
-                <span className="font-semibold">${selectedVariant.price}</span>
-              )}
+              <span className="font-semibold">${selectedVariant.price}</span>
             </p>
             <p><span className="font-medium">Stock:</span> {selectedVariant.stock_quantity} available</p>
           </div>

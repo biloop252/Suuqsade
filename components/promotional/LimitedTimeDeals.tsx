@@ -45,7 +45,9 @@ export default function LimitedTimeDeals({ className = '', maxDeals = 4 }: Limit
           is_active,
           start_date,
           end_date,
-          language_code
+          language_code,
+          created_at,
+          updated_at
         `)
         .eq('banner_position', 'limited_time_deals')
         .eq('is_active', true)

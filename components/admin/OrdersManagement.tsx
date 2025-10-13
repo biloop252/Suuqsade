@@ -358,7 +358,7 @@ export default function OrdersManagement() {
                               {(order as any).delivery[0].status.replace('_', ' ').charAt(0).toUpperCase() + (order as any).delivery[0].status.replace('_', ' ').slice(1)}
                             </span>
                             {!isStatusSynced(order.status, (order as any).delivery[0].status) && (
-                              <AlertCircle className="ml-1 h-3 w-3 text-orange-500" title="Status not synced" />
+                              <AlertCircle className="ml-1 h-3 w-3 text-orange-500" />
                             )}
                           </>
                         ) : (

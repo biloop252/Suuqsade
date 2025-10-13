@@ -142,7 +142,7 @@ export default function DeliveriesManagement() {
       }
 
       // Get unique order IDs
-      const orderIds = [...new Set(deliveriesData.map(d => d.order_id))];
+      const orderIds = Array.from(new Set(deliveriesData.map(d => d.order_id)));
 
       // First try to fetch orders without profiles join to see if orders exist
       const { data: simpleOrdersData, error: simpleOrdersError } = await supabase
@@ -184,7 +184,7 @@ export default function DeliveriesManagement() {
         console.error('Error fetching orders with profiles:', ordersError);
         
         // Try to fetch profiles separately
-        const userIds = [...new Set(simpleOrdersData.map(o => o.user_id))];
+        const userIds = Array.from(new Set(simpleOrdersData.map(o => o.user_id)));
         const { data: profilesData, error: profilesError } = await supabase
           .from('profiles')
           .select('id, first_name, last_name, email')
@@ -289,8 +289,8 @@ export default function DeliveriesManagement() {
     const matchesSearch = 
       delivery.tracking_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
       delivery.carrier.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      delivery.orders?.order_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      `${delivery.orders?.profiles?.first_name || ''} ${delivery.orders?.profiles?.last_name || ''}`.toLowerCase().includes(searchTerm.toLowerCase());
+      delivery.order?.order_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      `${delivery.order?.user?.first_name || ''} ${delivery.order?.user?.last_name || ''}`.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = statusFilter === 'all' || delivery.status === statusFilter;
     
@@ -426,7 +426,7 @@ export default function DeliveriesManagement() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
-                        {delivery.orders?.order_number ? `#${delivery.orders.order_number}` : 
+                        {delivery.order?.order_number ? `#${delivery.order.order_number}` : 
                          delivery.order_id ? `Order: ${delivery.order_id.slice(0, 8)}...` : 'N/A'}
                       </div>
                       <div className="text-sm text-gray-500">
@@ -435,28 +435,28 @@ export default function DeliveriesManagement() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
-                        {delivery.orders?.profiles ? 
-                          `${delivery.orders.profiles.first_name || ''} ${delivery.orders.profiles.last_name || ''}`.trim() || 'N/A' : 
+                        {delivery.order?.user ? 
+                          `${delivery.order.user.first_name || ''} ${delivery.order.user.last_name || ''}`.trim() || 'N/A' : 
                           'N/A'
                         }
                       </div>
                       <div className="text-sm text-gray-500">
-                        {delivery.orders?.profiles?.email || 'N/A'}
+                        {delivery.order?.user?.email || 'N/A'}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        {delivery.orders?.status ? (
+                        {delivery.order?.status ? (
                           <>
                             {(() => {
-                              const OrderStatusIcon = orderStatusConfig[delivery.orders.status].icon;
+                              const OrderStatusIcon = orderStatusConfig[delivery.order.status].icon;
                               return <OrderStatusIcon className="h-3 w-3 mr-1" />;
                             })()}
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${orderStatusConfig[delivery.orders.status].color}`}>
-                              {orderStatusConfig[delivery.orders.status].label}
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${orderStatusConfig[delivery.order.status].color}`}>
+                              {orderStatusConfig[delivery.order.status].label}
                             </span>
-                            {!isStatusSynced(delivery.status, delivery.orders.status) && (
-                              <AlertCircle className="ml-1 h-3 w-3 text-orange-500" title="Status not synced" />
+                            {!isStatusSynced(delivery.status, delivery.order.status) && (
+                              <AlertCircle className="ml-1 h-3 w-3 text-orange-500" />
                             )}
                           </>
                         ) : (
@@ -490,7 +490,7 @@ export default function DeliveriesManagement() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex space-x-2">
-                        {delivery.orders?.status && !isStatusSynced(delivery.status, delivery.orders.status) && (
+                        {delivery.order?.status && !isStatusSynced(delivery.status, delivery.order.status) && (
                           <button
                             onClick={() => syncDeliveryOrderStatus(delivery.id)}
                             className="text-orange-500 hover:text-orange-600"
@@ -583,42 +583,42 @@ export default function DeliveriesManagement() {
               </div>
 
               {/* Order Information */}
-              {selectedDelivery.orders && (
+              {selectedDelivery.order && (
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <h4 className="text-md font-semibold text-gray-900 mb-3">Order Information</h4>
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
                       <span className="text-gray-500">Order Number:</span>
-                      <div className="text-gray-900">#{selectedDelivery.orders.order_number}</div>
+                      <div className="text-gray-900">#{selectedDelivery.order.order_number}</div>
                     </div>
                     <div>
                       <span className="text-gray-500">Customer:</span>
                       <div className="text-gray-900">
-                        {selectedDelivery.orders.profiles ? 
-                          `${selectedDelivery.orders.profiles.first_name} ${selectedDelivery.orders.profiles.last_name}` : 
+                        {selectedDelivery.order.user ? 
+                          `${selectedDelivery.order.user.first_name} ${selectedDelivery.order.user.last_name}` : 
                           'N/A'
                         }
                       </div>
                     </div>
                     <div className="col-span-2">
                       <span className="text-gray-500">Email:</span>
-                      <div className="text-gray-900">{selectedDelivery.orders.profiles?.email || 'N/A'}</div>
+                      <div className="text-gray-900">{selectedDelivery.order.user?.email || 'N/A'}</div>
                     </div>
                   </div>
                 </div>
               )}
 
               {/* Delivery Address */}
-              {selectedDelivery.orders?.addresses && (
+              {selectedDelivery.order?.shipping_address && (
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <h4 className="text-md font-semibold text-gray-900 mb-3">Delivery Address</h4>
                   <div className="text-sm text-gray-900">
-                    <div>{selectedDelivery.orders.addresses.first_name} {selectedDelivery.orders.addresses.last_name}</div>
-                    <div>{selectedDelivery.orders.addresses.address_line_1}</div>
+                    <div>{selectedDelivery.order.shipping_address.first_name} {selectedDelivery.order.shipping_address.last_name}</div>
+                    <div>{selectedDelivery.order.shipping_address.address_line_1}</div>
                     <div>
-                      {selectedDelivery.orders.addresses.city}, {selectedDelivery.orders.addresses.state} {selectedDelivery.orders.addresses.postal_code}
+                      {selectedDelivery.order.shipping_address.city}, {selectedDelivery.order.shipping_address.state} {selectedDelivery.order.shipping_address.postal_code}
                     </div>
-                    <div>{selectedDelivery.orders.addresses.country}</div>
+                    <div>{selectedDelivery.order.shipping_address.country}</div>
                   </div>
                 </div>
               )}

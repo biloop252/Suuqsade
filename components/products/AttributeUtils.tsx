@@ -150,9 +150,9 @@ export const getAttributeType = (slug: string, value?: string): string => {
   }
   
   // Check if value looks like a size
-  if (value && SIZE_CATEGORIES.clothing.includes(value.toUpperCase()) || 
+  if (value && (SIZE_CATEGORIES.clothing.includes(value.toUpperCase()) || 
       SIZE_CATEGORIES.shoes.includes(value) || 
-      SIZE_CATEGORIES.rings.includes(value)) {
+      SIZE_CATEGORIES.rings.includes(value))) {
     return 'size';
   }
   

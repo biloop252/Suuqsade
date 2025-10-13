@@ -377,13 +377,22 @@ function AttributeModal({
   onClose: () => void; 
   onSave: () => void; 
 }) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string;
+    slug: string;
+    type: 'text' | 'number' | 'select' | 'multiselect' | 'boolean' | 'color' | 'size';
+    description: string;
+    is_required: boolean;
+    is_filterable: boolean;
+    is_variant_attribute: boolean;
+    sort_order: number;
+  }>({
     name: attribute?.name || '',
     slug: attribute?.slug || '',
     type: attribute?.type || 'text',
     description: attribute?.description || '',
     is_required: attribute?.is_required || false,
-    is_filterable: attribute?.is_filterable || true,
+    is_filterable: attribute?.is_filterable ?? true,
     is_variant_attribute: attribute?.is_variant_attribute || false,
     sort_order: attribute?.sort_order || 0
   });

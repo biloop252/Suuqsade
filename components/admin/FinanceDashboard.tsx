@@ -163,7 +163,7 @@ export default function FinanceDashboard() {
     }
     
     // Transform the data to match the expected interface
-    const summaries = (data || []).map(vendor => ({
+    const summaries = (data || []).map((vendor: any) => ({
       vendor_id: vendor.vendor_id,
       business_name: vendor.business_name,
       email: vendor.email,
@@ -215,9 +215,9 @@ export default function FinanceDashboard() {
       
       // Sort by total sales and take top 5
       const topVendors = (data || [])
-        .sort((a, b) => b.total_sales - a.total_sales)
+        .sort((a: any, b: any) => b.total_sales - a.total_sales)
         .slice(0, 5)
-        .map(vendor => ({
+        .map((vendor: any) => ({
           vendor_id: vendor.vendor_id,
           business_name: vendor.business_name,
           email: vendor.email,

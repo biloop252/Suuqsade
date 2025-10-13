@@ -51,7 +51,8 @@ export default function BrandPage() {
 
     // Apply price filter
     filteredProducts = filteredProducts.filter(product => {
-      const price = product.sale_price || product.price;
+      const discountInfo = productDiscounts[product.id];
+      const price = discountInfo?.discountInfo?.final_price || product.price;
       return price >= filters.priceRange.min && price <= filters.priceRange.max;
     });
 
@@ -62,9 +63,10 @@ export default function BrandPage() {
 
     // Apply on sale filter
     if (filters.onSale) {
-      filteredProducts = filteredProducts.filter(product => 
-        product.sale_price && product.sale_price < product.price
-      );
+      filteredProducts = filteredProducts.filter(product => {
+        const discountInfo = productDiscounts[product.id];
+        return discountInfo?.discountInfo?.has_discount || false;
+      });
     }
 
     // Apply sorting
@@ -77,8 +79,10 @@ export default function BrandPage() {
           bValue = b.name.toLowerCase();
           break;
         case 'price':
-          aValue = a.sale_price || a.price;
-          bValue = b.sale_price || b.price;
+          const aDiscountInfo = productDiscounts[a.id];
+          const bDiscountInfo = productDiscounts[b.id];
+          aValue = aDiscountInfo?.discountInfo?.final_price || a.price;
+          bValue = bDiscountInfo?.discountInfo?.final_price || b.price;
           break;
         case 'rating':
           aValue = 4.2; // Placeholder rating
@@ -146,7 +150,7 @@ export default function BrandPage() {
         
         // Set price range filter based on products
         if (products.length > 0) {
-          const prices = products.map(p => p.sale_price || p.price);
+          const prices = products.map(p => p.price);
           const minPrice = Math.min(...prices);
           const maxPrice = Math.max(...prices);
           setFilters(prev => ({
@@ -299,7 +303,7 @@ export default function BrandPage() {
         </div>
 
         {/* Promotional Banner */}
-        <PromotionalBanner />
+        <PromotionalBanner position="category_page" />
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Sidebar */}

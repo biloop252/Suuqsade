@@ -67,14 +67,14 @@ export default function ProductsManagement() {
       // Fetch categories
       const { data: categoriesData } = await supabase
         .from('categories')
-        .select('id, name')
+        .select('*')
         .eq('is_active', true)
         .order('name');
 
       // Fetch brands
       const { data: brandsData } = await supabase
         .from('brands')
-        .select('id, name')
+        .select('*')
         .eq('is_active', true)
         .order('name');
 
@@ -328,9 +328,6 @@ export default function ProductsManagement() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       <div>
                         <span className="font-medium">${product.price}</span>
-                        {product.sale_price && (
-                          <span className="ml-2 text-green-600">${product.sale_price}</span>
-                        )}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">

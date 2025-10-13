@@ -8,7 +8,7 @@ import {
   CheckCircleIcon,
   XCircleIcon,
   ClockIcon,
-  ArrowPathIcon
+  RotateCcw
 } from 'lucide-react';
 import PaymentForm from './PaymentForm';
 
@@ -141,7 +141,7 @@ export default function PaymentManagement() {
       case 'failed':
         return <XCircleIcon className="h-5 w-5 text-red-500" />;
       case 'refunded':
-        return <ArrowPathIcon className="h-5 w-5 text-blue-500" />;
+        return <RotateCcw className="h-5 w-5 text-blue-500" />;
       default:
         return <ClockIcon className="h-5 w-5 text-yellow-500" />;
     }

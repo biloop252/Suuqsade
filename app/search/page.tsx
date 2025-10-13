@@ -7,7 +7,7 @@ import { ProductWithDetails } from '@/types/database';
 import ProductCard from '@/components/products/ProductCard';
 import SearchSuggestions from '@/components/ui/SearchSuggestions';
 import { useSearchSuggestions } from '@/hooks/useSearchSuggestions';
-import { Filter, Grid, List, X } from 'lucide-react';
+import { Filter, Grid, List, X, Search } from 'lucide-react';
 import Link from 'next/link';
 
 export default function SearchPage() {
@@ -229,7 +229,7 @@ export default function SearchPage() {
           </div>
         ) : searchTerm ? (
           <div className="text-center py-12">
-            <SearchIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+            <Search className="h-16 w-16 text-gray-300 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No products found</h3>
             <p className="text-gray-600 mb-4">
               Try adjusting your search terms or filters
@@ -243,7 +243,7 @@ export default function SearchPage() {
           </div>
         ) : (
           <div className="text-center py-12">
-            <SearchIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+            <Search className="h-16 w-16 text-gray-300 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">Start your search</h3>
             <p className="text-gray-600">
               Enter a product name, category, or brand to find what you're looking for

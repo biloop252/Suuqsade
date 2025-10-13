@@ -55,7 +55,9 @@ export default function PromotionalMediaDisplay({
           is_active,
           start_date,
           end_date,
-          language_code
+          language_code,
+          created_at,
+          updated_at
         `)
         .eq('banner_position', position)
         .eq('is_active', true)
@@ -281,7 +283,7 @@ export default function PromotionalMediaDisplay({
                 <X className="w-5 h-5" />
               </button>
               
-              {renderMediaItem(showPopup, 0)}
+              {showPopup && renderMediaItem(showPopup!, 0)}
             </div>
           </div>
         </div>

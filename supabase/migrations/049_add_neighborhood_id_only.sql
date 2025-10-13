@@ -27,3 +27,4 @@ COMMENT ON COLUMN addresses.neighborhood_id IS 'Reference to neighborhood in loc
 
 
 
+

@@ -1,4 +1,4 @@
-export type UserRole = 'customer' | 'staff' | 'admin' | 'super_admin';
+export type UserRole = 'customer' | 'staff' | 'admin' | 'super_admin' | 'vendor';
 export type OrderStatus = 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'returned';
 export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded';
 export type DeliveryStatus = 'pending' | 'in_transit' | 'delivered' | 'failed';

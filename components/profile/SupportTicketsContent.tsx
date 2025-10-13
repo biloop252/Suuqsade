@@ -379,12 +379,6 @@ export default function SupportTicketsContent() {
                           <Calendar className="h-3 w-3 mr-1" />
                           {formatDate(ticket.created_at)}
                         </div>
-                        {ticket.messages_count > 0 && (
-                          <div className="flex items-center">
-                            <MessageSquare className="h-3 w-3 mr-1" />
-                            {ticket.messages_count} message{ticket.messages_count !== 1 ? 's' : ''}
-                          </div>
-                        )}
                       </div>
                     </div>
                     <p className="text-gray-600 text-sm line-clamp-2">
@@ -444,7 +438,7 @@ export default function SupportTicketsContent() {
                     <div
                       key={message.id}
                       className={`p-3 rounded-lg ${
-                        message.user.role === 'customer'
+                        message.user?.role === 'customer'
                           ? 'bg-orange-50 border border-orange-200'
                           : 'bg-gray-50'
                       }`}
@@ -452,9 +446,9 @@ export default function SupportTicketsContent() {
                       <div className="flex justify-between items-start mb-2">
                         <div className="flex items-center space-x-2">
                           <span className="text-sm font-medium text-gray-900">
-                            {message.user.first_name} {message.user.last_name}
+                            {message.user?.first_name} {message.user?.last_name}
                           </span>
-                          {message.user.role === 'customer' && (
+                          {message.user?.role === 'customer' && (
                             <span className="px-2 py-1 text-xs bg-orange-100 text-orange-800 rounded-full">
                               You
                             </span>

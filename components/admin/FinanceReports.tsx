@@ -207,15 +207,15 @@ export default function FinanceReports() {
     
     if (error) throw error;
     
-    const totalCommissionRevenue = data?.reduce((sum, vendor) => sum + vendor.total_commission_revenue, 0) || 0;
-    const totalSales = data?.reduce((sum, vendor) => sum + vendor.total_sales, 0) || 0;
-    const totalOrders = data?.reduce((sum, vendor) => sum + vendor.total_orders, 0) || 0;
+    const totalCommissionRevenue = data?.reduce((sum: number, vendor: any) => sum + vendor.total_commission_revenue, 0) || 0;
+    const totalSales = data?.reduce((sum: number, vendor: any) => sum + vendor.total_sales, 0) || 0;
+    const totalOrders = data?.reduce((sum: number, vendor: any) => sum + vendor.total_orders, 0) || 0;
     
     return {
       total_commission_revenue: totalCommissionRevenue,
       total_sales: totalSales,
       total_orders: totalOrders,
-      average_commission_rate: data?.length > 0 ? data.reduce((sum, vendor) => sum + vendor.commission_rate, 0) / data.length : 0,
+      average_commission_rate: data?.length > 0 ? data.reduce((sum: number, vendor: any) => sum + vendor.commission_rate, 0) / data.length : 0,
       vendor_count: data?.length || 0,
       vendors: data
     };

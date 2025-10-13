@@ -35,7 +35,15 @@ export default function CouponForm({ coupon, onClose, onSave, isVendor = false, 
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
-  const [vendors, setVendors] = useState<Profile[]>([]);
+  const [vendors, setVendors] = useState<Array<{
+    id: string;
+    business_name: string;
+    profiles?: {
+      first_name?: string;
+      last_name?: string;
+      role: string;
+    };
+  }>>([]);
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
@@ -159,7 +167,7 @@ export default function CouponForm({ coupon, onClose, onSave, isVendor = false, 
           .eq('vendor_id', vendorIdForFiltering)
           .not('category_id', 'is', null);
         
-        const categoryIds = [...new Set(vendorCategories?.map(p => p.category_id).filter(Boolean) || [])];
+        const categoryIds = Array.from(new Set(vendorCategories?.map(p => p.category_id).filter(Boolean) || []));
         
         promises.push(
           supabase
@@ -186,7 +194,7 @@ export default function CouponForm({ coupon, onClose, onSave, isVendor = false, 
           .eq('vendor_id', vendorIdForFiltering)
           .not('brand_id', 'is', null);
         
-        const brandIds = [...new Set(vendorBrands?.map(p => p.brand_id).filter(Boolean) || [])];
+        const brandIds = Array.from(new Set(vendorBrands?.map(p => p.brand_id).filter(Boolean) || []));
         
         promises.push(
           supabase
@@ -363,7 +371,13 @@ export default function CouponForm({ coupon, onClose, onSave, isVendor = false, 
         }
 
         // Create new associations
-        const associations = [];
+        const associations: Array<{
+          coupon_id: string;
+          vendor_id?: string;
+          product_id?: string;
+          category_id?: string;
+          brand_id?: string;
+        }> = [];
 
         // Product associations
         selectedProducts.forEach(productId => {

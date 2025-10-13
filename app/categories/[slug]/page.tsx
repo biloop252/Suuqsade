@@ -73,9 +73,10 @@ export default function CategoryPage() {
 
     // Apply sale filter
     if (filters.onSale) {
-      filteredProducts = filteredProducts.filter(product => 
-        product.sale_price && product.sale_price < product.price
-      );
+      filteredProducts = filteredProducts.filter(product => {
+        const discountInfo = productDiscounts[product.id];
+        return discountInfo?.discountInfo?.has_discount || false;
+      });
     }
 
     // Apply sorting
@@ -84,8 +85,10 @@ export default function CategoryPage() {
       
       switch (sortBy) {
         case 'price':
-          aValue = a.sale_price || a.price || 0;
-          bValue = b.sale_price || b.price || 0;
+          const aDiscountInfo = productDiscounts[a.id];
+          const bDiscountInfo = productDiscounts[b.id];
+          aValue = aDiscountInfo?.discountInfo?.final_price || a.price || 0;
+          bValue = bDiscountInfo?.discountInfo?.final_price || b.price || 0;
           break;
         case 'name':
           aValue = a.name.toLowerCase();

@@ -119,7 +119,7 @@ export default function HomePage() {
           discountMap[product.id] = {
             discounts: [],
             discountInfo: {
-              final_price: product.sale_price || product.price,
+              final_price: product.price,
               discount_amount: 0,
               has_discount: false
             }

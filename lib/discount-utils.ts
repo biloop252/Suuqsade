@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { Discount, Coupon } from '@/types/database';
+import { Discount, Coupon, Product } from '@/types/database';
 
 export interface ProductDiscount {
   id: string;

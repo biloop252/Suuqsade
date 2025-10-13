@@ -57,7 +57,9 @@ export default function HomepageMiddleSlider({ className = '', maxSlides = 5 }: 
           is_active,
           start_date,
           end_date,
-          language_code
+          language_code,
+          created_at,
+          updated_at
         `)
         .eq('banner_position', 'homepage_middle_slider')
         .eq('is_active', true)

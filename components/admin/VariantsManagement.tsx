@@ -51,14 +51,14 @@ export default function VariantsManagement() {
       // Fetch products
       const { data: productsData } = await supabase
         .from('products')
-        .select('id, name, sku')
+        .select('*')
         .eq('is_active', true)
         .order('name');
 
       // Fetch attributes
       const { data: attributesData } = await supabase
         .from('product_attributes')
-        .select('id, name, type')
+        .select('*')
         .eq('is_active', true)
         .eq('is_variant_attribute', true)
         .order('name');

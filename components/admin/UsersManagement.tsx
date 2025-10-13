@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Profile } from '@/types/database';
+import { Profile, UserRole } from '@/types/database';
 import { 
   Search,
   Filter,
@@ -60,7 +60,7 @@ export default function UsersManagement() {
 
       // Update local state
       setUsers(users.map(user => 
-        user.id === userId ? { ...user, role: newRole } : user
+        user.id === userId ? { ...user, role: newRole as UserRole } : user
       ));
     } catch (error) {
       console.error('Error updating user role:', error);
@@ -366,7 +366,7 @@ function EditUserModal({
               <label className="block text-sm font-medium text-gray-700 mb-2">New Role</label>
               <select
                 value={selectedRole}
-                onChange={(e) => setSelectedRole(e.target.value)}
+                onChange={(e) => setSelectedRole(e.target.value as UserRole)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                 required
               >

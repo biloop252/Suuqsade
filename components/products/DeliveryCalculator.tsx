@@ -117,7 +117,7 @@ export default function DeliveryCalculator({
       }
 
       // Get pickup locations for the matching cities
-      const pickupCities = [...new Set(options?.map(opt => opt.delivery_rate?.pickup_city).filter(Boolean) || [])];
+      const pickupCities = Array.from(new Set(options?.map(opt => opt.delivery_rate?.[0]?.pickup_city).filter(Boolean) || []));
       
       let pickupLocations: any[] = [];
       if (pickupCities.length > 0) {
@@ -136,17 +136,17 @@ export default function DeliveryCalculator({
       const transformedOptions: DeliveryOption[] = (options || [])
         .filter(opt => opt.delivery_rate)
         .map(opt => {
-          const pickupLocation = pickupLocations.find(pl => pl.city === opt.delivery_rate?.pickup_city);
+          const pickupLocation = pickupLocations.find(pl => pl.city === opt.delivery_rate?.[0]?.pickup_city);
           return {
             pickup_location_id: pickupLocation?.id || '',
             pickup_location_name: pickupLocation?.name || 'Unknown Location',
-            pickup_city: opt.delivery_rate?.pickup_city || '',
-            delivery_method_id: opt.delivery_rate?.delivery_method?.id || '',
-            delivery_method_name: opt.delivery_rate?.delivery_method?.name || 'Unknown Method',
+            pickup_city: opt.delivery_rate?.[0]?.pickup_city || '',
+            delivery_method_id: opt.delivery_rate?.[0]?.delivery_method?.[0]?.id || '',
+            delivery_method_name: opt.delivery_rate?.[0]?.delivery_method?.[0]?.name || 'Unknown Method',
             is_free_delivery: opt.is_free_delivery,
-            delivery_price: opt.delivery_rate?.price || 0,
-            estimated_min_days: opt.delivery_rate?.estimated_min_days || 0,
-            estimated_max_days: opt.delivery_rate?.estimated_max_days || 0
+            delivery_price: opt.delivery_rate?.[0]?.price || 0,
+            estimated_min_days: opt.delivery_rate?.[0]?.estimated_min_days || 0,
+            estimated_max_days: opt.delivery_rate?.[0]?.estimated_max_days || 0
           };
         })
         .filter(opt => opt.pickup_location_id); // Only include options with valid pickup locations

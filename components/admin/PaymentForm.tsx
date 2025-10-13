@@ -6,26 +6,30 @@ import { Payment } from '@/types/database';
 import { XIcon, CreditCardIcon } from 'lucide-react';
 
 interface PaymentFormProps {
-  payment: Payment;
+  payment: Payment | null;
   onClose: () => void;
   onSave: () => void;
 }
 
 export default function PaymentForm({ payment, onClose, onSave }: PaymentFormProps) {
   const [formData, setFormData] = useState({
-    status: payment.status
+    status: payment?.status || 'pending'
   });
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    setFormData({
-      status: payment.status
-    });
+    if (payment) {
+      setFormData({
+        status: payment.status
+      });
+    }
   }, [payment]);
 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!payment) return;
+    
     setLoading(true);
 
     try {
@@ -85,19 +89,19 @@ export default function PaymentForm({ payment, onClose, onSave }: PaymentFormPro
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="text-gray-500">Transaction ID:</span>
-                <p className="font-medium">{payment.transaction_id || 'N/A'}</p>
+                <p className="font-medium">{payment?.transaction_id || 'N/A'}</p>
               </div>
               <div>
                 <span className="text-gray-500">Amount:</span>
-                <p className="font-medium">{payment.currency} {payment.amount}</p>
+                <p className="font-medium">{payment?.currency} {payment?.amount}</p>
               </div>
               <div>
                 <span className="text-gray-500">Payment Method:</span>
-                <p className="font-medium capitalize">{payment.payment_method.replace('_', ' ')}</p>
+                <p className="font-medium capitalize">{payment?.payment_method?.replace('_', ' ') || 'N/A'}</p>
               </div>
               <div>
                 <span className="text-gray-500">Order ID:</span>
-                <p className="font-medium">{payment.order_id}</p>
+                <p className="font-medium">{payment?.order_id || 'N/A'}</p>
               </div>
             </div>
           </div>
@@ -120,7 +124,7 @@ export default function PaymentForm({ payment, onClose, onSave }: PaymentFormPro
               <option value="refunded">Refunded</option>
             </select>
             <p className="text-sm text-gray-500 mt-1">
-              Current status: <span className="font-medium capitalize">{payment.status}</span>
+              Current status: <span className="font-medium capitalize">{payment?.status || 'N/A'}</span>
             </p>
           </div>
 

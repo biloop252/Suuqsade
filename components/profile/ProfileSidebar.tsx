@@ -80,11 +80,6 @@ const ProfileSidebar = memo(function ProfileSidebar({ activeTab, onTabChange }: 
                     <item.icon className="h-4 w-4 mr-3" />
                     {item.label}
                   </div>
-                  {item.badge && (
-                    <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-                      {item.badge}
-                    </span>
-                  )}
                 </button>
               ))}
             </nav>
