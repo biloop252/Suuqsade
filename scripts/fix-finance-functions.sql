@@ -176,3 +176,4 @@ SELECT * FROM get_vendor_commission_revenue_breakdown_simple(NULL, '2024-01-01',
 SELECT 'Testing get_vendor_performance_metrics...' as test;
 SELECT * FROM get_vendor_performance_metrics(NULL, 30) LIMIT 1;
 
+

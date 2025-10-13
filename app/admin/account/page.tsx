@@ -8,8 +8,6 @@ import {
   Lock, 
   Mail, 
   Phone, 
-  MapPin, 
-  Calendar,
   Save,
   Eye,
   EyeOff,
@@ -30,13 +28,7 @@ export default function AccountPage() {
     first_name: '',
     last_name: '',
     email: '',
-    phone: '',
-    address: '',
-    city: '',
-    district: '',
-    neighborhood: '',
-    country: '',
-    date_of_birth: ''
+    phone: ''
   });
 
   // Security form state
@@ -56,13 +48,7 @@ export default function AccountPage() {
         first_name: profile.first_name || '',
         last_name: profile.last_name || '',
         email: profile.email || '',
-        phone: profile.phone || '',
-        address: profile.address || '',
-        city: profile.city || '',
-        district: profile.district || '',
-        neighborhood: profile.neighborhood || '',
-        country: profile.country || '',
-        date_of_birth: profile.date_of_birth || ''
+        phone: profile.phone || ''
       });
     }
   }, [profile]);
@@ -79,12 +65,6 @@ export default function AccountPage() {
           first_name: profileForm.first_name,
           last_name: profileForm.last_name,
           phone: profileForm.phone,
-          address: profileForm.address,
-          city: profileForm.city,
-          district: profileForm.district,
-          neighborhood: profileForm.neighborhood,
-          country: profileForm.country,
-          date_of_birth: profileForm.date_of_birth,
           updated_at: new Date().toISOString()
         })
         .eq('id', user?.id);
@@ -262,89 +242,6 @@ export default function AccountPage() {
                     className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                     placeholder="+1 (555) 123-4567"
                   />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Address
-                </label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  <textarea
-                    value={profileForm.address}
-                    onChange={(e) => setProfileForm({ ...profileForm, address: e.target.value })}
-                    rows={3}
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500"
-                    placeholder="Enter your full address"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    City
-                  </label>
-                  <input
-                    type="text"
-                    value={profileForm.city}
-                    onChange={(e) => setProfileForm({ ...profileForm, city: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    District
-                  </label>
-                  <input
-                    type="text"
-                    value={profileForm.district}
-                    onChange={(e) => setProfileForm({ ...profileForm, district: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Neighborhood
-                  </label>
-                  <input
-                    type="text"
-                    value={profileForm.neighborhood}
-                    onChange={(e) => setProfileForm({ ...profileForm, neighborhood: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Country
-                  </label>
-                  <input
-                    type="text"
-                    value={profileForm.country}
-                    onChange={(e) => setProfileForm({ ...profileForm, country: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Date of Birth
-                  </label>
-                  <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <input
-                      type="date"
-                      value={profileForm.date_of_birth}
-                      onChange={(e) => setProfileForm({ ...profileForm, date_of_birth: e.target.value })}
-                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500"
-                    />
-                  </div>
                 </div>
               </div>
 

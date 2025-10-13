@@ -170,3 +170,4 @@ async function checkAndPopulateAdminRevenues() {
 
 checkAndPopulateAdminRevenues().catch(console.error);
 
+

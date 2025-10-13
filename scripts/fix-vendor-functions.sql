@@ -150,3 +150,4 @@ COMMENT ON FUNCTION get_vendor_commissions_with_profiles(TEXT, UUID) IS 'Functio
 COMMENT ON FUNCTION get_vendor_payouts_with_profiles() IS 'Function to get vendor payouts with profile data';
 
 
+

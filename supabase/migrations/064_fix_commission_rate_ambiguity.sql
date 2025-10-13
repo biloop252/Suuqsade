@@ -127,3 +127,4 @@ COMMENT ON FUNCTION calculate_order_commissions(UUID) IS 'Calculates and creates
 COMMENT ON FUNCTION test_commission_calculation(UUID) IS 'Test function to preview commission calculations without actually creating records';
 
 
+

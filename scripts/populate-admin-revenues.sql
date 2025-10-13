@@ -37,3 +37,4 @@ LIMIT 10;
 SELECT 'Testing get_admin_financial_summary function:' as info;
 SELECT * FROM get_admin_financial_summary('2024-01-01', '2024-12-31');
 
+

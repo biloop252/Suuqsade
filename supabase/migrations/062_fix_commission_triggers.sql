@@ -86,3 +86,4 @@ COMMENT ON FUNCTION manual_commission_calculation(UUID) IS 'Manual function to t
 
 
 
+
