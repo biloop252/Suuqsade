@@ -307,7 +307,16 @@ export default function CheckoutPage() {
   const calculateSubtotal = () => {
     return cartItems.reduce((total, item) => {
       if (item.product) {
-        const price = item.product.sale_price || item.product.price;
+        let price = item.product.price;
+        
+        // If item has a variant, use variant price instead of product price
+        if (item.variant_id && item.product.variants) {
+          const variant = item.product.variants.find((v: any) => v.id === item.variant_id);
+          if (variant && variant.price) {
+            price = variant.price;
+          }
+        }
+        
         return total + (price * item.quantity);
       }
       return total;
@@ -317,9 +326,18 @@ export default function CheckoutPage() {
   const calculateSubtotalWithProductDiscounts = () => {
     return cartItems.reduce((total, item) => {
       if (item.product) {
-        const originalPrice = item.product.sale_price || item.product.price;
+        let originalPrice = item.product.price;
+        
+        // If item has a variant, use variant price instead of product price
+        if (item.variant_id && item.product.variants) {
+          const variant = item.product.variants.find((v: any) => v.id === item.variant_id);
+          if (variant && variant.price) {
+            originalPrice = variant.price;
+          }
+        }
+        
         const itemDiscounts = productDiscounts[item.product.id] || [];
-        const { final_price } = calculateBestDiscount(item.product, itemDiscounts);
+        const { final_price } = calculateBestDiscount({ price: originalPrice }, itemDiscounts);
         return total + (final_price * item.quantity);
       }
       return total;
@@ -889,9 +907,18 @@ export default function CheckoutPage() {
 
       // Create order items with discount information
       const orderItems = cartItems.map(item => {
-        const originalPrice = item.product.sale_price || item.product.price;
+        let originalPrice = item.product.price;
+        
+        // If item has a variant, use variant price instead of product price
+        if (item.variant_id && item.product.variants) {
+          const variant = item.product.variants.find((v: any) => v.id === item.variant_id);
+          if (variant && variant.price) {
+            originalPrice = variant.price;
+          }
+        }
+        
         const itemDiscounts = productDiscounts[item.product.id] || [];
-        const { final_price, discount_amount } = calculateBestDiscount(item.product, itemDiscounts);
+        const { final_price, discount_amount } = calculateBestDiscount({ price: originalPrice }, itemDiscounts);
         
         return {
           order_id: order.id,
@@ -978,6 +1005,28 @@ export default function CheckoutPage() {
         console.warn('Delivery record creation failed, but order was created successfully');
       } else {
         console.log('Delivery record created successfully:', deliveryResult);
+      }
+
+      // Trigger finance system integration
+      console.log('Triggering finance system integration...');
+      try {
+        // If payment is COD, mark as paid immediately for finance tracking
+        // This will automatically trigger commission calculation via the payment trigger
+        if (paymentMethod === 'cod') {
+          const { error: paymentUpdateError } = await supabase
+            .from('payments')
+            .update({ status: 'paid' })
+            .eq('order_id', order.id);
+          
+          if (paymentUpdateError) {
+            console.error('Error updating payment status for finance tracking:', paymentUpdateError);
+          } else {
+            console.log('Payment status updated to paid - commissions will be calculated automatically');
+          }
+        }
+      } catch (financeError) {
+        console.error('Error in finance system integration:', financeError);
+        // Don't fail the order if finance integration fails
       }
 
       // Clear cart

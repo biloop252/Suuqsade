@@ -42,8 +42,6 @@ export default function ProductForm({
     brand_id: product?.brand_id || '',
     vendor_id: product?.vendor_id || '',
     price: product?.price || 0,
-    sale_price: product?.sale_price || 0,
-    cost_price: product?.cost_price || 0,
     stock_quantity: product?.stock_quantity || 0,
     min_stock_level: product?.min_stock_level || 5,
     weight: product?.weight || 0,
@@ -524,6 +522,8 @@ export default function ProductForm({
       return;
     }
 
+    console.log('Generating variants with existing variants:', generatedVariants.length);
+
     // Get all attribute-value combinations for variant attributes only
     const attributeCombinations: Array<{ [key: string]: string }> = [];
     
@@ -555,7 +555,7 @@ export default function ProductForm({
 
     generateCombinations(0, {});
 
-    // Create variant objects
+    // Create variant objects, preserving existing data when possible
     const variants = attributeCombinations.map((combination, index) => {
       const variantName = Object.entries(combination)
         .map(([attrId, value]) => {
@@ -564,8 +564,45 @@ export default function ProductForm({
         })
         .join(', ');
 
+      // Try to find existing variant with matching attributes
+      const existingVariant = generatedVariants.find(existing => {
+        // Check if all attributes match
+        const existingAttrs = existing.attributes || {};
+        const combinationAttrs = combination;
+        
+        // Compare attribute values - only check attributes that exist in both
+        const existingKeys = Object.keys(existingAttrs).sort();
+        const combinationKeys = Object.keys(combinationAttrs).sort();
+        
+        // Find common attributes between existing and new combination
+        const commonKeys = existingKeys.filter(key => combinationKeys.includes(key));
+        
+        // If there are no common attributes, this is a completely new variant
+        if (commonKeys.length === 0) {
+          return false;
+        }
+        
+        // Check if all common attributes have matching values
+        return commonKeys.every(key => existingAttrs[key] === combinationAttrs[key]);
+      });
+
+      // If we found an existing variant, preserve its data
+      if (existingVariant) {
+        console.log('Preserving existing variant:', existingVariant.name, 'with price:', existingVariant.price, 'stock:', existingVariant.stock_quantity);
+        return {
+          id: existingVariant.id,
+          name: variantName,
+          attributes: combination,
+          price: existingVariant.price,
+          stock_quantity: existingVariant.stock_quantity,
+          sku: existingVariant.sku
+        };
+      }
+
+      // Otherwise, create new variant with default values
+      console.log('Creating new variant:', variantName);
       return {
-        id: `variant-${index}`,
+        id: generateUniqueVariantId(generatedVariants),
         name: variantName,
         attributes: combination,
         price: formData.price,
@@ -574,8 +611,22 @@ export default function ProductForm({
       };
     });
 
+    console.log('Generated', variants.length, 'variants total');
     setGeneratedVariants(variants);
     setShowVariants(true);
+  };
+
+  // Generate unique variant ID
+  const generateUniqueVariantId = (existingVariants: any[]) => {
+    let counter = 1;
+    let newId = `variant-${counter}`;
+    
+    while (existingVariants.some(v => v.id === newId)) {
+      counter++;
+      newId = `variant-${counter}`;
+    }
+    
+    return newId;
   };
 
   // Update variant price/stock
@@ -709,8 +760,6 @@ export default function ProductForm({
         brand_id: formData.brand_id,
         vendor_id: formData.vendor_id || null,
         price: parseFloat(formData.price.toString()),
-        sale_price: parseFloat(formData.sale_price.toString()),
-        cost_price: parseFloat(formData.cost_price.toString()),
         stock_quantity: parseInt(formData.stock_quantity.toString()),
         min_stock_level: parseInt(formData.min_stock_level.toString()),
         weight: parseFloat(formData.weight.toString()),
@@ -1189,7 +1238,7 @@ export default function ProductForm({
           {/* Pricing */}
           <div className="space-y-4">
             <h3 className="text-lg font-medium text-gray-900">Pricing</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">Price *</label>
                 <input
@@ -1199,26 +1248,6 @@ export default function ProductForm({
                   onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
                   className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                   required
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Sale Price</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={formData.sale_price}
-                  onChange={(e) => setFormData({ ...formData, sale_price: parseFloat(e.target.value) || 0 })}
-                  className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Cost Price</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={formData.cost_price}
-                  onChange={(e) => setFormData({ ...formData, cost_price: parseFloat(e.target.value) || 0 })}
-                  className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                 />
               </div>
             </div>

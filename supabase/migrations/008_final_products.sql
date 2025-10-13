@@ -78,3 +78,6 @@ INSERT INTO product_images (product_id, image_url, alt_text, is_primary, sort_or
 
 
 
+
+
+

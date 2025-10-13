@@ -207,7 +207,16 @@ export default function CartPage() {
   const calculateSubtotal = () => {
     return cartItems.reduce((total, item) => {
       if (item.product) {
-        const price = item.product.sale_price || item.product.price;
+        let price = item.product.price;
+        
+        // If item has a variant, use variant price instead of product price
+        if (item.variant_id && item.product.variants) {
+          const variant = item.product.variants.find((v: any) => v.id === item.variant_id);
+          if (variant && variant.price) {
+            price = variant.price;
+          }
+        }
+        
         return total + (price * item.quantity);
       }
       return total;
@@ -217,9 +226,18 @@ export default function CartPage() {
   const calculateSubtotalWithProductDiscounts = () => {
     return cartItems.reduce((total, item) => {
       if (item.product) {
-        const originalPrice = item.product.sale_price || item.product.price;
+        let originalPrice = item.product.price;
+        
+        // If item has a variant, use variant price instead of product price
+        if (item.variant_id && item.product.variants) {
+          const variant = item.product.variants.find((v: any) => v.id === item.variant_id);
+          if (variant && variant.price) {
+            originalPrice = variant.price;
+          }
+        }
+        
         const itemDiscounts = productDiscounts[item.product.id] || [];
-        const { final_price } = calculateBestDiscount(item.product, itemDiscounts);
+        const { final_price } = calculateBestDiscount({ price: originalPrice }, itemDiscounts);
         return total + (final_price * item.quantity);
       }
       return total;
@@ -371,9 +389,18 @@ export default function CartPage() {
                     <tbody className="bg-white divide-y divide-gray-200">
                       {cartItems.map((item) => {
                         const primaryImage = item.product.images?.find(img => img.is_primary) || item.product.images?.[0];
-                        const originalPrice = item.product.sale_price || item.product.price;
+                        
+                        // Determine the price to use (variant price if available, otherwise product price)
+                        let originalPrice = item.product.price;
+                        if (item.variant_id && item.product.variants) {
+                          const variant = item.product.variants.find((v: any) => v.id === item.variant_id);
+                          if (variant && variant.price) {
+                            originalPrice = variant.price;
+                          }
+                        }
+                        
                         const itemDiscounts = productDiscounts[item.product.id] || [];
-                        const { final_price, discount_amount, best_discount } = calculateBestDiscount(item.product, itemDiscounts);
+                        const { final_price, discount_amount, best_discount } = calculateBestDiscount({ price: originalPrice }, itemDiscounts);
                         const hasDiscount = discount_amount > 0;
                         
                         return (

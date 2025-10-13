@@ -201,12 +201,7 @@ export default function VariantsManagement() {
                       {variant.sku || '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <div>
-                        <span className="font-medium">${variant.price || 0}</span>
-                        {variant.sale_price && (
-                          <span className="ml-2 text-green-600">${variant.sale_price}</span>
-                        )}
-                      </div>
+                      <span className="font-medium">${variant.price || 0}</span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
@@ -335,7 +330,6 @@ function VariantModal({
     name: variant?.name || '',
     sku: variant?.sku || '',
     price: variant?.price || 0,
-    sale_price: variant?.sale_price || 0,
     stock_quantity: variant?.stock_quantity || 0,
     attributes: variant?.attributes || {}
   });
@@ -427,7 +421,7 @@ function VariantModal({
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">Price *</label>
                 <input
@@ -437,16 +431,6 @@ function VariantModal({
                   onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
                   className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                   required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Sale Price</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={formData.sale_price}
-                  onChange={(e) => setFormData({ ...formData, sale_price: parseFloat(e.target.value) || 0 })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                 />
               </div>
               <div>

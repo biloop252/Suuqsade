@@ -78,8 +78,6 @@ export interface Product {
   brand_id?: string;
   vendor_id?: string;
   price: number;
-  sale_price?: number;
-  cost_price?: number;
   stock_quantity: number;
   min_stock_level: number;
   weight?: number;
@@ -115,7 +113,6 @@ export interface ProductVariant {
   name: string;
   sku?: string;
   price?: number;
-  sale_price?: number;
   stock_quantity: number;
   attributes?: Record<string, any>;
   is_active: boolean;
@@ -590,6 +587,109 @@ export interface VendorBrandDiscount {
   vendor_id: string;
   brand_id: string;
   created_at: string;
+}
+
+// Finance Management System Interfaces
+export interface FinanceTransaction {
+  id: string;
+  transaction_type: 'sale_commission' | 'vendor_payout' | 'admin_revenue' | 'subscription_fee' | 'advertising_revenue' | 'refund' | 'chargeback' | 'penalty' | 'bonus';
+  order_id?: string;
+  vendor_id?: string;
+  user_id?: string;
+  amount: number;
+  currency: string;
+  description?: string;
+  status: 'pending' | 'completed' | 'failed' | 'cancelled';
+  reference_id?: string;
+  metadata?: Record<string, any>;
+  processed_at?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface VendorCommission {
+  id: string;
+  order_id: string;
+  vendor_id: string;
+  order_item_id: string;
+  product_id?: string;
+  commission_rate: number;
+  order_amount: number;
+  commission_amount: number;
+  admin_amount: number;
+  status: 'pending' | 'paid' | 'cancelled' | 'refunded';
+  paid_at?: string;
+  payout_transaction_id?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface VendorPayout {
+  id: string;
+  vendor_id: string;
+  payout_period_start: string;
+  payout_period_end: string;
+  total_commission: number;
+  total_orders: number;
+  payout_method: 'bank_transfer' | 'paypal' | 'stripe' | 'check';
+  payout_details: Record<string, any>;
+  status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled';
+  transaction_id?: string;
+  processed_at?: string;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AdminRevenue {
+  id: string;
+  revenue_type: 'commission' | 'subscription' | 'advertising' | 'listing_fee' | 'premium_features' | 'other';
+  source_id?: string;
+  source_type?: string;
+  amount: number;
+  currency: string;
+  description?: string;
+  period_start?: string;
+  period_end?: string;
+  status: 'pending' | 'confirmed' | 'cancelled';
+  transaction_id?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FinancialReport {
+  id: string;
+  report_type: 'daily_sales' | 'monthly_commissions' | 'vendor_payouts' | 'admin_revenue' | 'tax_summary';
+  report_period_start: string;
+  report_period_end: string;
+  generated_by?: string;
+  data: Record<string, any>;
+  file_url?: string;
+  status: 'generating' | 'generated' | 'failed';
+  created_at: string;
+}
+
+// Extended interfaces with relationships
+export interface FinanceTransactionWithDetails extends FinanceTransaction {
+  order?: Order;
+  vendor?: Profile;
+  user?: Profile;
+}
+
+export interface VendorCommissionWithDetails extends VendorCommission {
+  order?: Order;
+  vendor?: Profile;
+  order_item?: OrderItem;
+  product?: Product;
+}
+
+export interface VendorPayoutWithDetails extends VendorPayout {
+  vendor?: Profile;
+  transaction?: FinanceTransaction;
+}
+
+export interface AdminRevenueWithDetails extends AdminRevenue {
+  transaction?: FinanceTransaction;
 }
 
 

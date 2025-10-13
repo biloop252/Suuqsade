@@ -249,7 +249,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const calculateSubtotal = (): number => {
     return cartItems.reduce((total, item) => {
       if (item.product) {
-        const price = item.product.sale_price || item.product.price;
+        let price = item.product.price;
+        
+        // If item has a variant, use variant price instead of product price
+        if (item.variant_id && item.product.variants) {
+          const variant = item.product.variants.find((v: any) => v.id === item.variant_id);
+          if (variant && variant.price) {
+            price = variant.price;
+          }
+        }
+        
         return total + (price * item.quantity);
       }
       return total;
@@ -273,8 +282,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
       
       cartItems.forEach(item => {
         if (item.product) {
+          let price = item.product.price;
+          
+          // If item has a variant, use variant price instead of product price
+          if (item.variant_id && item.product.variants) {
+            const variant = item.product.variants.find((v: any) => v.id === item.variant_id);
+            if (variant && variant.price) {
+              price = variant.price;
+            }
+          }
+          
           const productDiscounts = discountMap[item.product.id] || [];
-          const { final_price } = calculateBestDiscount(item.product, productDiscounts);
+          const { final_price } = calculateBestDiscount({ price }, productDiscounts);
           totalWithDiscounts += final_price * item.quantity;
         }
       });

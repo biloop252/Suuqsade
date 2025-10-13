@@ -39,7 +39,7 @@ export default function ProductCard({ product, viewMode = 'grid', discountData }
     discount_amount: number;
     has_discount: boolean;
   }>({
-    final_price: product.sale_price || product.price,
+    final_price: product.price,
     discount_amount: 0,
     has_discount: false
   });
@@ -78,7 +78,7 @@ export default function ProductCard({ product, viewMode = 'grid', discountData }
 
       fetchDiscounts();
     }
-  }, [product.id, product.price, product.sale_price, discountData]);
+  }, [product.id, product.price, discountData]);
 
   // Fetch review stats
   useEffect(() => {

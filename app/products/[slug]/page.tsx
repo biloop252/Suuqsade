@@ -40,6 +40,7 @@ export default function ProductDetailPage() {
   const [selectedCity, setSelectedCity] = useState<string>('');
   const [selectedDeliveryOption, setSelectedDeliveryOption] = useState<any>(null);
   const [attributeSelections, setAttributeSelections] = useState<Record<string, string>>({});
+  const [selectedVariant, setSelectedVariant] = useState<any>(null);
   const [dynamicPrice, setDynamicPrice] = useState<{ basePrice: number } | null>(null);
   const [discounts, setDiscounts] = useState<ProductDiscount[]>([]);
   const [discountInfo, setDiscountInfo] = useState<{
@@ -90,8 +91,7 @@ export default function ProductDetailPage() {
         setProduct(data);
         // Initialize dynamic price with base product price
         setDynamicPrice({
-          basePrice: data.price,
-          salePrice: data.sale_price
+          basePrice: data.price
         });
         
         // Fetch discounts immediately after product is loaded
@@ -149,7 +149,7 @@ export default function ProductDetailPage() {
 
     try {
       setAddingToCart(true);
-      await addToCart(product?.id || '', undefined, quantity);
+      await addToCart(product?.id || '', selectedVariant?.id, quantity);
       alert('Item added to cart successfully!');
     } catch (error) {
       console.error('Error:', error);
@@ -239,11 +239,13 @@ export default function ProductDetailPage() {
         console.log('Matching variant found:', matchingVariant);
 
         if (matchingVariant) {
+          setSelectedVariant(matchingVariant);
           setDynamicPrice({
             basePrice: matchingVariant.price || 0
           });
         } else {
           // If no matching variant, use base product price
+          setSelectedVariant(null);
           setDynamicPrice({
             basePrice: product.price
           });

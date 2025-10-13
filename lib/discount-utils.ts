@@ -15,7 +15,6 @@ export interface ProductWithDiscounts {
   id: string;
   name: string;
   price: number;
-  sale_price?: number;
   category_id?: string;
   brand_id?: string;
   vendor_id?: string;
@@ -245,10 +244,10 @@ export async function getProductDiscounts(productId: string): Promise<ProductDis
  * Calculate the best discount for a product
  */
 export function calculateBestDiscount(
-  product: { price: number; sale_price?: number },
+  product: { price: number },
   discounts: ProductDiscount[]
 ): { final_price: number; discount_amount: number; best_discount?: ProductDiscount } {
-  const originalPrice = product.sale_price || product.price;
+  const originalPrice = product.price;
   let bestDiscount: ProductDiscount | undefined;
   let maxDiscountAmount = 0;
 
@@ -289,7 +288,7 @@ export function calculateBestDiscount(
 /**
  * Apply discounts to a list of products
  */
-export async function applyDiscountsToProducts<T extends { id: string; price: number; sale_price?: number }>(
+export async function applyDiscountsToProducts<T extends { id: string; price: number }>(
   products: T[]
 ): Promise<(T & { discounts: ProductDiscount[]; final_price: number; discount_amount: number; has_discount: boolean })[]> {
   const productsWithDiscounts = await Promise.all(
