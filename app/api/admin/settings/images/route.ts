@@ -58,12 +58,12 @@ export async function POST(request: NextRequest) {
     console.log('POST request received at /api/admin/settings/images');
     
     // Check environment variables first
-    if (!supabaseUrl || !supabaseKey) {
+    if (!supabaseUrl || !supabaseAnonKey) {
       return NextResponse.json({ 
         error: 'Server configuration error: Missing Supabase credentials',
         details: {
           supabaseUrl: !!supabaseUrl,
-          supabaseKey: !!supabaseKey
+          supabaseAnonKey: !!supabaseAnonKey
         }
       }, { status: 500 });
     }
