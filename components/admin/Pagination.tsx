@@ -94,7 +94,7 @@ export default function Pagination({
                 id="items-per-page"
                 value={itemsPerPage}
                 onChange={(e) => onItemsPerPageChange(Number(e.target.value))}
-                className="block w-20 px-3 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                className="block w-20 px-3 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
               >
                 <option value={10}>10</option>
                 <option value={25}>25</option>
@@ -121,7 +121,7 @@ export default function Pagination({
               disabled={page === '...'}
               className={`relative inline-flex items-center px-4 py-2 text-sm font-medium ${
                 page === currentPage
-                  ? 'z-10 bg-orange-50 border-orange-500 text-orange-600'
+                  ? 'z-10 bg-primary-50 border-primary-500 text-primary-600'
                   : page === '...'
                   ? 'text-gray-500 cursor-default'
                   : 'text-gray-500 bg-white border border-gray-300 hover:bg-gray-50'

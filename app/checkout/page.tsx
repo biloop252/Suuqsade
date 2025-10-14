@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth-context';
 import { useCart } from '@/lib/cart-context';
+import { useNotification } from '@/lib/notification-context';
 import { ProductWithDetails, Coupon } from '@/types/database';
 import { getBatchProductDiscounts, calculateBestDiscount, ProductDiscount } from '@/lib/discount-utils';
 import { DiscountCalculator } from '@/lib/discount-calculator';
@@ -64,6 +65,7 @@ export default function CheckoutPage() {
     calculateSubtotal: calculateCartSubtotal,
     calculateSubtotalWithDiscounts
   } = useCart();
+  const { showSuccess, showError, showInfo } = useNotification();
   const router = useRouter();
   
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -108,7 +110,7 @@ export default function CheckoutPage() {
     } else {
       router.push('/auth/signin');
     }
-  }, [user, router]);
+  }, [user]);
 
   // Fetch product discounts when cart items change
   useEffect(() => {
@@ -143,7 +145,10 @@ export default function CheckoutPage() {
 
   const fetchCartItems = async () => {
     try {
-      setLoading(true);
+      // Only set loading if we don't have cart items yet
+      if (cartItems.length === 0) {
+        setLoading(true);
+      }
       const { data, error } = await supabase
         .from('cart_items')
         .select(`
@@ -608,6 +613,7 @@ export default function CheckoutPage() {
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) {
       setCouponError('Please enter a coupon code');
+      showError('Coupon Required', 'Please enter a coupon code');
       return;
     }
 
@@ -625,6 +631,7 @@ export default function CheckoutPage() {
 
       if (error || !coupon) {
         setCouponError('Invalid coupon code');
+        showError('Invalid Coupon', 'The coupon code you entered is not valid');
         return;
       }
 
@@ -635,6 +642,7 @@ export default function CheckoutPage() {
 
       if (now < startDate || (endDate && now > endDate)) {
         setCouponError('Coupon has expired');
+        showError('Coupon Expired', 'This coupon has expired');
         return;
       }
 
@@ -642,6 +650,7 @@ export default function CheckoutPage() {
       const subtotal = calculateSubtotal();
       if (coupon.minimum_order_amount > 0 && subtotal < coupon.minimum_order_amount) {
         setCouponError(`Minimum order amount of $${coupon.minimum_order_amount} required`);
+        showError('Minimum Order Required', `Minimum order amount of $${coupon.minimum_order_amount} required for this coupon`);
         return;
       }
 
@@ -649,9 +658,16 @@ export default function CheckoutPage() {
       await applyCoupon(coupon);
       setCouponCode('');
       setCouponError('');
+      
+      // Show success notification
+      showSuccess(
+        'Coupon Applied!',
+        `${coupon.code} has been applied successfully. You saved $${coupon.discount_amount}!`
+      );
     } catch (error) {
       console.error('Error applying coupon:', error);
       setCouponError('Failed to apply coupon');
+      showError('Coupon Application Failed', 'There was an error applying the coupon. Please try again.');
     } finally {
       setCouponLoading(false);
     }
@@ -660,6 +676,7 @@ export default function CheckoutPage() {
   const handleRemoveCoupon = () => {
     removeCoupon();
     setCouponError('');
+    showInfo('Coupon Removed', 'The coupon has been removed from your order');
   };
 
   const trackDiscountUsage = async (orderId: string) => {
@@ -818,17 +835,17 @@ export default function CheckoutPage() {
     try {
       // Validate required data
       if (!user?.id) {
-        alert('Please log in to place an order.');
+        showError('Authentication Required', 'Please log in to place an order.');
         return;
       }
 
       if (cartItems.length === 0) {
-        alert('Your cart is empty.');
+        showError('Empty Cart', 'Your cart is empty.');
         return;
       }
 
       if (!selectedShippingAddressId) {
-        alert('Please select a shipping address.');
+        showError('Address Required', 'Please select a shipping address.');
         return;
       }
 
@@ -842,7 +859,7 @@ export default function CheckoutPage() {
       if (finalShippingAddressId === 'new') {
         // Check if we have the address data
         if (!shippingAddress.first_name || !shippingAddress.last_name || !shippingAddress.address_line_1 || !shippingAddress.city || !shippingAddress.district || !shippingAddress.neighborhood || !shippingAddress.country) {
-          alert('Please fill in all required address fields.');
+          showError('Incomplete Address', 'Please fill in all required address fields.');
           return;
         }
 
@@ -860,7 +877,7 @@ export default function CheckoutPage() {
 
         if (addressError) {
           console.error('Error creating address:', addressError);
-          alert(`Error creating address: ${addressError.message}`);
+          showError('Address Creation Failed', `Error creating address: ${addressError.message}`);
           return;
         }
 
@@ -875,6 +892,9 @@ export default function CheckoutPage() {
         shippingAddressId: finalShippingAddressId,
         cartItemsCount: cartItems.length
       });
+
+      // Show progress notification
+      showInfo('Processing Order', 'Creating your order...');
 
       // Create order
       const { data: order, error: orderError } = await supabase
@@ -899,7 +919,7 @@ export default function CheckoutPage() {
 
       if (orderError) {
         console.error('Error creating order:', orderError);
-        alert(`Error creating order: ${orderError.message}`);
+        showError('Order Creation Failed', `Error creating order: ${orderError.message}`);
         return;
       }
 
@@ -1034,15 +1054,24 @@ export default function CheckoutPage() {
       await clearCart();
       console.log('Cart cleared successfully');
 
+      // Show cart cleared notification
+      showInfo('Cart Cleared', 'Your cart has been cleared after successful order placement.');
+
       // Show success message
-      alert(`Order placed successfully! Order number: ${orderNumber}`);
+      showSuccess(
+        'Order Placed Successfully!',
+        `Your order has been placed successfully. Order number: ${orderNumber}`
+      );
       
       // Redirect to confirmation
       setStep('confirmation');
       console.log('Order placement completed successfully!');
     } catch (error) {
       console.error('Error in handlePaymentSubmit:', error);
-      alert(`An error occurred while placing your order: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      showError(
+        'Order Placement Failed',
+        `An error occurred while placing your order: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     } finally {
       setProcessing(false);
     }
@@ -1429,13 +1458,13 @@ export default function CheckoutPage() {
                         value={couponCode}
                         onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                         placeholder="Enter coupon code"
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                         disabled={couponLoading}
                       />
                       <button
                         onClick={handleApplyCoupon}
                         disabled={couponLoading || !couponCode.trim()}
-                        className="px-4 py-2 bg-orange-600 text-white text-sm font-medium rounded-md hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {couponLoading ? 'Applying...' : 'Apply'}
                       </button>

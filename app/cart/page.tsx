@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth-context';
 import { useCart } from '@/lib/cart-context';
+import { useNotification } from '@/lib/notification-context';
 import { ProductWithDetails } from '@/types/database';
 import { getBatchProductDiscounts, calculateBestDiscount, ProductDiscount } from '@/lib/discount-utils';
 import { DiscountCalculator } from '@/lib/discount-calculator';
@@ -36,6 +37,7 @@ export default function CartPage() {
     applyCoupon,
     removeCoupon
   } = useCart();
+  const { showSuccess, showError, showConfirm } = useNotification();
   const router = useRouter();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,7 +62,7 @@ export default function CartPage() {
     } else {
       router.push('/auth/signin');
     }
-  }, [user, router]);
+  }, [user]);
 
   // Fetch discounts when cart items change
   useEffect(() => {
@@ -72,7 +74,10 @@ export default function CartPage() {
 
   const fetchCartItems = async () => {
     try {
-      setLoading(true);
+      // Only set loading if we don't have cart items yet
+      if (cartItems.length === 0) {
+        setLoading(true);
+      }
       const { data, error } = await supabase
         .from('cart_items')
         .select(`
@@ -176,32 +181,66 @@ export default function CartPage() {
     
     try {
       setUpdating(itemId);
+      
+      // Find the item to get its name
+      const item = cartItems.find(item => item.id === itemId);
+      const itemName = item?.product?.name || 'Item';
+      
       await contextUpdateQuantity(itemId, newQuantity);
+      
+      // Show success notification
+      showSuccess(
+        'Quantity Updated',
+        `${itemName} quantity updated to ${newQuantity}`
+      );
+      
       // Refresh cart items after update
       await fetchCartItems();
     } catch (error) {
       console.error('Error:', error);
+      showError(
+        'Failed to Update Cart',
+        'There was an error updating your cart. Please try again.'
+      );
     } finally {
       setUpdating(null);
     }
   };
 
   const removeItem = async (itemId: string) => {
-    // Add confirmation dialog
-    if (!confirm('Are you sure you want to remove this item from your cart?')) {
-      return;
-    }
+    // Find the item to get its name for the notification
+    const itemToRemove = cartItems.find(item => item.id === itemId);
+    const itemName = itemToRemove?.product?.name || 'Item';
     
-    try {
-      setUpdating(itemId);
-      await contextRemoveFromCart(itemId);
-      // Refresh cart items after removal
-      await fetchCartItems();
-    } catch (error) {
-      console.error('Error:', error);
-    } finally {
-      setUpdating(null);
-    }
+    // Show confirmation toast instead of browser confirm dialog
+    showConfirm(
+      'Remove Item',
+      `Are you sure you want to remove "${itemName}" from your cart?`,
+      async () => {
+        // User confirmed removal
+        try {
+          setUpdating(itemId);
+          await contextRemoveFromCart(itemId);
+          
+          // Show success notification
+          showSuccess(
+            'Removed from Cart',
+            `${itemName} has been removed from your cart`
+          );
+          
+          // Refresh cart items after removal
+          await fetchCartItems();
+        } catch (error) {
+          console.error('Error:', error);
+          showError(
+            'Failed to Remove Item',
+            'There was an error removing this item from your cart. Please try again.'
+          );
+        } finally {
+          setUpdating(null);
+        }
+      }
+    );
   };
 
   const calculateSubtotal = () => {
@@ -527,13 +566,13 @@ export default function CartPage() {
                           value={couponCode}
                           onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                           placeholder="Enter coupon code"
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                           disabled={couponLoading}
                         />
                         <button
                           onClick={handleApplyCoupon}
                           disabled={couponLoading || !couponCode.trim()}
-                          className="px-4 py-2 bg-orange-600 text-white text-sm font-medium rounded-md hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {couponLoading ? 'Applying...' : 'Apply'}
                         </button>

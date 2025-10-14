@@ -2,12 +2,13 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/lib/auth-context';
+import { useNotification } from '@/lib/notification-context';
 import { supabase } from '@/lib/supabase';
-import { toast } from 'react-hot-toast';
 import { Eye, EyeOff, Lock } from 'lucide-react';
 
 export default function ProfileForm() {
   const { profile, refreshProfile, loading } = useAuth();
+  const { showSuccess, showError } = useNotification();
   const [isLoading, setIsLoading] = useState(false);
   const [isPasswordLoading, setIsPasswordLoading] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
@@ -57,10 +58,16 @@ export default function ProfileForm() {
 
       // Refresh profile data
       await refreshProfile();
-      toast.success('Profile updated successfully!');
+      showSuccess(
+        'Profile Updated!',
+        'Your profile information has been updated successfully'
+      );
     } catch (error) {
       console.error('Error updating profile:', error);
-      toast.error('Failed to update profile');
+      showError(
+        'Profile Update Failed',
+        'Failed to update profile. Please try again.'
+      );
     } finally {
       setIsLoading(false);
     }
@@ -112,25 +119,25 @@ export default function ProfileForm() {
 
     // Validate current password is provided
     if (!passwordData.currentPassword) {
-      toast.error('Please enter your current password');
+      showError('Current Password Required', 'Please enter your current password');
       return;
     }
 
     // Validate passwords
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      toast.error('New passwords do not match');
+      showError('Password Mismatch', 'New passwords do not match');
       return;
     }
 
     const passwordValidation = validatePassword(passwordData.newPassword);
     if (!passwordValidation.isValid) {
-      toast.error('Password must be at least 8 characters with uppercase, lowercase, numbers, and special characters');
+      showError('Password Requirements', 'Password must be at least 8 characters with uppercase, lowercase, numbers, and special characters');
       return;
     }
 
     // Check if new password is different from current
     if (passwordData.currentPassword === passwordData.newPassword) {
-      toast.error('New password must be different from current password');
+      showError('Password Change Required', 'New password must be different from current password');
       return;
     }
 
@@ -143,7 +150,7 @@ export default function ProfileForm() {
       });
 
       if (signInError) {
-        toast.error('Current password is incorrect');
+        showError('Invalid Current Password', 'Current password is incorrect');
         return;
       }
 
@@ -161,10 +168,16 @@ export default function ProfileForm() {
         confirmPassword: '',
       });
       setShowPasswordForm(false);
-      toast.success('Password updated successfully!');
+      showSuccess(
+        'Password Updated!',
+        'Your password has been updated successfully'
+      );
     } catch (error: any) {
       console.error('Error updating password:', error);
-      toast.error(error.message || 'Failed to update password');
+      showError(
+        'Password Update Failed',
+        error.message || 'Failed to update password. Please try again.'
+      );
     } finally {
       setIsPasswordLoading(false);
     }

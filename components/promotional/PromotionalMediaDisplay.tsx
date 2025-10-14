@@ -149,50 +149,51 @@ export default function PromotionalMediaDisplay({
         }}
       >
         {imageUrl ? (
-          <div className="relative">
-            <img
-              src={imageUrl}
-              alt={media.title}
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
-              }}
-            />
-            {media.video_url && (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <button
-                  onClick={() => window.open(media.video_url, '_blank')}
-                  className="bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-70 transition-all"
-                >
-                  <Play className="w-6 h-6" />
-                </button>
-              </div>
-            )}
-            
-            {/* Content Overlay for image-based media */}
-            {(media.title || media.subtitle || media.description || media.button_text) && (
-              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-end">
-                <div className="p-4 w-full">
-                  {media.title && (
-                    <h3 className="text-xl font-bold mb-2">{media.title}</h3>
-                  )}
-                  {media.subtitle && (
-                    <h4 className="text-lg font-semibold mb-2">{media.subtitle}</h4>
-                  )}
-                  {media.description && (
-                    <p className="text-sm mb-3 line-clamp-2">{media.description}</p>
-                  )}
-                  {media.button_text && (
-                    <button
-                      onClick={() => handleMediaClick(media)}
-                      className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors flex items-center gap-2"
-                    >
-                      {media.button_text}
-                      {media.target === '_blank' && <ExternalLink className="w-4 h-4" />}
-                    </button>
-                  )}
+          <div className="flex flex-col">
+            {/* Image Container */}
+            <div className="relative">
+              <img
+                src={imageUrl}
+                alt={media.title}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                }}
+              />
+              {media.video_url && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <button
+                    onClick={() => window.open(media.video_url, '_blank')}
+                    className="bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-70 transition-all"
+                  >
+                    <Play className="w-6 h-6" />
+                  </button>
                 </div>
+              )}
+            </div>
+            
+            {/* Content Below Image */}
+            {(media.title || media.subtitle || media.description || media.button_text) && (
+              <div className="p-4 bg-white">
+                {media.title && (
+                  <h3 className="text-xl font-bold mb-2 text-gray-900">{media.title}</h3>
+                )}
+                {media.subtitle && (
+                  <h4 className="text-lg font-semibold mb-2 text-gray-700">{media.subtitle}</h4>
+                )}
+                {media.description && (
+                  <p className="text-sm mb-3 line-clamp-2 text-gray-600">{media.description}</p>
+                )}
+                {media.button_text && (
+                  <button
+                    onClick={() => handleMediaClick(media)}
+                    className="bg-primary-600 text-white px-4 py-2 rounded hover:bg-primary-700 transition-colors flex items-center gap-2"
+                  >
+                    {media.button_text}
+                    {media.target === '_blank' && <ExternalLink className="w-4 h-4" />}
+                  </button>
+                )}
               </div>
             )}
           </div>

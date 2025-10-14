@@ -32,7 +32,11 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      setLoading(true);
+      // Only set loading if we don't have favorites yet
+      if (favorites.length === 0) {
+        setLoading(true);
+      }
+      
       const { data, error } = await supabase
         .from('wishlist_items')
         .select(`

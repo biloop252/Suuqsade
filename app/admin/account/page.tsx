@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
+import { useNotification } from '@/lib/notification-context';
 import { supabase } from '@/lib/supabase';
 import { 
   User, 
@@ -18,6 +19,7 @@ import AdminProtectedRoute from '@/components/admin/AdminProtectedRoute';
 
 export default function AccountPage() {
   const { profile, user } = useAuth();
+  const { showSuccess, showError } = useNotification();
   const [activeTab, setActiveTab] = useState<'profile' | 'security'>('profile');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -73,10 +75,16 @@ export default function AccountPage() {
         throw error;
       }
 
-      setMessage({ type: 'success', text: 'Profile updated successfully!' });
+      showSuccess(
+        'Profile Updated!',
+        'Your profile information has been updated successfully'
+      );
     } catch (error: any) {
       console.error('Error updating profile:', error);
-      setMessage({ type: 'error', text: error.message || 'Failed to update profile' });
+      showError(
+        'Profile Update Failed',
+        error.message || 'Failed to update profile. Please try again.'
+      );
     } finally {
       setSaving(false);
     }
@@ -88,13 +96,13 @@ export default function AccountPage() {
     setMessage(null);
 
     if (securityForm.new_password !== securityForm.confirm_password) {
-      setMessage({ type: 'error', text: 'New passwords do not match' });
+      showError('Password Mismatch', 'New passwords do not match');
       setSaving(false);
       return;
     }
 
     if (securityForm.new_password.length < 6) {
-      setMessage({ type: 'error', text: 'New password must be at least 6 characters long' });
+      showError('Password Requirements', 'New password must be at least 6 characters long');
       setSaving(false);
       return;
     }
@@ -109,7 +117,10 @@ export default function AccountPage() {
         throw error;
       }
 
-      setMessage({ type: 'success', text: 'Password updated successfully!' });
+      showSuccess(
+        'Password Updated!',
+        'Your password has been updated successfully'
+      );
       setSecurityForm({
         current_password: '',
         new_password: '',
@@ -117,7 +128,10 @@ export default function AccountPage() {
       });
     } catch (error: any) {
       console.error('Error updating password:', error);
-      setMessage({ type: 'error', text: error.message || 'Failed to update password' });
+      showError(
+        'Password Update Failed',
+        error.message || 'Failed to update password. Please try again.'
+      );
     } finally {
       setSaving(false);
     }

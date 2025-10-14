@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import Pagination from '@/components/admin/Pagination';
 
 interface Order {
   id: string;
@@ -89,17 +90,27 @@ export default function OrdersContent() {
   const [statusFilter, setStatusFilter] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [expandedOrders, setExpandedOrders] = useState<Set<string>>(new Set());
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [totalOrders, setTotalOrders] = useState(0);
 
   useEffect(() => {
     if (user) {
       fetchOrders();
     }
-  }, [user]);
+  }, [user, currentPage, itemsPerPage, searchTerm, statusFilter]);
 
   const fetchOrders = async () => {
     try {
-      setLoading(true);
-      const { data, error } = await supabase
+      // Only set loading if we don't have orders yet
+      if (orders.length === 0) {
+        setLoading(true);
+      }
+      
+      // Build the query with filters
+      let query = supabase
         .from('orders')
         .select(`
           *,
@@ -119,14 +130,34 @@ export default function OrdersContent() {
           billing_address:addresses!billing_address_id(*),
           shipping_address:addresses!shipping_address_id(*),
           payments(*)
-        `)
-        .eq('user_id', user?.id)
-        .order('created_at', { ascending: false });
+        `, { count: 'exact' })
+        .eq('user_id', user?.id);
+
+      // Apply status filter
+      if (statusFilter) {
+        query = query.eq('status', statusFilter);
+      }
+
+      // Apply search filter
+      if (searchTerm) {
+        query = query.or(`order_number.ilike.%${searchTerm}%,order_items.product_name.ilike.%${searchTerm}%`);
+      }
+
+      // Apply pagination
+      const from = (currentPage - 1) * itemsPerPage;
+      const to = from + itemsPerPage - 1;
+      
+      query = query
+        .order('created_at', { ascending: false })
+        .range(from, to);
+
+      const { data, error, count } = await query;
 
       if (error) {
         console.error('Error fetching orders:', error);
       } else {
         setOrders(data || []);
+        setTotalOrders(count || 0);
       }
     } catch (error) {
       console.error('Error:', error);
@@ -160,14 +191,26 @@ export default function OrdersContent() {
     });
   };
 
-  const filteredOrders = orders.filter(order => {
-    const matchesSearch = order.order_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.order_items.some(item => 
-                           item.product_name.toLowerCase().includes(searchTerm.toLowerCase())
-                         );
-    const matchesStatus = !statusFilter || order.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  // Pagination handlers
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handleItemsPerPageChange = (newItemsPerPage: number) => {
+    setItemsPerPage(newItemsPerPage);
+    setCurrentPage(1); // Reset to first page when changing items per page
+  };
+
+  // Reset to first page when search or filter changes
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  };
+
+  const handleStatusFilterChange = (status: string) => {
+    setStatusFilter(status);
+    setCurrentPage(1);
+  };
 
   const toggleOrderExpansion = (orderId: string) => {
     setExpandedOrders(prev => {
@@ -214,7 +257,7 @@ export default function OrdersContent() {
               type="text"
               placeholder="Search orders or products..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             />
           </div>
@@ -232,7 +275,7 @@ export default function OrdersContent() {
           <div className="mt-4 pt-4 border-t border-gray-200">
             <div className="flex flex-wrap gap-2">
               <button
-                onClick={() => setStatusFilter('')}
+                onClick={() => handleStatusFilterChange('')}
                 className={`px-3 py-1 text-sm rounded-full ${
                   !statusFilter ? 'bg-primary-100 text-primary-800' : 'bg-gray-100 text-gray-700'
                 }`}
@@ -242,7 +285,7 @@ export default function OrdersContent() {
               {['pending', 'processing', 'shipped', 'delivered', 'cancelled'].map((status) => (
                 <button
                   key={status}
-                  onClick={() => setStatusFilter(status)}
+                  onClick={() => handleStatusFilterChange(status)}
                   className={`px-3 py-1 text-sm rounded-full capitalize ${
                     statusFilter === status ? 'bg-primary-100 text-primary-800' : 'bg-gray-100 text-gray-700'
                   }`}
@@ -256,19 +299,19 @@ export default function OrdersContent() {
       </div>
 
       {/* Orders List */}
-      {filteredOrders.length === 0 ? (
+      {orders.length === 0 ? (
         <div className="text-center py-12 bg-white rounded-lg shadow-sm border border-gray-200">
           <PackageIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-gray-900 mb-2">
-            {orders.length === 0 ? "No orders yet" : "No orders found"}
+            {totalOrders === 0 ? "No orders yet" : "No orders found"}
           </h3>
           <p className="text-gray-600 mb-8">
-            {orders.length === 0 
+            {totalOrders === 0 
               ? "You haven't placed any orders yet." 
               : "Try adjusting your search or filter criteria."
             }
           </p>
-          {orders.length === 0 && (
+          {totalOrders === 0 && (
             <Link 
               href="/products" 
               className="bg-primary-600 text-white px-6 py-3 rounded-md font-medium hover:bg-primary-700"
@@ -279,7 +322,7 @@ export default function OrdersContent() {
         </div>
       ) : (
         <div className="space-y-2">
-          {filteredOrders.map((order) => (
+          {orders.map((order) => (
             <div key={order.id} className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
               <div className="p-4">
                 <div className="flex items-center justify-between">
@@ -391,6 +434,19 @@ export default function OrdersContent() {
             </div>
           ))}
         </div>
+      )}
+
+      {/* Pagination */}
+      {totalOrders > 0 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={Math.ceil(totalOrders / itemsPerPage)}
+          totalItems={totalOrders}
+          itemsPerPage={itemsPerPage}
+          onPageChange={handlePageChange}
+          onItemsPerPageChange={handleItemsPerPageChange}
+          showItemsPerPage={true}
+        />
       )}
     </div>
   );

@@ -145,7 +145,7 @@ export default function SearchSuggestions({
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             onFocus={() => value.length > 0 && setIsOpen(true)}
-            className="w-full pl-10 pr-20 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
+            className="w-full pl-10 pr-20 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm"
             autoComplete="off"
           />
           {value && (
@@ -159,7 +159,7 @@ export default function SearchSuggestions({
           )}
           <button
             type="submit"
-            className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-orange-500 text-white p-1.5 rounded hover:bg-orange-600"
+            className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-primary-500 text-white p-1.5 rounded hover:bg-primary-600"
           >
             <SearchIcon className="h-4 w-4" />
           </button>
@@ -174,7 +174,7 @@ export default function SearchSuggestions({
         >
           {loading ? (
             <div className="p-3 text-center text-gray-500">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-500 mx-auto"></div>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-500 mx-auto"></div>
               <span className="ml-2">Searching...</span>
             </div>
           ) : suggestions.length > 0 ? (

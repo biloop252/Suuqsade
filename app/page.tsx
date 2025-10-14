@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { ProductWithDetails } from '@/types/database';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
+import { useNotification } from '@/lib/notification-context';
 import { useAuth } from '@/lib/auth-context';
 import { useCart } from '@/lib/cart-context';
 import { useFavorites } from '@/lib/favorites-context';
@@ -21,6 +22,7 @@ export default function HomePage() {
   const { user } = useAuth();
   const { addToCart } = useCart();
   const { isFavorite, toggleFavorite } = useFavorites();
+  const { showSuccess, showError } = useNotification();
   
   const [flashProducts, setFlashProducts] = useState<ProductWithDetails[]>([]);
   const [recommendedProducts, setRecommendedProducts] = useState<ProductWithDetails[]>([]);
@@ -144,9 +146,16 @@ export default function HomePage() {
     try {
       setAddingToCart(product.id);
       await addToCart(product.id, undefined, 1);
-      // You could add a toast notification here
+      showSuccess(
+        'Added to Cart!',
+        `${product.name} has been added to your cart`
+      );
     } catch (error) {
       console.error('Error adding to cart:', error);
+      showError(
+        'Failed to Add to Cart',
+        'There was an error adding this item to your cart. Please try again.'
+      );
     } finally {
       setAddingToCart(null);
     }
@@ -510,7 +519,7 @@ export default function HomePage() {
           {/* Section Header */}
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center space-x-3">
-              <div className="bg-orange-500 rounded-lg p-2">
+              <div className="bg-primary-500 rounded-lg p-2">
                 <Star className="h-6 w-6 text-white" />
               </div>
               <div>
@@ -607,7 +616,7 @@ export default function HomePage() {
                       
                       {/* Product Info */}
                       <div className="p-4">
-                        <h3 className="text-sm font-medium text-gray-900 mb-2 line-clamp-2 group-hover:text-orange-500 transition-colors">
+                        <h3 className="text-sm font-medium text-gray-900 mb-2 line-clamp-2 group-hover:text-primary-500 transition-colors">
                           {product.name}
                         </h3>
                         
@@ -638,7 +647,7 @@ export default function HomePage() {
                           <button 
                             onClick={(e) => handleAddToCart(product, e)}
                             disabled={addingToCart === product.id}
-                            className="bg-orange-500 text-white px-3 py-2 rounded-lg hover:bg-orange-600 transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="bg-primary-500 text-white px-3 py-2 rounded-lg hover:bg-primary-600 transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             {addingToCart === product.id ? (
                               <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
@@ -693,7 +702,7 @@ export default function HomePage() {
           {/* Section Header */}
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center space-x-3">
-              <div className="bg-orange-500 rounded-lg p-2">
+              <div className="bg-primary-500 rounded-lg p-2">
                 <ShoppingBag className="h-6 w-6 text-white" />
               </div>
               <div>
@@ -790,7 +799,7 @@ export default function HomePage() {
                       
                       {/* Product Info */}
                       <div className="p-4">
-                        <h3 className="text-sm font-medium text-gray-900 mb-2 line-clamp-2 group-hover:text-orange-500 transition-colors">
+                        <h3 className="text-sm font-medium text-gray-900 mb-2 line-clamp-2 group-hover:text-primary-500 transition-colors">
                           {product.name}
                         </h3>
                         
@@ -821,7 +830,7 @@ export default function HomePage() {
                           <button 
                             onClick={(e) => handleAddToCart(product, e)}
                             disabled={addingToCart === product.id}
-                            className="bg-orange-500 text-white px-3 py-2 rounded-lg hover:bg-orange-600 transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="bg-primary-500 text-white px-3 py-2 rounded-lg hover:bg-primary-600 transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             {addingToCart === product.id ? (
                               <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
@@ -876,7 +885,7 @@ export default function HomePage() {
           {/* Section Header */}
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center space-x-3">
-              <div className="bg-orange-500 rounded-lg p-2">
+              <div className="bg-primary-500 rounded-lg p-2">
                 <Home className="h-6 w-6 text-white" />
               </div>
               <div>
@@ -973,7 +982,7 @@ export default function HomePage() {
                       
                       {/* Product Info */}
                       <div className="p-4">
-                        <h3 className="text-sm font-medium text-gray-900 mb-2 line-clamp-2 group-hover:text-orange-500 transition-colors">
+                        <h3 className="text-sm font-medium text-gray-900 mb-2 line-clamp-2 group-hover:text-primary-500 transition-colors">
                           {product.name}
                         </h3>
                         
@@ -1004,7 +1013,7 @@ export default function HomePage() {
                           <button 
                             onClick={(e) => handleAddToCart(product, e)}
                             disabled={addingToCart === product.id}
-                            className="bg-orange-500 text-white px-3 py-2 rounded-lg hover:bg-orange-600 transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="bg-primary-500 text-white px-3 py-2 rounded-lg hover:bg-primary-600 transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             {addingToCart === product.id ? (
                               <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
@@ -1141,7 +1150,7 @@ export default function HomePage() {
                     
                     {/* Product Info */}
                     <div className="p-4">
-                      <h3 className="text-sm font-medium text-gray-900 mb-2 line-clamp-2 group-hover:text-orange-500 transition-colors">
+                      <h3 className="text-sm font-medium text-gray-900 mb-2 line-clamp-2 group-hover:text-primary-500 transition-colors">
                         {product.name}
                       </h3>
                       
@@ -1172,7 +1181,7 @@ export default function HomePage() {
                         <button 
                           onClick={(e) => handleAddToCart(product, e)}
                           disabled={addingToCart === product.id}
-                          className="bg-orange-500 text-white px-3 py-2 rounded-lg hover:bg-orange-600 transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="bg-primary-500 text-white px-3 py-2 rounded-lg hover:bg-primary-600 transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {addingToCart === product.id ? (
                             <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>

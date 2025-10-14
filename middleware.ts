@@ -1,9 +1,13 @@
-import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next()
+
+  // Allow auth callback to pass through without any middleware interference
+  if (req.nextUrl.pathname.startsWith('/auth/callback')) {
+    return res
+  }
 
   // Check if the route is an admin route
   if (req.nextUrl.pathname.startsWith('/admin')) {
@@ -30,7 +34,8 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
+     * - auth/callback (auth callback route)
      */
-    '/((?!_next/static|_next/image|favicon.ico).*)',
+    '/((?!_next/static|_next/image|favicon.ico|auth/callback).*)',
   ],
 }

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth-context';
+import { useNotification } from '@/lib/notification-context';
 import { Review } from '@/types/database';
 import { Star } from 'lucide-react';
 
@@ -22,6 +23,7 @@ export default function ReviewForm({
   existingReview 
 }: ReviewFormProps) {
   const { user } = useAuth();
+  const { showSuccess, showError } = useNotification();
   const [rating, setRating] = useState(existingReview?.rating || 0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [title, setTitle] = useState(existingReview?.title || '');
@@ -33,22 +35,22 @@ export default function ReviewForm({
     e.preventDefault();
     
     if (!user) {
-      setError('You must be logged in to submit a review');
+      showError('Authentication Required', 'You must be logged in to submit a review');
       return;
     }
 
     if (rating === 0) {
-      setError('Please select a rating');
+      showError('Rating Required', 'Please select a rating');
       return;
     }
 
     if (!title.trim()) {
-      setError('Please enter a review title');
+      showError('Title Required', 'Please enter a review title');
       return;
     }
 
     if (!comment.trim()) {
-      setError('Please enter a review comment');
+      showError('Comment Required', 'Please enter a review comment');
       return;
     }
 
@@ -93,6 +95,11 @@ export default function ReviewForm({
         if (updateError) {
           throw updateError;
         }
+
+        showSuccess(
+          'Review Updated!',
+          `Your review for ${productName} has been updated successfully`
+        );
       } else {
         // Create new review
         const { error: insertError } = await supabase
@@ -110,12 +117,20 @@ export default function ReviewForm({
         if (insertError) {
           throw insertError;
         }
+
+        showSuccess(
+          'Review Submitted!',
+          `Thank you for reviewing ${productName}! Your review has been submitted successfully`
+        );
       }
 
       onReviewSubmitted();
     } catch (error: any) {
       console.error('Error submitting review:', error);
-      setError(error.message || 'Failed to submit review');
+      showError(
+        'Review Submission Failed',
+        error.message || 'Failed to submit review. Please try again.'
+      );
     } finally {
       setLoading(false);
     }

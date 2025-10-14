@@ -43,7 +43,10 @@ export default function DashboardContent() {
 
   const fetchDashboardData = async () => {
     try {
-      setLoading(true);
+      // Only set loading if we don't have data yet
+      if (!orderStats && recentOrders.length === 0) {
+        setLoading(true);
+      }
       
       // Fetch order statistics
       const { data: ordersData, error: ordersError } = await supabase

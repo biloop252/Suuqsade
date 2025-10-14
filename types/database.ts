@@ -12,6 +12,8 @@ export type CouponStatus = 'active' | 'inactive' | 'expired' | 'used_up';
 export type SupportTicketStatus = 'open' | 'in_progress' | 'waiting_customer' | 'waiting_staff' | 'resolved' | 'closed';
 export type SupportTicketPriority = 'low' | 'medium' | 'high' | 'urgent';
 export type SupportNotificationType = 'ticket_update' | 'new_message' | 'status_change' | 'assignment';
+export type SettingType = 'text' | 'number' | 'boolean' | 'json' | 'url' | 'email';
+export type SystemImageType = 'logo' | 'favicon' | 'icon' | 'banner' | 'background';
 
 export interface Profile {
   id: string;
@@ -795,6 +797,43 @@ export interface SupportSlaLog {
   is_breached: boolean;
   created_at: string;
   ticket?: SupportTicket;
+}
+
+export interface SystemSetting {
+  id: string;
+  setting_key: string;
+  setting_value?: string;
+  setting_type: SettingType;
+  category: string;
+  description?: string;
+  is_public: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SystemImage {
+  id: string;
+  image_type: SystemImageType;
+  image_url: string;
+  alt_text?: string;
+  width?: number;
+  height?: number;
+  file_size?: number;
+  mime_type?: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SettingsFormData {
+  [key: string]: string | number | boolean;
+}
+
+export interface ImageUploadData {
+  file: File;
+  image_type: SystemImageType;
+  alt_text?: string;
+  is_active?: boolean;
 }
 
 

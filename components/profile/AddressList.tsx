@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
+import { useNotification } from '@/lib/notification-context';
 import { supabase } from '@/lib/supabase';
-import { toast } from 'react-hot-toast';
 import { 
   PlusIcon, 
   EditIcon, 
@@ -41,6 +41,7 @@ interface Address {
 
 export default function AddressList() {
   const { user, loading: authLoading } = useAuth();
+  const { showSuccess, showError, showConfirm } = useNotification();
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -56,7 +57,11 @@ export default function AddressList() {
     if (!user) return;
 
     try {
-
+      // Only set loading if we don't have addresses yet
+      if (addresses.length === 0) {
+        setLoading(true);
+      }
+      
       const { data, error } = await supabase
         .from('addresses')
         .select('*')
@@ -68,29 +73,42 @@ export default function AddressList() {
       setAddresses(data || []);
     } catch (error: any) {
       console.error('Error fetching addresses:', error);
-      toast.error('Failed to load addresses');
+      showError('Failed to Load Addresses', 'There was an error loading your addresses. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (addressId: string) => {
-    if (!confirm('Are you sure you want to delete this address?')) return;
+    const addressToDelete = addresses.find(addr => addr.id === addressId);
+    const addressName = addressToDelete ? `${addressToDelete.first_name} ${addressToDelete.last_name}` : 'this address';
+    
+    showConfirm(
+      'Delete Address',
+      `Are you sure you want to delete ${addressName}? This action cannot be undone.`,
+      async () => {
+        try {
+          const { error } = await supabase
+            .from('addresses')
+            .delete()
+            .eq('id', addressId);
 
-    try {
-      const { error } = await supabase
-        .from('addresses')
-        .delete()
-        .eq('id', addressId);
-
-      if (error) throw error;
-      
-      toast.success('Address deleted successfully');
-      fetchAddresses();
-    } catch (error: any) {
-      console.error('Error deleting address:', error);
-      toast.error('Failed to delete address');
-    }
+          if (error) throw error;
+          
+          showSuccess(
+            'Address Deleted',
+            `${addressName} has been deleted successfully`
+          );
+          fetchAddresses();
+        } catch (error: any) {
+          console.error('Error deleting address:', error);
+          showError(
+            'Delete Failed',
+            'Failed to delete address. Please try again.'
+          );
+        }
+      }
+    );
   };
 
   const handleSetDefault = async (addressId: string) => {
@@ -111,11 +129,20 @@ export default function AddressList() {
 
       if (error) throw error;
       
-      toast.success('Default address updated');
+      const addressToSet = addresses.find(addr => addr.id === addressId);
+      const addressName = addressToSet ? `${addressToSet.first_name} ${addressToSet.last_name}` : 'this address';
+      
+      showSuccess(
+        'Default Address Updated',
+        `${addressName} has been set as your default address`
+      );
       fetchAddresses();
     } catch (error: any) {
       console.error('Error setting default address:', error);
-      toast.error('Failed to update default address');
+      showError(
+        'Update Failed',
+        'Failed to update default address. Please try again.'
+      );
     }
   };
 

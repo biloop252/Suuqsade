@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { 
   FacebookIcon, 
   TwitterIcon, 
@@ -73,7 +74,7 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="bg-gray-100 text-gray-800 border-t border-orange-500">
+    <footer className="bg-gray-100 text-gray-800 border-t border-primary-500">
       {/* Footer Promotional Banner */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -93,7 +94,15 @@ export default function Footer() {
           {/* Company Info */}
           <div className="lg:col-span-1">
             <div className="mb-6">
-              <h3 className="text-2xl font-bold text-orange-500 mb-2">Suuqsade</h3>
+              <div className="mb-2">
+                <Image
+                  src="https://uwautfehppioudadfgcc.supabase.co/storage/v1/object/public/brand-logos/Logo1.png"
+                  alt="Suuqsade Logo"
+                  width={200}
+                  height={67}
+                  className="h-16 w-auto object-contain"
+                />
+              </div>
               <p className="text-gray-600 text-sm leading-relaxed">
                 Your trusted online marketplace for quality products. We bring you the best deals 
                 from top brands with fast delivery and excellent customer service.
@@ -103,15 +112,15 @@ export default function Footer() {
             {/* Contact Info */}
             <div className="space-y-3">
               <div className="flex items-center text-gray-600 text-sm">
-                <MailIcon className="h-4 w-4 mr-3 text-orange-500" />
+                <MailIcon className="h-4 w-4 mr-3 text-primary-500" />
                 <span>support@suuqsade.com</span>
               </div>
               <div className="flex items-center text-gray-600 text-sm">
-                <PhoneIcon className="h-4 w-4 mr-3 text-orange-500" />
+                <PhoneIcon className="h-4 w-4 mr-3 text-primary-500" />
                 <span>+1 (555) 123-4567</span>
               </div>
               <div className="flex items-start text-gray-600 text-sm">
-                <MapPinIcon className="h-4 w-4 mr-3 mt-0.5 text-orange-500" />
+                <MapPinIcon className="h-4 w-4 mr-3 mt-0.5 text-primary-500" />
                 <span>123 Commerce Street<br />Business District, BD 12345</span>
               </div>
             </div>
@@ -119,13 +128,13 @@ export default function Footer() {
 
           {/* Categories */}
           <div>
-            <h4 className="text-lg font-semibold mb-4 text-orange-500">Shop by Category</h4>
+            <h4 className="text-lg font-semibold mb-4 text-primary-500">Shop by Category</h4>
             <div className="grid grid-cols-2 gap-2">
               {categories.map((category) => (
                 <Link 
                   key={category.name} 
                   href={category.href}
-                  className="flex items-center text-gray-600 hover:text-orange-500 transition-colors text-sm py-1"
+                  className="flex items-center text-gray-600 hover:text-primary-500 transition-colors text-sm py-1"
                 >
                   <category.icon className="h-3 w-3 mr-2" />
                   {category.name}
@@ -136,13 +145,13 @@ export default function Footer() {
 
           {/* Customer Service */}
           <div>
-            <h4 className="text-lg font-semibold mb-4 text-orange-500">Customer Service</h4>
+            <h4 className="text-lg font-semibold mb-4 text-primary-500">Customer Service</h4>
             <ul className="space-y-2">
               {customerService.map((item) => (
                 <li key={item.name}>
                   <Link 
                     href={item.href}
-                    className="text-gray-600 hover:text-orange-500 transition-colors text-sm"
+                    className="text-gray-600 hover:text-primary-500 transition-colors text-sm"
                   >
                     {item.name}
                   </Link>
@@ -153,13 +162,13 @@ export default function Footer() {
 
           {/* Company & Legal */}
           <div>
-            <h4 className="text-lg font-semibold mb-4 text-orange-500">Company</h4>
+            <h4 className="text-lg font-semibold mb-4 text-primary-500">Company</h4>
             <ul className="space-y-2 mb-6">
               {company.map((item) => (
                 <li key={item.name}>
                   <Link 
                     href={item.href}
-                    className="text-gray-600 hover:text-orange-500 transition-colors text-sm"
+                    className="text-gray-600 hover:text-primary-500 transition-colors text-sm"
                   >
                     {item.name}
                   </Link>
@@ -167,13 +176,13 @@ export default function Footer() {
               ))}
             </ul>
             
-            <h4 className="text-lg font-semibold mb-4 text-orange-500">Legal</h4>
+            <h4 className="text-lg font-semibold mb-4 text-primary-500">Legal</h4>
             <ul className="space-y-2">
               {legal.map((item) => (
                 <li key={item.name}>
                   <Link 
                     href={item.href}
-                    className="text-gray-600 hover:text-orange-500 transition-colors text-sm"
+                    className="text-gray-600 hover:text-primary-500 transition-colors text-sm"
                   >
                     {item.name}
                   </Link>
@@ -187,18 +196,18 @@ export default function Footer() {
         <div className="border-t border-gray-300 mt-12 pt-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="flex items-center text-gray-600">
-              <div className="bg-orange-500/20 rounded-lg p-3 mr-4">
-                <TruckIcon className="h-6 w-6 text-orange-500" />
+              <div className="bg-primary-500/20 rounded-lg p-3 mr-4">
+                <TruckIcon className="h-6 w-6 text-primary-500" />
               </div>
               <div>
                 <h5 className="font-semibold text-gray-800">Free Shipping</h5>
-                <p className="text-sm">On orders over $50</p>
+                <p className="text-sm">On orders in same city</p>
               </div>
             </div>
             
             <div className="flex items-center text-gray-600">
-              <div className="bg-orange-500/20 rounded-lg p-3 mr-4">
-                <RotateCcwIcon className="h-6 w-6 text-orange-500" />
+              <div className="bg-primary-500/20 rounded-lg p-3 mr-4">
+                <RotateCcwIcon className="h-6 w-6 text-primary-500" />
               </div>
               <div>
                 <h5 className="font-semibold text-gray-800">Easy Returns</h5>
@@ -207,8 +216,8 @@ export default function Footer() {
             </div>
             
             <div className="flex items-center text-gray-600">
-              <div className="bg-orange-500/20 rounded-lg p-3 mr-4">
-                <ShieldCheckIcon className="h-6 w-6 text-orange-500" />
+              <div className="bg-primary-500/20 rounded-lg p-3 mr-4">
+                <ShieldCheckIcon className="h-6 w-6 text-primary-500" />
               </div>
               <div>
                 <h5 className="font-semibold text-gray-800">Secure Payment</h5>
@@ -217,8 +226,8 @@ export default function Footer() {
             </div>
             
             <div className="flex items-center text-gray-600">
-              <div className="bg-orange-500/20 rounded-lg p-3 mr-4">
-                <MessageSquareIcon className="h-6 w-6 text-orange-500" />
+              <div className="bg-primary-500/20 rounded-lg p-3 mr-4">
+                <MessageSquareIcon className="h-6 w-6 text-primary-500" />
               </div>
               <div>
                 <h5 className="font-semibold text-gray-800">24/7 Support</h5>
@@ -232,7 +241,7 @@ export default function Footer() {
         <div className="border-t border-gray-300 mt-8 pt-8">
           <div className="flex flex-col lg:flex-row justify-between items-center">
             <div className="mb-6 lg:mb-0">
-              <h4 className="text-lg font-semibold mb-3 text-orange-500">Follow Us</h4>
+              <h4 className="text-lg font-semibold mb-3 text-primary-500">Follow Us</h4>
               <div className="flex space-x-4">
                 {socialLinks.map((social) => (
                   <a
@@ -240,7 +249,7 @@ export default function Footer() {
                     href={social.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="bg-gray-200 hover:bg-orange-500 hover:text-white rounded-lg p-3 transition-colors"
+                    className="bg-gray-200 hover:bg-primary-500 hover:text-white rounded-lg p-3 transition-colors"
                     aria-label={social.name}
                   >
                     <social.icon className="h-5 w-5" />
@@ -250,15 +259,15 @@ export default function Footer() {
             </div>
             
             <div className="text-center lg:text-right">
-              <h4 className="text-lg font-semibold mb-3 text-orange-500">Newsletter</h4>
+              <h4 className="text-lg font-semibold mb-3 text-primary-500">Newsletter</h4>
               <p className="text-gray-600 text-sm mb-4">Get the latest deals and updates</p>
               <div className="flex flex-col sm:flex-row gap-2">
                 <input
                   type="email"
                   placeholder="Enter your email"
-                  className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 />
-                <button className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+                <button className="bg-primary-500 hover:bg-primary-600 text-white px-6 py-2 rounded-lg font-medium transition-colors">
                   Subscribe
                 </button>
               </div>

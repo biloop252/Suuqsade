@@ -122,6 +122,7 @@ export default function HierarchicalCategorySelector({
           <div className="flex items-center space-x-2">
             {hasChildren && (
               <button
+                type="button"
                 onClick={(e) => {
                   e.stopPropagation();
                   toggleExpanded(category.id);

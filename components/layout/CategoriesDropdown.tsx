@@ -13,7 +13,8 @@ interface CategoriesDropdownProps {
 export default function CategoriesDropdown({ className = '' }: CategoriesDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [subcategories, setSubcategories] = useState<{ [key: string]: Category[] }>({});
+  const [allCategories, setAllCategories] = useState<Category[]>([]);
+  const [categoryHierarchy, setCategoryHierarchy] = useState<{ [key: string]: Category[] }>({});
   const [loading, setLoading] = useState(true);
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -39,52 +40,46 @@ export default function CategoriesDropdown({ className = '' }: CategoriesDropdow
   const fetchCategories = async () => {
     try {
       setLoading(true);
-      // Fetch parent categories
-      const { data: parentCategories, error: parentError } = await supabase
+      
+      // Fetch all categories
+      const { data: allCategoriesData, error: allError } = await supabase
         .from('categories')
         .select('*')
         .eq('is_active', true)
-        .is('parent_id', null)
         .order('sort_order')
         .order('name');
 
-      if (parentError) {
-        console.error('Error fetching parent categories:', parentError);
+      if (allError) {
+        console.error('Error fetching categories:', allError);
         setCategories([]);
+        setAllCategories([]);
+        setCategoryHierarchy({});
         return;
       }
 
-      // Fetch all subcategories
-      const { data: allSubcategories, error: subError } = await supabase
-        .from('categories')
-        .select('*')
-        .eq('is_active', true)
-        .not('parent_id', 'is', null)
-        .order('sort_order')
-        .order('name');
-
-      if (subError) {
-        console.error('Error fetching subcategories:', subError);
-        setSubcategories({});
-      } else {
-        // Group subcategories by parent_id
-        const subcategoriesMap: { [key: string]: Category[] } = {};
-        allSubcategories?.forEach(subcategory => {
-          if (subcategory.parent_id) {
-            if (!subcategoriesMap[subcategory.parent_id]) {
-              subcategoriesMap[subcategory.parent_id] = [];
-            }
-            subcategoriesMap[subcategory.parent_id].push(subcategory);
+      // Separate parent categories (no parent_id)
+      const parentCategories = allCategoriesData?.filter(cat => !cat.parent_id) || [];
+      
+      // Group all categories by their parent_id
+      const hierarchyMap: { [key: string]: Category[] } = {};
+      
+      allCategoriesData?.forEach(category => {
+        if (category.parent_id) {
+          if (!hierarchyMap[category.parent_id]) {
+            hierarchyMap[category.parent_id] = [];
           }
-        });
-        setSubcategories(subcategoriesMap);
-      }
+          hierarchyMap[category.parent_id].push(category);
+        }
+      });
 
-      setCategories(parentCategories || []);
+      setCategories(parentCategories);
+      setAllCategories(allCategoriesData || []);
+      setCategoryHierarchy(hierarchyMap);
     } catch (error) {
       console.error('Error:', error);
       setCategories([]);
-      setSubcategories({});
+      setAllCategories([]);
+      setCategoryHierarchy({});
     } finally {
       setLoading(false);
     }
@@ -103,6 +98,24 @@ export default function CategoriesDropdown({ className = '' }: CategoriesDropdow
     setHoveredCategory(categoryId);
   };
 
+  // Recursive function to render all category levels
+  const renderCategoryLevel = (parentId: string, level: number = 0): JSX.Element[] => {
+    const children = categoryHierarchy[parentId] || [];
+    return children.map((category) => (
+      <div key={category.id}>
+        <Link
+          href={`/categories/${category.slug}`}
+          className="block text-sm text-gray-600 hover:text-primary-500 hover:bg-primary-50 px-2 py-1.5 rounded transition-colors duration-200 font-medium"
+          onClick={() => setIsOpen(false)}
+        >
+          {category.name}
+        </Link>
+        {/* Recursively render children */}
+        {renderCategoryLevel(category.id, level + 1)}
+      </div>
+    ));
+  };
+
   return (
     <div 
       ref={dropdownRef}
@@ -111,12 +124,12 @@ export default function CategoriesDropdown({ className = '' }: CategoriesDropdow
       onMouseLeave={handleMouseLeave}
     >
       <button 
-        className="flex items-center space-x-2 text-gray-700 hover:text-orange-500 transition-colors"
+        className="flex items-center space-x-2 text-gray-700 hover:text-primary-500 transition-colors"
         onClick={() => setIsOpen(!isOpen)}
       >
         <MenuIcon className="h-4 w-4" />
         <span className="font-medium text-sm">ALL CATEGORIES</span>
-        <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">New</span>
+        <span className="bg-secondary-500 text-gray-900 text-xs px-2 py-0.5 rounded-full">New</span>
         <ChevronDownIcon className={`h-4 w-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
@@ -124,7 +137,7 @@ export default function CategoriesDropdown({ className = '' }: CategoriesDropdow
         <div className="absolute top-full left-0 mt-0 w-[800px] max-w-[calc(100vw-2rem)] bg-white shadow-2xl border border-gray-200 z-50 rounded-lg overflow-hidden sm:w-[800px] w-[calc(100vw-1rem)]">
           {loading ? (
             <div className="px-8 py-12 text-center text-gray-500">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto mb-4"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500 mx-auto mb-4"></div>
               Loading categories...
             </div>
           ) : (
@@ -132,18 +145,14 @@ export default function CategoriesDropdown({ className = '' }: CategoriesDropdow
               {/* Left Column - Main Categories */}
               <div className="w-full sm:w-64 bg-gray-50 border-r-0 sm:border-r border-gray-200 border-b sm:border-b-0">
                 <div className="py-2">
-                  {categories.length === 0 ? (
-                    <div className="px-6 py-8 text-center text-gray-500">
-                      No categories found
-                    </div>
-                  ) : (
+                  {categories.length > 0 && (
                     categories.map((category) => (
                       <div
                         key={category.id}
                         className={`group cursor-pointer border-l-4 ${
                           hoveredCategory === category.id 
-                            ? 'bg-orange-500 text-white border-orange-600' 
-                            : 'hover:bg-orange-100 hover:text-orange-600 border-transparent hover:border-orange-300'
+                            ? 'bg-primary-500 text-white border-primary-600' 
+                            : 'hover:bg-primary-100 hover:text-primary-600 border-transparent hover:border-primary-300'
                         } transition-all duration-200`}
                         onMouseEnter={() => handleCategoryHover(category.id)}
                       >
@@ -165,7 +174,7 @@ export default function CategoriesDropdown({ className = '' }: CategoriesDropdow
                             )}
                             <span className="truncate">{category.name}</span>
                           </div>
-                          {subcategories[category.id] && subcategories[category.id].length > 0 && (
+                          {categoryHierarchy[category.id] && categoryHierarchy[category.id].length > 0 && (
                             <ChevronRightIcon className={`h-4 w-4 flex-shrink-0 ${
                               hoveredCategory === category.id ? 'text-white' : 'text-gray-400'
                             }`} />
@@ -179,11 +188,11 @@ export default function CategoriesDropdown({ className = '' }: CategoriesDropdow
 
               {/* Right Column - Subcategories */}
               <div className="flex-1 p-4 sm:p-6">
-                {hoveredCategory && subcategories[hoveredCategory] && subcategories[hoveredCategory].length > 0 ? (
+                {hoveredCategory && categoryHierarchy[hoveredCategory] && categoryHierarchy[hoveredCategory].length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                    {subcategories[hoveredCategory].map((subcategory) => (
+                    {categoryHierarchy[hoveredCategory].map((subcategory) => (
                       <div key={subcategory.id} className="space-y-3">
-                        <div className="flex items-center space-x-2 border-b-2 border-orange-200 pb-2">
+                        <div className="flex items-center space-x-2 border-b-2 border-primary-200 pb-2">
                           {subcategory.image_url && (
                             <img
                               src={subcategory.image_url}
@@ -201,40 +210,13 @@ export default function CategoriesDropdown({ className = '' }: CategoriesDropdow
                         <div className="space-y-1">
                           <Link
                             href={`/categories/${subcategory.slug}`}
-                            className="block text-sm text-gray-600 hover:text-orange-500 hover:bg-orange-50 px-2 py-1.5 rounded transition-colors duration-200 font-medium"
+                            className="block text-sm text-gray-600 hover:text-primary-500 hover:bg-primary-50 px-2 py-1.5 rounded transition-colors duration-200 font-medium"
                             onClick={() => setIsOpen(false)}
                           >
                             {subcategory.name}
                           </Link>
-                          {subcategory.description && (
-                            <p className="text-xs text-gray-500 px-2 leading-relaxed">
-                              {subcategory.description}
-                            </p>
-                          )}
-                          {/* Add some sample sub-subcategories for better visual representation */}
-                          <div className="space-y-1 ml-2">
-                            <Link
-                              href={`/categories/${subcategory.slug}?filter=featured`}
-                              className="block text-xs text-gray-500 hover:text-orange-400 px-2 py-1 rounded transition-colors duration-200"
-                              onClick={() => setIsOpen(false)}
-                            >
-                              Featured {subcategory.name}
-                            </Link>
-                            <Link
-                              href={`/categories/${subcategory.slug}?filter=trending`}
-                              className="block text-xs text-gray-500 hover:text-orange-400 px-2 py-1 rounded transition-colors duration-200"
-                              onClick={() => setIsOpen(false)}
-                            >
-                              Trending {subcategory.name}
-                            </Link>
-                            <Link
-                              href={`/categories/${subcategory.slug}?filter=sale`}
-                              className="block text-xs text-gray-500 hover:text-orange-400 px-2 py-1 rounded transition-colors duration-200"
-                              onClick={() => setIsOpen(false)}
-                            >
-                              On Sale
-                            </Link>
-                          </div>
+                          {/* Render all child levels recursively */}
+                          {renderCategoryLevel(subcategory.id)}
                         </div>
                       </div>
                     ))}
@@ -242,11 +224,9 @@ export default function CategoriesDropdown({ className = '' }: CategoriesDropdow
                 ) : (
                   <div className="flex items-center justify-center h-full text-gray-500">
                     <div className="text-center">
-                      <div className="w-20 h-20 bg-gradient-to-br from-orange-100 to-orange-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <MenuIcon className="h-10 w-10 text-orange-400" />
+                      <div className="w-20 h-20 bg-gradient-to-br from-primary-100 to-primary-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <MenuIcon className="h-10 w-10 text-primary-400" />
                       </div>
-                      <p className="text-sm font-medium">Select a category to view subcategories</p>
-                      <p className="text-xs text-gray-400 mt-1">Hover over a category on the left to see its subcategories</p>
                     </div>
                   </div>
                 )}

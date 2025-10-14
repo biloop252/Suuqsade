@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth-context';
+import { useNotification } from '@/lib/notification-context';
 import { SupportTicket, SupportMessage, SupportCategory } from '@/types/database';
 import { 
   Search,
@@ -27,6 +28,7 @@ import Pagination from './Pagination';
 
 export default function SupportManagement() {
   const { user, profile } = useAuth();
+  const { showSuccess, showError, showInfo } = useNotification();
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -213,6 +215,9 @@ export default function SupportManagement() {
       setNewMessage('');
       await fetchMessages(selectedTicket.id);
       
+      // Show success notification
+      showInfo('Message Sent', 'Your message has been sent successfully');
+      
       // Update last message time
       setTickets(prev => prev.map(ticket => 
         ticket.id === selectedTicket.id 
@@ -221,7 +226,10 @@ export default function SupportManagement() {
       ));
     } catch (error) {
       console.error('Error sending message:', error);
-      alert('Failed to send message: ' + (error as any).message);
+      showError(
+        'Message Send Failed',
+        'Failed to send message: ' + (error as any).message
+      );
     }
   };
 

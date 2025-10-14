@@ -19,6 +19,7 @@ import Image from 'next/image';
 import { useAuth } from '@/lib/auth-context';
 import { useCart } from '@/lib/cart-context';
 import { useFavorites } from '@/lib/favorites-context';
+import { useNotification } from '@/lib/notification-context';
 import { ProductDiscount, getBatchProductDiscounts, calculateBestDiscount } from '@/lib/discount-utils';
 import DiscountBadge from '@/components/ui/DiscountBadge';
 import LocationSelector from '@/components/products/LocationSelector';
@@ -31,6 +32,7 @@ export default function ProductDetailPage() {
   const { user } = useAuth();
   const { addToCart } = useCart();
   const { isFavorite, toggleFavorite } = useFavorites();
+  const { showSuccess, showError } = useNotification();
   const [product, setProduct] = useState<ProductWithDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
@@ -150,10 +152,16 @@ export default function ProductDetailPage() {
     try {
       setAddingToCart(true);
       await addToCart(product?.id || '', selectedVariant?.id, quantity);
-      alert('Item added to cart successfully!');
+      showSuccess(
+        'Added to Cart!',
+        `${product?.name} has been added to your cart`
+      );
     } catch (error) {
       console.error('Error:', error);
-      alert('Failed to add item to cart');
+      showError(
+        'Failed to Add to Cart',
+        'There was an error adding this item to your cart. Please try again.'
+      );
     } finally {
       setAddingToCart(false);
     }

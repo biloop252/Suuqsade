@@ -124,34 +124,34 @@ export default function HomepageMiddleSlider({ className = '', maxSlides = 5 }: 
                   className="w-full flex-shrink-0 relative cursor-pointer"
                   onClick={() => handleSlideClick(slide)}
                 >
-                  <div className="h-full relative group cursor-pointer overflow-hidden">
-                    {/* Background Image */}
-                    <div 
-                      className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-                      style={{ backgroundImage: `url(${slide.image_url})` }}
-                    />
-                    
-                    {/* Overlay Content */}
-                    {(slide.title || slide.subtitle || slide.description || slide.button_text) && (
-                      <div className="absolute inset-0 bg-gradient-to-r from-black/30 to-transparent flex items-center">
-                        <div className="p-8 text-white">
+                  <div className="h-full group cursor-pointer overflow-hidden">
+                    {slide.image_url ? (
+                      /* Show only image when image is present */
+                      <div 
+                        className="h-full bg-cover bg-center bg-no-repeat"
+                        style={{ backgroundImage: `url(${slide.image_url})` }}
+                      />
+                    ) : (
+                      /* Show only text content when no image */
+                      <div className="h-full flex items-center justify-center p-8 bg-gray-50">
+                        <div className="text-center">
                           {slide.subtitle && (
-                            <div className="text-sm font-medium mb-2 opacity-90">
+                            <div className="text-sm font-medium mb-2 text-gray-600">
                               {slide.subtitle}
                             </div>
                           )}
                           {slide.title && (
-                            <h3 className="text-2xl font-bold mb-2">
+                            <h3 className="text-2xl font-bold mb-2 text-gray-900">
                               {slide.title}
                             </h3>
                           )}
                           {slide.description && (
-                            <p className="text-lg mb-4 opacity-90">
+                            <p className="text-lg mb-4 text-gray-600">
                               {slide.description}
                             </p>
                           )}
                           {slide.button_text && (
-                            <div className="inline-block bg-white text-gray-900 px-6 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors">
+                            <div className="inline-block bg-primary-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-700 transition-colors">
                               {slide.button_text}
                             </div>
                           )}

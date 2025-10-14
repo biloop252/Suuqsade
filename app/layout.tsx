@@ -4,6 +4,7 @@ import './globals.css';
 import { AuthProvider } from '@/lib/auth-context';
 import { CartProvider } from '@/lib/cart-context';
 import { FavoritesProvider } from '@/lib/favorites-context';
+import { NotificationProvider } from '@/lib/notification-context';
 import ConditionalLayout from '@/components/layout/ConditionalLayout';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -24,9 +25,11 @@ export default function RootLayout({
         <AuthProvider>
           <CartProvider>
             <FavoritesProvider>
-              <ConditionalLayout>
-                {children}
-              </ConditionalLayout>
+              <NotificationProvider>
+                <ConditionalLayout>
+                  {children}
+                </ConditionalLayout>
+              </NotificationProvider>
             </FavoritesProvider>
           </CartProvider>
         </AuthProvider>

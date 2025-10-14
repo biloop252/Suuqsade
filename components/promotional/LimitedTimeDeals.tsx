@@ -81,7 +81,7 @@ export default function LimitedTimeDeals({ className = '', maxDeals = 4 }: Limit
 
   if (loading) {
     return (
-      <section className={`py-6 bg-gradient-to-r from-red-50 to-orange-50 relative overflow-hidden ${className}`}>
+      <section className={`py-6 bg-gray-50 relative overflow-hidden ${className}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="animate-pulse">
             <div className="h-8 bg-gray-200 rounded w-64 mb-4"></div>
@@ -100,37 +100,35 @@ export default function LimitedTimeDeals({ className = '', maxDeals = 4 }: Limit
     return null; // Don't render the section if no deals are available
   }
 
-  // Color schemes for different deals
+  // Color schemes for different deals - all using primary colors
   const colorSchemes = [
-    { bg: 'from-red-500 to-orange-500', border: 'border-red-100', hover: 'from-red-500/5 to-orange-500/5', text: 'text-red-600', button: 'bg-red-500 hover:bg-red-600' },
-    { bg: 'from-orange-500 to-yellow-500', border: 'border-orange-100', hover: 'from-orange-500/5 to-yellow-500/5', text: 'text-orange-600', button: 'bg-orange-500 hover:bg-orange-600' },
-    { bg: 'from-red-500 to-orange-500', border: 'border-red-100', hover: 'from-red-500/5 to-orange-500/5', text: 'text-red-600', button: 'bg-red-500 hover:bg-red-600' },
-    { bg: 'from-orange-500 to-yellow-500', border: 'border-orange-100', hover: 'from-orange-500/5 to-yellow-500/5', text: 'text-orange-600', button: 'bg-orange-500 hover:bg-orange-600' }
+    { bg: 'bg-primary-500', border: 'border-primary-100', hover: 'bg-primary-50', text: 'text-primary-600', button: 'bg-primary-500 hover:bg-primary-600' },
+    { bg: 'bg-primary-600', border: 'border-primary-200', hover: 'bg-primary-100', text: 'text-primary-700', button: 'bg-primary-600 hover:bg-primary-700' },
+    { bg: 'bg-primary-500', border: 'border-primary-100', hover: 'bg-primary-50', text: 'text-primary-600', button: 'bg-primary-500 hover:bg-primary-600' },
+    { bg: 'bg-primary-600', border: 'border-primary-200', hover: 'bg-primary-100', text: 'text-primary-700', button: 'bg-primary-600 hover:bg-primary-700' }
   ];
 
   return (
-    <section className={`py-6 bg-gradient-to-r from-red-50 to-orange-50 relative overflow-hidden ${className}`}>
+    <section className={`py-6 bg-gray-50 relative overflow-hidden ${className}`}>
       {/* Background decoration */}
-      <div className="absolute inset-0 bg-gradient-to-r from-red-100/20 to-orange-100/20"></div>
-      <div className="absolute top-0 right-0 w-64 h-64 bg-red-200/10 rounded-full -translate-y-32 translate-x-32"></div>
-      <div className="absolute bottom-0 left-0 w-48 h-48 bg-orange-200/10 rounded-full translate-y-24 -translate-x-24"></div>
+      <div className="absolute inset-0 bg-gray-100/30"></div>
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         {/* Section Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center space-x-4">
-            <div className="bg-gradient-to-r from-red-500 to-orange-500 rounded-xl p-3 shadow-lg">
+            <div className="bg-primary-500 rounded-xl p-3 shadow-lg">
               <ZapIcon className="h-7 w-7 text-white animate-pulse" />
             </div>
             <div>
-              <h2 className="text-3xl font-bold bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-transparent">
+              <h2 className="text-3xl font-bold text-primary-600">
                 Limited Time Deals
               </h2>
               <p className="text-gray-600 font-medium">Don't miss out on these exclusive offers</p>
             </div>
           </div>
 
-          <Link href="/products?deals=limited" className="bg-white/80 backdrop-blur-sm text-gray-700 px-6 py-3 rounded-xl hover:bg-white transition-all duration-300 flex items-center space-x-2 border border-red-200 shadow-lg hover:shadow-xl">
+          <Link href="/products?deals=limited" className="bg-white/80 backdrop-blur-sm text-gray-700 px-6 py-3 rounded-xl hover:bg-white transition-all duration-300 flex items-center space-x-2 border border-primary-200 shadow-lg hover:shadow-xl">
             <span className="font-medium">View All Deals</span>
             <ChevronRightIcon className="h-4 w-4" />
           </Link>
@@ -147,11 +145,11 @@ export default function LimitedTimeDeals({ className = '', maxDeals = 4 }: Limit
                 className={`bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border ${colorScheme.border} hover:shadow-2xl hover:scale-105 transition-all duration-300 group relative overflow-hidden cursor-pointer`}
                 onClick={() => handleDealClick(deal)}
               >
-                <div className={`absolute inset-0 bg-gradient-to-r ${colorScheme.hover} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}></div>
+                <div className={`absolute inset-0 ${colorScheme.hover} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}></div>
                 <div className="relative p-6">
                   <div className="text-center">
                     {/* Badge */}
-                    <div className={`bg-gradient-to-r ${colorScheme.bg} text-white text-xs px-3 py-1 rounded-full font-bold mb-3 inline-block`}>
+                    <div className={`${colorScheme.bg} text-white text-xs px-3 py-1 rounded-full font-bold mb-3 inline-block`}>
                       {deal.subtitle || 'LIMITED TIME'}
                     </div>
                     

@@ -5,13 +5,12 @@ import { useAuth } from '@/lib/auth-context';
 import { useFavorites } from '@/lib/favorites-context';
 import { ProductWithDetails } from '@/types/database';
 import ProductCard from '@/components/products/ProductCard';
-import { HeartIcon, GridIcon, ListIcon } from 'lucide-react';
+import { HeartIcon } from 'lucide-react';
 import Link from 'next/link';
 
 export default function FavoritesPage() {
   const { user } = useAuth();
   const { favorites, loading } = useFavorites();
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   if (!user) {
     return (
@@ -80,36 +79,16 @@ export default function FavoritesPage() {
                     Showing {favorites.length} item{favorites.length !== 1 ? 's' : ''}
                   </span>
                 </div>
-
-                {/* View Mode Toggle */}
-                <div className="flex border border-gray-300 rounded-md">
-                  <button
-                    onClick={() => setViewMode('grid')}
-                    className={`p-2 ${viewMode === 'grid' ? 'bg-primary-600 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
-                  >
-                    <GridIcon className="h-5 w-5" />
-                  </button>
-                  <button
-                    onClick={() => setViewMode('list')}
-                    className={`p-2 ${viewMode === 'list' ? 'bg-primary-600 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
-                  >
-                    <ListIcon className="h-5 w-5" />
-                  </button>
-                </div>
               </div>
             </div>
 
-            {/* Products Grid/List */}
-            <div className={
-              viewMode === 'grid'
-                ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
-                : 'space-y-4'
-            }>
+            {/* Products List */}
+            <div className="space-y-4">
               {favorites.map((product) => (
                 <ProductCard
                   key={product.id}
                   product={product}
-                  viewMode={viewMode}
+                  viewMode="list"
                 />
               ))}
             </div>
@@ -119,6 +98,8 @@ export default function FavoritesPage() {
     </div>
   );
 }
+
+
 
 
 

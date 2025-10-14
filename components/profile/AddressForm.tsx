@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
+import { useNotification } from '@/lib/notification-context';
 import { supabase } from '@/lib/supabase';
-import { toast } from 'react-hot-toast';
 import { XIcon, MapPinIcon } from 'lucide-react';
 import LocationSelector from '@/components/common/LocationSelector';
 
@@ -39,6 +39,7 @@ interface AddressFormProps {
 
 export default function AddressForm({ address, onClose, onSuccess }: AddressFormProps) {
   const { user } = useAuth();
+  const { showSuccess, showError } = useNotification();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     type: 'shipping' as 'billing' | 'shipping',
@@ -170,7 +171,10 @@ export default function AddressForm({ address, onClose, onSuccess }: AddressForm
           .eq('id', address.id);
 
         if (error) throw error;
-        toast.success('Address updated successfully!');
+        showSuccess(
+          'Address Updated!',
+          'Your address has been updated successfully'
+        );
       } else {
         // Create new address
         const { error } = await supabase
@@ -178,14 +182,20 @@ export default function AddressForm({ address, onClose, onSuccess }: AddressForm
           .insert(addressData);
 
         if (error) throw error;
-        toast.success('Address added successfully!');
+        showSuccess(
+          'Address Added!',
+          'Your new address has been added successfully'
+        );
       }
 
       onSuccess();
       onClose();
     } catch (error: any) {
       console.error('Error saving address:', error);
-      toast.error(error.message || 'Failed to save address');
+      showError(
+        'Address Save Failed',
+        error.message || 'Failed to save address. Please try again.'
+      );
     } finally {
       setIsLoading(false);
     }

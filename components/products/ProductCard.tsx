@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { useCart } from '@/lib/cart-context';
+import { useNotification } from '@/lib/notification-context';
 import { useFavorites } from '@/lib/favorites-context';
 import { ProductDiscount, calculateBestDiscount } from '@/lib/discount-utils';
 import DiscountBadge from '@/components/ui/DiscountBadge';
@@ -31,6 +32,7 @@ export default function ProductCard({ product, viewMode = 'grid', discountData }
   const { user } = useAuth();
   const { addToCart } = useCart();
   const { isFavorite, toggleFavorite } = useFavorites();
+  const { showSuccess, showError } = useNotification();
   const [isHovered, setIsHovered] = useState(false);
   const [addingToCart, setAddingToCart] = useState(false);
   const [discounts, setDiscounts] = useState<ProductDiscount[]>([]);
@@ -112,10 +114,16 @@ export default function ProductCard({ product, viewMode = 'grid', discountData }
     try {
       setAddingToCart(true);
       await addToCart(product.id);
-      alert('Item added to cart!');
+      showSuccess(
+        'Added to Cart!',
+        `${product.name} has been added to your cart`
+      );
     } catch (error) {
       console.error('Error adding to cart:', error);
-      alert('Failed to add item to cart');
+      showError(
+        'Failed to Add to Cart',
+        'There was an error adding this item to your cart. Please try again.'
+      );
     } finally {
       setAddingToCart(false);
     }
@@ -185,13 +193,13 @@ export default function ProductCard({ product, viewMode = 'grid', discountData }
                 {product.brand && (
                   <Link
                     href={`/brands/${product.brand.slug}`}
-                    className="text-orange-500 hover:text-orange-600 text-sm font-medium"
+                    className="text-primary-500 hover:text-orange-600 text-sm font-medium"
                   >
                     {product.brand.name}
                   </Link>
                 )}
                 <Link href={`/products/${product.slug}`}>
-                  <h3 className="text-lg font-semibold text-gray-900 hover:text-orange-500 mt-1 mb-2 transition-colors">
+                  <h3 className="text-lg font-semibold text-gray-900 hover:text-primary-500 mt-1 mb-2 transition-colors">
                     {product.name}
                   </h3>
                 </Link>
@@ -237,7 +245,7 @@ export default function ProductCard({ product, viewMode = 'grid', discountData }
                 <button
                   onClick={handleAddToCart}
                   disabled={addingToCart}
-                  className="flex items-center justify-center px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+                  className="flex items-center justify-center px-4 py-2 bg-primary-500 text-white rounded-md hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
                 >
                   <ShoppingCart className="h-4 w-4 mr-2" />
                   {addingToCart ? 'Adding...' : 'Add to Cart'}
@@ -321,14 +329,14 @@ export default function ProductCard({ product, viewMode = 'grid', discountData }
         {product.brand && (
           <Link
             href={`/brands/${product.brand.slug}`}
-            className="text-orange-500 hover:text-orange-600 text-sm font-medium"
+            className="text-primary-500 hover:text-orange-600 text-sm font-medium"
           >
             {product.brand.name}
           </Link>
         )}
         
         <Link href={`/products/${product.slug}`}>
-          <h3 className="text-lg font-semibold text-gray-900 hover:text-orange-500 mt-1 mb-2 line-clamp-2 transition-colors">
+          <h3 className="text-lg font-semibold text-gray-900 hover:text-primary-500 mt-1 mb-2 line-clamp-2 transition-colors">
             {product.name}
           </h3>
         </Link>

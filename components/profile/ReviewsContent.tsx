@@ -33,7 +33,10 @@ export default function ReviewsContent() {
 
   const fetchUserReviews = async () => {
     try {
-      setLoading(true);
+      // Only set loading if we don't have reviews yet
+      if (reviews.length === 0) {
+        setLoading(true);
+      }
       
       const { data, error } = await supabase
         .from('reviews')

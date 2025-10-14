@@ -115,40 +115,41 @@ export default function PromotionalBanner({
       }}
     >
       {imageUrl ? (
-        <div className="relative">
-          <img
-            src={imageUrl}
-            alt={banner.title}
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.style.display = 'none';
-            }}
-          />
+        <div className="flex flex-col">
+          {/* Image Container */}
+          <div className="relative">
+            <img
+              src={imageUrl}
+              alt={banner.title}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+              }}
+            />
+          </div>
           
-          {/* Content Overlay */}
+          {/* Content Below Image */}
           {(showTitle || showDescription) && (banner.title || banner.subtitle || banner.description || banner.button_text) && (
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-end">
-              <div className="p-4 w-full">
-                {showTitle && banner.title && (
-                  <h3 className="text-lg font-bold mb-1">{banner.title}</h3>
-                )}
-                {banner.subtitle && (
-                  <h4 className="text-md font-semibold mb-1">{banner.subtitle}</h4>
-                )}
-                {showDescription && banner.description && (
-                  <p className="text-sm mb-2 line-clamp-2">{banner.description}</p>
-                )}
-                {banner.button_text && (
-                  <button
-                    onClick={handleBannerClick}
-                    className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition-colors flex items-center gap-1"
-                  >
-                    {banner.button_text}
-                    {banner.target === '_blank' && <ExternalLink className="w-3 h-3" />}
-                  </button>
-                )}
-              </div>
+            <div className="p-3 bg-white">
+              {showTitle && banner.title && (
+                <h3 className="text-lg font-bold mb-1 text-gray-900">{banner.title}</h3>
+              )}
+              {banner.subtitle && (
+                <h4 className="text-md font-semibold mb-1 text-gray-700">{banner.subtitle}</h4>
+              )}
+              {showDescription && banner.description && (
+                <p className="text-sm mb-2 line-clamp-2 text-gray-600">{banner.description}</p>
+              )}
+              {banner.button_text && (
+                <button
+                  onClick={handleBannerClick}
+                  className="bg-primary-600 text-white px-3 py-1 rounded text-sm hover:bg-primary-700 transition-colors flex items-center gap-1"
+                >
+                  {banner.button_text}
+                  {banner.target === '_blank' && <ExternalLink className="w-3 h-3" />}
+                </button>
+              )}
             </div>
           )}
         </div>
