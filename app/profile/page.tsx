@@ -7,6 +7,7 @@ import ProfileSidebar from '@/components/profile/ProfileSidebar';
 import ProfileContent from '@/components/profile/ProfileContent';
 import { useAuth } from '@/lib/auth-context';
 
+// This page must be client-side due to authentication context and URL parameters
 export default function ProfilePage() {
   const { loading } = useAuth();
   const searchParams = useSearchParams();

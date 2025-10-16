@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 
+// This page must be client-side due to authentication handling
 export default function AuthCallback() {
   const router = useRouter();
   const searchParams = useSearchParams();

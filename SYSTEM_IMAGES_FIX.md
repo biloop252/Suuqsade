@@ -57,3 +57,4 @@ Make sure you have the following environment variables set:
 3. Verify images appear in the admin settings
 4. Check that images are stored in the `system_images` table
 
+

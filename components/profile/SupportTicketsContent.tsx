@@ -49,7 +49,7 @@ export default function SupportTicketsContent() {
     try {
       // Only set loading if we don't have tickets yet
       if (tickets.length === 0) {
-        setLoading(true);
+      setLoading(true);
       }
       const { data, error } = await supabase
         .from('support_tickets')
@@ -159,7 +159,7 @@ export default function SupportTicketsContent() {
         }]);
 
       if (error) throw error;
-
+      
       setNewMessage('');
       await fetchMessages(selectedTicket.id);
       showSuccess('Message sent successfully');
@@ -249,67 +249,67 @@ export default function SupportTicketsContent() {
       {showNewTicketForm && (
         <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-lg font-medium text-gray-900 mb-4">Create New Support Ticket</h3>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Subject *
-              </label>
-              <input
-                type="text"
-                value={newTicket.subject}
-                onChange={(e) => setNewTicket({ ...newTicket, subject: e.target.value })}
-                placeholder="Brief description of your issue"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              />
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Subject *
+                </label>
+                <input
+                  type="text"
+                  value={newTicket.subject}
+                  onChange={(e) => setNewTicket({ ...newTicket, subject: e.target.value })}
+                  placeholder="Brief description of your issue"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Category
+                </label>
+                <select
+                  value={newTicket.category_id}
+                  onChange={(e) => setNewTicket({ ...newTicket, category_id: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                >
+                  <option value="">Select a category</option>
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Priority
+                </label>
+                <select
+                  value={newTicket.priority}
+                  onChange={(e) => setNewTicket({ ...newTicket, priority: e.target.value as any })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                >
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="urgent">Urgent</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Description *
+                </label>
+                <textarea
+                  value={newTicket.description}
+                  onChange={(e) => setNewTicket({ ...newTicket, description: e.target.value })}
+                  placeholder="Please provide detailed information about your issue..."
+                rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                />
             </div>
             
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Category
-              </label>
-              <select
-                value={newTicket.category_id}
-                onChange={(e) => setNewTicket({ ...newTicket, category_id: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              >
-                <option value="">Select a category</option>
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Priority
-              </label>
-              <select
-                value={newTicket.priority}
-                onChange={(e) => setNewTicket({ ...newTicket, priority: e.target.value as any })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              >
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-                <option value="urgent">Urgent</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Description *
-              </label>
-              <textarea
-                value={newTicket.description}
-                onChange={(e) => setNewTicket({ ...newTicket, description: e.target.value })}
-                placeholder="Please provide detailed information about your issue..."
-                rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              />
-            </div>
-
             <div className="flex justify-end space-x-3">
               <button
                 onClick={() => setShowNewTicketForm(false)}
@@ -374,14 +374,14 @@ export default function SupportTicketsContent() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {tickets.map((ticket) => (
+                {tickets.map((ticket) => (
                       <tr
-                        key={ticket.id}
+                    key={ticket.id}
                         className={`hover:bg-gray-50 cursor-pointer transition-colors ${
-                          selectedTicket?.id === ticket.id ? 'bg-primary-50' : ''
-                        }`}
-                        onClick={() => handleTicketClick(ticket)}
-                      >
+                      selectedTicket?.id === ticket.id ? 'bg-primary-50' : ''
+                    }`}
+                    onClick={() => handleTicketClick(ticket)}
+                  >
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-medium text-gray-900">
                             {ticket.ticket_number}
@@ -418,9 +418,9 @@ export default function SupportTicketsContent() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           <div className="flex items-center">
-                            <Calendar className="h-3 w-3 mr-1" />
-                            {formatDate(ticket.created_at)}
-                          </div>
+                          <Calendar className="h-3 w-3 mr-1" />
+                          {formatDate(ticket.created_at)}
+                        </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <button
@@ -491,9 +491,9 @@ export default function SupportTicketsContent() {
               {/* Messages */}
               <div className="border-t border-gray-200">
                 <div className="p-6">
-                  <h4 className="text-sm font-medium text-gray-900 mb-4">Messages</h4>
+                <h4 className="text-sm font-medium text-gray-900 mb-4">Messages</h4>
                   <div className="space-y-4 max-h-64 overflow-y-auto">
-                    {messages.map((message) => (
+                  {messages.map((message) => (
                       <div key={message.id} className="flex space-x-3">
                         <div className="flex-shrink-0">
                           <div className="h-8 w-8 bg-primary-100 rounded-full flex items-center justify-center">
@@ -503,43 +503,43 @@ export default function SupportTicketsContent() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center space-x-2 mb-1">
                             <p className="text-sm font-medium text-gray-900">
-                              {message.user?.first_name} {message.user?.last_name}
+                            {message.user?.first_name} {message.user?.last_name}
                             </p>
-                            <span className="text-xs text-gray-500">
-                              {formatDate(message.created_at)}
-                            </span>
-                          </div>
-                          <p className="text-sm text-gray-600 whitespace-pre-wrap">
-                            {message.message}
-                          </p>
-                        </div>
+                        <span className="text-xs text-gray-500">
+                          {formatDate(message.created_at)}
+                        </span>
                       </div>
-                    ))}
+                          <p className="text-sm text-gray-600 whitespace-pre-wrap">
+                        {message.message}
+                      </p>
+                        </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Reply Form */}
+              {selectedTicket.status !== 'closed' && (
+                <div className="p-6 border-t border-gray-200">
+                  <div className="space-y-4">
+                    <textarea
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      placeholder="Type your message..."
+                      rows={3}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    />
+                    <button
+                      onClick={sendMessage}
+                      disabled={!newMessage.trim()}
+                      className="w-full flex items-center justify-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      <Send className="h-4 w-4 mr-2" />
+                      Send Message
+                    </button>
                   </div>
                 </div>
-
-                {/* Reply Form */}
-                {selectedTicket.status !== 'closed' && (
-                  <div className="p-6 border-t border-gray-200">
-                    <div className="space-y-4">
-                      <textarea
-                        value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
-                        placeholder="Type your message..."
-                        rows={3}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                      />
-                      <button
-                        onClick={sendMessage}
-                        disabled={!newMessage.trim()}
-                        className="w-full flex items-center justify-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                      >
-                        <Send className="h-4 w-4 mr-2" />
-                        Send Message
-                      </button>
-                    </div>
-                  </div>
-                )}
+              )}
               </div>
             </div>
           ) : (

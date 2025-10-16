@@ -38,7 +38,9 @@ import {
   GamepadIcon,
   BookOpenIcon,
   CarIcon,
-  BabyIcon
+  BabyIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon
 } from 'lucide-react';
 
 export default function Navigation() {
@@ -52,6 +54,9 @@ export default function Navigation() {
   const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
   const { suggestions, loading } = useSearchSuggestions(searchTerm);
 
   const handleSignOut = async () => {
@@ -62,6 +67,33 @@ export default function Navigation() {
   const handleSearch = (searchQuery: string) => {
     if (searchQuery.trim()) {
       router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
+
+  // Scroll functions for category navigation
+  const scrollLeft = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({
+        left: -200,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  const scrollRight = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({
+        left: 200,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  const checkScrollButtons = () => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth);
     }
   };
 
@@ -106,6 +138,28 @@ export default function Navigation() {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  // Check scroll buttons visibility
+  useEffect(() => {
+    const checkScroll = () => {
+      checkScrollButtons();
+    };
+
+    // Check initially and after categories load
+    checkScroll();
+    
+    // Add scroll event listener
+    const scrollContainer = scrollContainerRef.current;
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', checkScroll);
+      window.addEventListener('resize', checkScroll);
+      
+      return () => {
+        scrollContainer.removeEventListener('scroll', checkScroll);
+        window.removeEventListener('resize', checkScroll);
+      };
+    }
+  }, [categories, categoriesLoading]);
 
   return (
     <div className="bg-white shadow-sm">
@@ -317,7 +371,21 @@ export default function Navigation() {
           <div className="flex items-center h-12">
             <CategoriesDropdown />
             
-            <div className="flex items-center space-x-4 ml-6 overflow-x-auto scrollbar-hide flex-1">
+            {/* Scroll Left Button */}
+            {canScrollLeft && (
+              <button
+                onClick={scrollLeft}
+                className="flex-shrink-0 p-1 ml-2 text-gray-500 hover:text-primary-500 transition-colors"
+                aria-label="Scroll left"
+              >
+                <ChevronLeftIcon className="h-5 w-5" />
+              </button>
+            )}
+            
+            <div 
+              ref={scrollContainerRef}
+              className="flex items-center space-x-4 ml-2 overflow-x-auto scrollbar-hide flex-1 scroll-smooth"
+            >
               {categoriesLoading ? (
                 // Loading skeleton for categories - show 8 skeleton items
                 [...Array(8)].map((_, index) => (
@@ -352,6 +420,17 @@ export default function Navigation() {
                 <span className="bg-secondary-500 text-gray-900 text-xs px-2 py-0.5 rounded-full">New</span>
               </Link>
             </div>
+
+            {/* Scroll Right Button */}
+            {canScrollRight && (
+              <button
+                onClick={scrollRight}
+                className="flex-shrink-0 p-1 ml-2 text-gray-500 hover:text-primary-500 transition-colors"
+                aria-label="Scroll right"
+              >
+                <ChevronRightIcon className="h-5 w-5" />
+              </button>
+            )}
           </div>
         </div>
       </div>

@@ -57,3 +57,4 @@ WHERE table_name = 'system_images' AND table_schema = 'public';
 -- VALUES ('logo', 'test-url', 'Test logo')
 -- ON CONFLICT DO NOTHING;
 
+

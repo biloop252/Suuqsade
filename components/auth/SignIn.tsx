@@ -25,20 +25,6 @@ export default function SignIn() {
     }
   }, [user, loading, router]);
 
-  // Show loading while checking authentication
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-      </div>
-    );
-  }
-
-  // Don't render the form if user is authenticated
-  if (user) {
-    return null;
-  }
-
   // Check for URL error parameters from auth callback
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -66,6 +52,20 @@ export default function SignIn() {
     
     testConnection();
   }, []);
+
+  // Show loading while checking authentication
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+      </div>
+    );
+  }
+
+  // Don't render the form if user is authenticated
+  if (user) {
+    return null;
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
