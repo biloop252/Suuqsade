@@ -5,24 +5,207 @@
 @layer base {
   html {
     font-family: system-ui, sans-serif;
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* Responsive typography */
+  h1, h2, h3, h4, h5, h6 {
+    line-height: 1.2;
+    font-weight: 600;
+  }
+  
+  /* Touch-friendly button sizing */
+  button, 
+  [role="button"], 
+  input[type="submit"], 
+  input[type="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Responsive images */
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  /* Remove default focus outlines and highlights */
+  *:focus {
+    outline: none !important;
+  }
+  
+  /* Remove tap highlights on mobile */
+  * {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  
+  /* Allow text selection for input fields and text content */
+  input, textarea, [contenteditable] {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+  }
+  
+  /* Remove button and link highlights */
+  button, a, [role="button"] {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+  }
+  
+  /* Remove focus rings for mouse users, keep for keyboard users */
+  *:focus:not(:focus-visible) {
+    outline: none;
+  }
+  
+  /* Keep focus visible for keyboard navigation */
+  *:focus-visible {
+    outline: 2px solid theme('colors.primary.500');
+    outline-offset: 2px;
+  }
+  
+  /* Prevent horizontal scroll */
+  body {
+    overflow-x: hidden;
   }
 }
 
 @layer components {
+  /* Responsive Button Styles */
   .btn-primary {
-    @apply bg-primary-500 text-white px-4 py-2 rounded-lg hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors font-medium;
+    @apply bg-primary-500 text-white px-3 py-2 sm:px-4 sm:py-2 rounded-lg hover:bg-primary-600 transition-colors font-medium text-sm sm:text-base min-h-[44px] min-w-[44px] flex items-center justify-center;
+    outline: none !important;
+    -webkit-tap-highlight-color: transparent;
   }
   
   .btn-secondary {
-    @apply bg-secondary-500 text-gray-900 px-4 py-2 rounded-lg hover:bg-secondary-400 focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:ring-offset-2 transition-colors font-medium;
+    @apply bg-secondary-500 text-gray-900 px-3 py-2 sm:px-4 sm:py-2 rounded-lg hover:bg-secondary-400 transition-colors font-medium text-sm sm:text-base min-h-[44px] min-w-[44px] flex items-center justify-center;
+    outline: none !important;
+    -webkit-tap-highlight-color: transparent;
   }
   
+  .btn-sm {
+    @apply px-2 py-1 text-xs sm:text-sm min-h-[36px] min-w-[36px];
+  }
+  
+  .btn-lg {
+    @apply px-6 py-3 text-lg sm:text-xl min-h-[52px];
+  }
+  
+  /* Responsive Input Styles */
   .input-field {
-    @apply block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 transition-colors;
+    @apply block w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 transition-colors text-sm sm:text-base min-h-[44px];
   }
   
+  /* Responsive Card Styles */
   .card {
-    @apply bg-white rounded-lg shadow-sm p-6 border border-gray-100;
+    @apply bg-white rounded-lg shadow-sm p-4 sm:p-6 border border-gray-100;
+  }
+  
+  .card-sm {
+    @apply p-3 sm:p-4;
+  }
+  
+  .card-lg {
+    @apply p-6 sm:p-8;
+  }
+  
+  /* Responsive Grid Utilities */
+  .grid-responsive {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6;
+  }
+  
+  .grid-responsive-2 {
+    @apply grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6;
+  }
+  
+  .grid-responsive-3 {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6;
+  }
+  
+  /* Responsive Container */
+  .container-responsive {
+    @apply w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  
+  /* Responsive Text */
+  .text-responsive-xs {
+    @apply text-xs sm:text-sm;
+  }
+  
+  .text-responsive-sm {
+    @apply text-sm sm:text-base;
+  }
+  
+  .text-responsive-base {
+    @apply text-base sm:text-lg;
+  }
+  
+  .text-responsive-lg {
+    @apply text-lg sm:text-xl;
+  }
+  
+  .text-responsive-xl {
+    @apply text-xl sm:text-2xl;
+  }
+  
+  .text-responsive-2xl {
+    @apply text-2xl sm:text-3xl lg:text-4xl;
+  }
+  
+  .text-responsive-3xl {
+    @apply text-3xl sm:text-4xl lg:text-5xl;
+  }
+  
+  /* Responsive Spacing */
+  .space-responsive {
+    @apply space-y-4 sm:space-y-6 lg:space-y-8;
+  }
+  
+  .space-x-responsive {
+    @apply space-x-2 sm:space-x-4 lg:space-x-6;
+  }
+  
+  .space-y-responsive {
+    @apply space-y-2 sm:space-y-4 lg:space-y-6;
+  }
+  
+  /* Mobile-first Flexbox */
+  .flex-responsive {
+    @apply flex flex-col sm:flex-row;
+  }
+  
+  .flex-responsive-reverse {
+    @apply flex flex-col-reverse sm:flex-row;
+  }
+  
+  /* Responsive Visibility */
+  .mobile-only {
+    @apply block sm:hidden;
+  }
+  
+  .desktop-only {
+    @apply hidden sm:block;
+  }
+  
+  .tablet-up {
+    @apply hidden md:block;
+  }
+  
+  .mobile-tablet-only {
+    @apply block lg:hidden;
   }
   
   /* Enhanced scrollbar hiding for better cross-browser support */
@@ -35,6 +218,25 @@
     display: none !important; /* Safari and Chrome */
     width: 0 !important;
     height: 0 !important;
+  }
+
+  /* Remove all click highlights and outlines */
+  button, a, [role="button"], input, select, textarea {
+    outline: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-touch-callout: none !important;
+  }
+  
+  /* Remove active/focus states that cause highlights */
+  button:active, a:active, [role="button"]:active {
+    outline: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+  }
+  
+  /* Remove focus rings on all elements */
+  *:focus {
+    outline: none !important;
+    box-shadow: none !important;
   }
 
   /* Social Auth Button Styles */
