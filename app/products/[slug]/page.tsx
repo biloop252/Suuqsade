@@ -281,17 +281,19 @@ export default function ProductDetailPage() {
       const positiveCount = reviewsData?.filter((r: any) => (r.rating || 0) >= 4).length || 0;
       const positiveRatingPercent = totalReviews > 0 ? Math.round((positiveCount / totalReviews) * 100) : 0;
 
-      // Fetch total units sold across order_items for these products
-      const { data: itemsData, error: itemsError } = await supabase
-        .from('order_items')
-        .select('quantity, product_id')
-        .in('product_id', productIds);
-
-      if (itemsError) {
-        console.error('Error fetching vendor sold units:', itemsError);
+      // Fetch units sold via server-side function so it's consistent for all users
+      let totalUnitsSold = 0;
+      try {
+        const { data: unitsSoldData, error: unitsError } = await supabase
+          .rpc('get_vendor_units_sold', { vendor_uuid: vendorId });
+        if (unitsError) {
+          console.error('Error fetching vendor units sold via RPC:', unitsError);
+        } else if (typeof unitsSoldData === 'number') {
+          totalUnitsSold = unitsSoldData as number;
+        }
+      } catch (rpcErr) {
+        console.error('RPC error:', rpcErr);
       }
-
-      const totalUnitsSold = (itemsData || []).reduce((sum, item: any) => sum + (item.quantity || 0), 0);
 
       setSellerStats({ averageRating, totalReviews, totalUnitsSold, positiveRatingPercent });
     } catch (error) {
