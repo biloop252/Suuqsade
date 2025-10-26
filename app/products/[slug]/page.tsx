@@ -26,6 +26,7 @@ import LocationSelector from '@/components/products/LocationSelector';
 import DeliveryCalculator from '@/components/products/DeliveryCalculator';
 import ProductOptions from '@/components/products/ProductOptions';
 import ReviewDisplay from '@/components/reviews/ReviewDisplay';
+import ProductCard from '@/components/products/ProductCard';
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -61,6 +62,20 @@ export default function ProductDetailPage() {
     averageRating: 0,
     totalReviews: 0
   });
+  const [relatedProducts, setRelatedProducts] = useState<ProductWithDetails[]>([]);
+  const [recommendedProducts, setRecommendedProducts] = useState<ProductWithDetails[]>([]);
+  const [productTags, setProductTags] = useState<Array<{ id: string; name: string; slug: string; description?: string }>>([]);
+  const [sellerStats, setSellerStats] = useState<{
+    averageRating: number;
+    totalReviews: number;
+    totalUnitsSold: number;
+    positiveRatingPercent: number;
+  }>({
+    averageRating: 0,
+    totalReviews: 0,
+    totalUnitsSold: 0,
+    positiveRatingPercent: 0
+  });
 
   useEffect(() => {
     if (params.slug) {
@@ -78,10 +93,13 @@ export default function ProductDetailPage() {
           *,
           category:categories(*),
           brand:brands(*),
-          vendor:vendor_profiles(business_name, city, country, logo_url),
+          vendor:vendor_profiles(business_name, business_description, city, country, logo_url),
           images:product_images(*),
           variants:product_variants(*),
-          reviews:reviews(*)
+          reviews:reviews(*),
+          tag_assignments:product_tag_assignments(
+            tag:product_tags(*)
+          )
         `)
         .eq('slug', params.slug)
         .eq('is_active', true)
@@ -134,11 +152,150 @@ export default function ProductDetailPage() {
         } catch (reviewError) {
           console.error('Error fetching review stats:', reviewError);
         }
+
+        // Fetch related and recommended products
+        try {
+          await fetchRelatedAndRecommended(data as ProductWithDetails);
+        } catch (relatedErr) {
+          console.error('Error fetching related/recommended products:', relatedErr);
+        }
+
+        // Fallback: fetch product tags explicitly (in case nested join doesn't return due to policies/links)
+        try {
+          const { data: tagRows, error: tagsError } = await supabase
+            .from('product_tag_assignments')
+            .select('tag:product_tags(*)')
+            .eq('product_id', data.id);
+          if (tagsError) {
+            console.error('Error fetching product tags:', tagsError);
+          } else {
+            const tags = (tagRows || [])
+              .map((r: any) => r?.tag)
+              .filter(Boolean)
+              .map((t: any) => ({ id: t.id, name: t.name, slug: t.slug, description: t.description }));
+            setProductTags(tags);
+          }
+        } catch (tagsErr) {
+          console.error('Error:', tagsErr);
+        }
+
+        // Fetch seller stats if vendor_id exists
+        try {
+          if (data.vendor_id) {
+            await fetchSellerStats(data.vendor_id);
+          }
+        } catch (sellerErr) {
+          console.error('Error fetching seller stats:', sellerErr);
+        }
       }
     } catch (error) {
       console.error('Error:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchRelatedAndRecommended = async (p: ProductWithDetails) => {
+    try {
+      const baseSelect = `
+        *,
+        category:categories(*),
+        brand:brands(*),
+        images:product_images(*),
+        variants:product_variants(*),
+        reviews:reviews(*)
+      `;
+
+      // Related by category
+      if (p.category_id) {
+        const { data: related } = await supabase
+          .from('products')
+          .select(baseSelect)
+          .eq('is_active', true)
+          .eq('category_id', p.category_id)
+          .neq('id', p.id)
+          .order('created_at', { ascending: false })
+          .limit(10);
+        setRelatedProducts(related || []);
+      } else {
+        setRelatedProducts([]);
+      }
+
+      // Recommended by brand (fallback to category or recent)
+      let query = supabase
+        .from('products')
+        .select(baseSelect)
+        .eq('is_active', true)
+        .neq('id', p.id);
+
+      if (p.brand_id) {
+        query = query.eq('brand_id', p.brand_id);
+      } else if (p.category_id) {
+        query = query.eq('category_id', p.category_id);
+      }
+
+      const { data: rec } = await query
+        .order('created_at', { ascending: false })
+        .limit(10);
+      setRecommendedProducts(rec || []);
+    } catch (err) {
+      console.error('Error in fetchRelatedAndRecommended:', err);
+    }
+  };
+
+  const fetchSellerStats = async (vendorId: string) => {
+    try {
+      // Get all product IDs for this vendor
+      const { data: vendorProducts, error: vpError } = await supabase
+        .from('products')
+        .select('id')
+        .eq('vendor_id', vendorId)
+        .eq('is_active', true);
+
+      if (vpError) {
+        console.error('Error fetching vendor products:', vpError);
+        return;
+      }
+
+      const productIds = (vendorProducts || []).map(p => p.id);
+      if (productIds.length === 0) {
+        setSellerStats({ averageRating: 0, totalReviews: 0, totalUnitsSold: 0, positiveRatingPercent: 0 });
+        return;
+      }
+
+      // Fetch approved reviews for these products
+      const { data: reviewsData, error: reviewsError } = await supabase
+        .from('reviews')
+        .select('rating')
+        .in('product_id', productIds)
+        .eq('is_approved', true);
+
+      if (reviewsError) {
+        console.error('Error fetching vendor reviews:', reviewsError);
+      }
+
+      const totalReviews = reviewsData?.length || 0;
+      const averageRating = totalReviews > 0
+        ? (reviewsData!.reduce((sum, r) => sum + (r as any).rating, 0) / totalReviews)
+        : 0;
+      const positiveCount = reviewsData?.filter((r: any) => (r.rating || 0) >= 4).length || 0;
+      const positiveRatingPercent = totalReviews > 0 ? Math.round((positiveCount / totalReviews) * 100) : 0;
+
+      // Fetch total units sold across order_items for these products
+      const { data: itemsData, error: itemsError } = await supabase
+        .from('order_items')
+        .select('quantity, product_id')
+        .in('product_id', productIds);
+
+      if (itemsError) {
+        console.error('Error fetching vendor sold units:', itemsError);
+      }
+
+      const totalUnitsSold = (itemsData || []).reduce((sum, item: any) => sum + (item.quantity || 0), 0);
+
+      setSellerStats({ averageRating, totalReviews, totalUnitsSold, positiveRatingPercent });
+    } catch (error) {
+      console.error('Error computing seller stats:', error);
     }
   };
 
@@ -445,6 +602,8 @@ export default function ProductDetailPage() {
                 <p className="text-gray-600 text-sm sm:text-base mb-6">{product.short_description}</p>
               )}
 
+          
+
               {/* Discount Information */}
               {hasDiscount && discounts.length > 0 && (
                 <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
@@ -589,30 +748,30 @@ export default function ProductDetailPage() {
                   <div className="border-t pt-4">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-medium text-gray-700">Seller Rating</span>
-                      <span className="text-sm text-gray-500">4.8/5</span>
+                      <span className="text-sm text-gray-500">{sellerStats.averageRating.toFixed(1)}/5</span>
                     </div>
                     <div className="flex items-center space-x-1 mb-2">
                       {[...Array(5)].map((_, i) => (
                         <Star
                           key={i}
                           className={`h-4 w-4 ${
-                            i < 4 ? 'text-yellow-400 fill-current' : 'text-gray-300'
+                            i < Math.round(sellerStats.averageRating) ? 'text-yellow-400 fill-current' : 'text-gray-300'
                           }`}
                         />
                       ))}
                     </div>
-                    <p className="text-xs text-gray-500">Based on 156 reviews</p>
+                    <p className="text-xs text-gray-500">Based on {sellerStats.totalReviews} reviews</p>
                   </div>
 
                   {/* Seller Stats */}
                   <div className="border-t pt-4">
                     <div className="grid grid-cols-2 gap-4 text-center">
                       <div>
-                        <p className="text-lg font-semibold text-gray-900">98%</p>
+                        <p className="text-lg font-semibold text-gray-900">{sellerStats.positiveRatingPercent}%</p>
                         <p className="text-xs text-gray-500">Positive Rating</p>
                       </div>
                       <div>
-                        <p className="text-lg font-semibold text-gray-900">2.1k</p>
+                        <p className="text-lg font-semibold text-gray-900">{sellerStats.totalUnitsSold}</p>
                         <p className="text-xs text-gray-500">Products Sold</p>
                       </div>
                     </div>
@@ -621,18 +780,16 @@ export default function ProductDetailPage() {
                   {/* Seller Description */}
                   <div className="border-t pt-4">
                     <h5 className="text-sm font-medium text-gray-700 mb-2">About This Seller</h5>
-                    <p className="text-sm text-gray-600 leading-relaxed">
-                      {(product as any).vendor.business_name} is a trusted seller specializing in high-quality products. 
-                      We pride ourselves on excellent customer service and fast shipping. All our products come with 
-                      a satisfaction guarantee.
+                    <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
+                      {(product as any).vendor.business_description || `${(product as any).vendor.business_name} is a trusted seller.`}
                     </p>
                   </div>
 
-                  {/* Contact Seller Button */}
+                  {/* View Seller Button */}
                   <div className="border-t pt-4">
-                    <button className="w-full bg-gray-100 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-200 transition-colors text-sm font-medium">
-                      Contact Seller
-                    </button>
+                    <Link href={`/vendors/${(product as any).vendor_id || ''}`} className="block w-full bg-gray-100 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-200 transition-colors text-sm font-medium text-center">
+                      View Seller
+                    </Link>
                   </div>
                 </div>
               ) : (
@@ -668,6 +825,77 @@ export default function ProductDetailPage() {
             productName={product.name} 
           />
         </div>
+
+        {/* Tags - moved below reviews */}
+        {(product.category || product.brand || (product as any).tag_assignments?.length > 0 || productTags.length > 0) && (
+          <div className="mt-12">
+            <h3 className="text-lg font-semibold text-gray-900 mb-3">Tags</h3>
+            <div className="flex flex-wrap gap-2">
+              {product.category && (
+                <Link
+                  href={`/categories/${product.category.slug}`}
+                  className="px-2.5 py-1 text-xs bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200"
+                >
+                  #{product.category.name}
+                </Link>
+              )}
+              {product.brand && (
+                <Link
+                  href={`/brands/${product.brand.slug}`}
+                  className="px-2.5 py-1 text-xs bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200"
+                >
+                  #{product.brand.name}
+                </Link>
+              )}
+              {(product as any).tag_assignments?.map((ta: any) => (
+                ta?.tag ? (
+                  <Link
+                    key={ta.tag.id}
+                    href={`/tags/${ta.tag.slug}`}
+                    className="px-2.5 py-1 text-xs bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200"
+                    title={ta.tag.description || ''}
+                  >
+                    #{ta.tag.name}
+                  </Link>
+                ) : null
+              ))}
+              {productTags.map((t) => (
+                <Link
+                  key={`fallback-${t.id}`}
+                  href={`/tags/${t.slug}`}
+                  className="px-2.5 py-1 text-xs bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200"
+                  title={t.description || ''}
+                >
+                  #{t.name}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Related Products */}
+        {relatedProducts.length > 0 && (
+          <div className="mt-16">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Related Products</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+              {relatedProducts.map((rp) => (
+                <ProductCard key={rp.id} product={rp} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* You May Also Like */}
+        {recommendedProducts.length > 0 && (
+          <div className="mt-12">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">You May Also Like</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+              {recommendedProducts.map((rp) => (
+                <ProductCard key={rp.id} product={rp} />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

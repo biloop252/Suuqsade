@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import DeliveryOptionsManagement from './DeliveryOptionsManagement';
 import DeliveryOptionsSelector from './DeliveryOptionsSelector';
+import ProductTagsSelector from '@/components/admin/ProductTagsSelector';
 
 interface ProductFormProps {
   product?: ProductWithDetails | null;
@@ -53,7 +54,8 @@ export default function ProductForm({
     is_returnable: product?.return_policy?.is_returnable ?? false,
     is_cancelable: product?.cancellation_policy?.is_cancelable ?? false,
     return_days: product?.return_policy?.return_days || 14,
-    cancel_until_status: product?.cancellation_policy?.cancel_until_status || 'shipped'
+    cancel_until_status: product?.cancellation_policy?.cancel_until_status || 'shipped',
+    tag_ids: (product as any)?.tag_assignments?.map((ta: any) => ta.tag?.id).filter(Boolean) || []
   });
 
   // Delivery options state
@@ -1097,6 +1099,28 @@ export default function ProductForm({
         }
       }
 
+      // After uploadImages(productId);
+      const tagIds = (formData as any).tag_ids as string[] | undefined;
+      if (tagIds && tagIds.length >= 0) {
+        // Clear existing tag assignments
+        const { error: delTagsErr } = await supabase
+          .from('product_tag_assignments')
+          .delete()
+          .eq('product_id', productId);
+        if (delTagsErr) {
+          console.error('Error clearing product tags:', delTagsErr);
+        }
+        if (tagIds.length > 0) {
+          const inserts = tagIds.map(id => ({ product_id: productId, tag_id: id }));
+          const { error: addTagsErr } = await supabase
+            .from('product_tag_assignments')
+            .insert(inserts);
+          if (addTagsErr) {
+            console.error('Error assigning product tags:', addTagsErr);
+          }
+        }
+      }
+
       onSave(completeProduct);
     } catch (error) {
       console.error('Error saving product:', error);
@@ -2005,6 +2029,15 @@ export default function ProductForm({
                 />
               </div>
             </div>
+          </div>
+
+          {/* Tags */}
+          <div className="space-y-3">
+            <h3 className="text-lg font-medium text-gray-900">Tags</h3>
+            <ProductTagsSelector
+              initialSelectedIds={formData.tag_ids}
+              onChange={(ids) => setFormData(prev => ({ ...prev, tag_ids: ids }))}
+            />
           </div>
 
           {/* Actions */}

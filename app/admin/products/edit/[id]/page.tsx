@@ -45,6 +45,9 @@ export default function EditProductPage() {
               *,
               attribute:product_attributes(*)
             )
+          ),
+          tag_assignments:product_tag_assignments(
+            tag:product_tags(*)
           )
         `)
         .eq('id', productId)

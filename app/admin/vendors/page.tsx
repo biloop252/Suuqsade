@@ -66,6 +66,7 @@ export default function VendorsManagement() {
     business_name: '',
     business_description: '',
     logo_file: null as File | null,
+    banner_file: null as File | null,
     email: '',
     password: '',
     confirmPassword: '',
@@ -212,6 +213,7 @@ export default function VendorsManagement() {
       business_name: '',
       business_description: '',
       logo_file: null,
+      banner_file: null,
       email: '',
       password: '',
       confirmPassword: '',
@@ -239,6 +241,7 @@ export default function VendorsManagement() {
       business_name: vendor.business_name,
       business_description: vendor.business_description || '',
       logo_file: null,
+      banner_file: null,
       email: vendor.email,
       password: '', // Don't populate password for editing
       confirmPassword: '', // Don't populate password for editing
@@ -271,6 +274,7 @@ export default function VendorsManagement() {
         business_name, 
         business_description, 
         logo_file, 
+        banner_file,
         email, 
         password, 
         confirmPassword, 
@@ -328,6 +332,7 @@ export default function VendorsManagement() {
 
       // Upload files if provided
       let logo_url = null;
+      let banner_url = null;
       let business_license_url = null;
       let national_id_url = null;
 
@@ -335,6 +340,16 @@ export default function VendorsManagement() {
         logo_url = await uploadFile(logo_file, 'logos');
         if (!logo_url) {
           setFormErrors({ general: 'Error uploading logo file' });
+          setSaving(false);
+          setUploading(false);
+          return;
+        }
+      }
+
+      if (banner_file) {
+        banner_url = await uploadFile(banner_file, 'vendor-banners');
+        if (!banner_url) {
+          setFormErrors({ general: 'Error uploading banner file' });
           setSaving(false);
           setUploading(false);
           return;
@@ -389,6 +404,7 @@ export default function VendorsManagement() {
             commission_rate: parseFloat(commission_rate.toString()),
             status,
             ...(logo_url && { logo_url }),
+            ...(banner_url && { banner_url }),
             ...(business_license_url && { business_license_url }),
             ...(national_id_url && { national_id_url })
           })
@@ -419,6 +435,7 @@ export default function VendorsManagement() {
               tax_id,
               commission_rate,
               logo_url,
+              banner_url,
               business_license_url,
               national_id_url,
               status
@@ -450,6 +467,7 @@ export default function VendorsManagement() {
         business_name: '',
         business_description: '',
         logo_file: null,
+        banner_file: null,
         email: '',
         password: '',
         confirmPassword: '',
@@ -749,6 +767,7 @@ export default function VendorsManagement() {
                       business_name: '',
                       business_description: '',
                       logo_file: null,
+                      banner_file: null,
                       email: '',
                       password: '',
                       confirmPassword: '',
@@ -842,6 +861,45 @@ export default function VendorsManagement() {
                           <p className="text-sm text-green-600 flex items-center justify-center">
                             <Image className="h-4 w-4 mr-1" />
                             {formData.logo_file.name}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Banner Upload */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Business Banner</label>
+                    <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-gray-400 transition-colors">
+                      <div className="space-y-1 text-center">
+                        <Image className="mx-auto h-12 w-12 text-gray-400" />
+                        <div className="flex text-sm text-gray-600">
+                          <label
+                            htmlFor="banner-upload"
+                            className="relative cursor-pointer bg-white rounded-md font-medium text-orange-600 hover:text-orange-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-orange-500"
+                          >
+                            <span>Upload banner</span>
+                            <input
+                              id="banner-upload"
+                              name="banner-upload"
+                              type="file"
+                              accept=".jpg,.jpeg,.png"
+                              className="sr-only"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  setFormData({ ...formData, banner_file: file });
+                                }
+                              }}
+                            />
+                          </label>
+                          <p className="pl-1">or drag and drop</p>
+                        </div>
+                        <p className="text-xs text-gray-500">PNG, JPG up to 5MB</p>
+                        {formData.banner_file && (
+                          <p className="text-sm text-green-600 flex items-center justify-center">
+                            <Image className="h-4 w-4 mr-1" />
+                            {formData.banner_file.name}
                           </p>
                         )}
                       </div>
@@ -1140,6 +1198,7 @@ export default function VendorsManagement() {
                         business_name: '',
                         business_description: '',
                         logo_file: null,
+                        banner_file: null,
                         email: '',
                         password: '',
                         confirmPassword: '',

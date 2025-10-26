@@ -424,6 +424,9 @@ export interface ProductWithDetails extends Product {
   cancellation_policy?: CancellationPolicy;
   // Keep old interface for backward compatibility
   attribute_values?: ProductAttributeValue[];
+  // Product tags
+  tags?: ProductTag[];
+  tag_assignments?: ProductTagAssignmentWithDetails[];
 }
 
 export interface ProductVariantWithDetails extends ProductVariant {
@@ -836,4 +839,25 @@ export interface ImageUploadData {
   is_active?: boolean;
 }
 
+
+// Product Tags
+export interface ProductTag {
+  id: string;
+  name: string;
+  slug: string;
+  color?: string;
+  description?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProductTagAssignment {
+  product_id: string;
+  tag_id: string;
+  assigned_at: string;
+}
+
+export interface ProductTagAssignmentWithDetails extends ProductTagAssignment {
+  tag?: ProductTag;
+}
 

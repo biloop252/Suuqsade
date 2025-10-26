@@ -102,13 +102,7 @@ export default function PromotionalMediaDisplay({
     setCurrentSlide((prev) => (prev - 1 + mediaItems.length) % mediaItems.length);
   };
 
-  const getImageUrl = (media: PromotionalMedia) => {
-    // Use mobile image on smaller screens, desktop image on larger screens
-    if (typeof window !== 'undefined' && window.innerWidth < 768) {
-      return media.mobile_image_url || media.image_url;
-    }
-    return media.image_url || media.mobile_image_url;
-  };
+  // Use responsive <picture> in render instead of window checks
 
   if (loading) {
     console.log('🔄 PromotionalMediaDisplay: Loading state');
@@ -127,12 +121,15 @@ export default function PromotionalMediaDisplay({
   // Render different components based on media type
   const renderMediaItem = (media: PromotionalMedia, index: number) => {
     const isActive = index === currentSlide;
-    const imageUrl = getImageUrl(media);
+    // image URLs
+    const desktopImage = media.image_url || media.mobile_image_url || '';
+    const mobileImage = media.mobile_image_url || media.image_url || '';
 
     console.log(`🎨 Rendering media item ${index + 1}:`, {
       title: media.title,
-      hasImage: !!imageUrl,
-      imageUrl: imageUrl,
+      hasImage: !!(desktopImage || mobileImage),
+      desktopImage,
+      mobileImage,
       mediaType: media.media_type,
       isActive: isActive
     });
@@ -148,19 +145,22 @@ export default function PromotionalMediaDisplay({
           color: media.text_color
         }}
       >
-        {imageUrl ? (
+        {desktopImage || mobileImage ? (
           <div className="flex flex-col">
             {/* Image Container */}
             <div className="relative">
-              <img
-                src={imageUrl}
-                alt={media.title}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                }}
-              />
+              <picture>
+                <source media="(max-width: 767px)" srcSet={mobileImage} />
+                <img
+                  src={desktopImage}
+                  alt={media.title || 'Promotional banner'}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                  }}
+                />
+              </picture>
               {media.video_url && (
                 <div className="absolute inset-0 flex items-center justify-center">
                   <button
