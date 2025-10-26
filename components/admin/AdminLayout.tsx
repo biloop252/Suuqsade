@@ -19,7 +19,8 @@ import {
   Layers,
   Home,
   DollarSign,
-  MessageSquare
+  MessageSquare,
+  FileText
 } from 'lucide-react';
 
 interface AdminLayoutProps {
@@ -52,6 +53,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     { name: 'Categories', href: '/admin/categories', icon: FolderTree },
     { name: 'Attributes', href: '/admin/attributes', icon: Tag },
     { name: 'Variants', href: '/admin/variants', icon: Layers },
+    { name: 'Pages', href: '/admin/pages', icon: FileText },
     { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
     { name: 'Users', href: '/admin/users', icon: Users },
     { name: 'Support', href: '/admin/support', icon: MessageSquare },

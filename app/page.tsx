@@ -481,7 +481,7 @@ export default function HomePage() {
     <div className="min-h-screen bg-gray-50">
       {/* Hero Promotional Banners - Carousel + Single Image */}
       <section className="bg-white">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           
           {/* Section 1: Dynamic Hero Carousel from Admin Panel */}
           <div className="relative overflow-hidden lg:col-span-2">
@@ -517,17 +517,17 @@ export default function HomePage() {
       <section className="py-6 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Section Header */}
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-6 sm:mb-8">
             <div className="flex items-center space-x-3">
               <div className="bg-primary-500 rounded-lg p-2">
                 <Star className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">Recommended for You</h2>
-                <p className="text-gray-600">Products you might love</p>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Recommended for You</h2>
+                <p className="text-xs sm:text-sm text-gray-600">Products you might love</p>
               </div>
             </div>
-            <Link href="/products?sort=recommended" className="bg-gray-100 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-200 transition-colors flex items-center space-x-2 border border-gray-200">
+            <Link href="/products?sort=recommended" className="bg-gray-100 text-gray-700 px-3 sm:px-6 py-1.5 sm:py-2 text-sm sm:text-base whitespace-nowrap self-start sm:self-auto rounded-lg hover:bg-gray-200 transition-colors flex items-center space-x-2 border border-gray-200">
               <span>View All</span>
                 <ChevronRight className="h-4 w-4" />
               </Link>
@@ -571,10 +571,10 @@ export default function HomePage() {
                   const reviewCount = stats.totalReviews;
                   
                   return (
-                    <Link key={product.id} href={`/products/${product.slug}`} className="flex-shrink-0 w-64 bg-white rounded-lg shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 group">
+                    <Link key={product.id} href={`/products/${product.slug}`} className="flex-shrink-0 w-56 sm:w-64 bg-white rounded-lg shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 group">
                       <div className="relative">
                         {/* Product Image */}
-                        <div className="w-full h-56 bg-gray-100 rounded-t-lg overflow-hidden">
+                        <div className="w-full h-48 sm:h-56 bg-gray-100 rounded-t-lg overflow-hidden">
                           {primaryImage ? (
                             <Image
                               src={primaryImage.image_url}
@@ -605,7 +605,7 @@ export default function HomePage() {
                         <div className="absolute top-3 right-3">
                           <button 
                             onClick={(e) => handleToggleFavorite(product, e)}
-                            className={`bg-white/80 hover:bg-white rounded-full p-2 transition-colors ${
+                            className={`w-10 h-10 flex items-center justify-center bg-white/90 hover:bg-white rounded-full shadow-sm transition-colors ${
                               isFavorite(product.id) ? 'text-red-500' : 'text-gray-600 hover:text-red-500'
                             }`}
                           >
@@ -628,7 +628,7 @@ export default function HomePage() {
                             ))}
                           </div>
                           <span className="text-xs text-gray-500">
-                            {reviewCount > 0 ? `${averageRating.toFixed(1)} (${reviewCount})` : 'No reviews'}
+                            {reviewCount > 0 ? `${averageRating.toFixed(1)} (${reviewCount})` : <span className="hidden sm:inline">No reviews</span>}
                           </span>
                         </div>
                         
@@ -700,17 +700,17 @@ export default function HomePage() {
       <section className="py-6 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Section Header */}
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-6 sm:mb-8">
             <div className="flex items-center space-x-3">
               <div className="bg-primary-500 rounded-lg p-2">
                 <ShoppingBag className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">Best Selling Products</h2>
-                <p className="text-gray-600">Most popular items this month</p>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Best Selling Products</h2>
+                <p className="text-xs sm:text-sm text-gray-600">Most popular items this month</p>
               </div>
             </div>
-            <Link href="/products?sort=bestselling" className="bg-gray-100 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-200 transition-colors flex items-center space-x-2 border border-gray-200">
+            <Link href="/products?sort=bestselling" className="bg-gray-100 text-gray-700 px-3 sm:px-6 py-1.5 sm:py-2 text-sm sm:text-base whitespace-nowrap self-start sm:self-auto rounded-lg hover:bg-gray-200 transition-colors flex items-center space-x-2 border border-gray-200">
               <span>View All</span>
               <ChevronRight className="h-4 w-4" />
             </Link>
@@ -754,10 +754,10 @@ export default function HomePage() {
                   const reviewCount = stats.totalReviews;
                   
                   return (
-                    <Link key={product.id} href={`/products/${product.slug}`} className="flex-shrink-0 w-64 bg-white rounded-lg shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 group">
+                    <Link key={product.id} href={`/products/${product.slug}`} className="flex-shrink-0 w-56 sm:w-64 bg-white rounded-lg shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 group">
                       <div className="relative">
                         {/* Product Image */}
-                        <div className="w-full h-56 bg-gray-100 rounded-t-lg overflow-hidden">
+                        <div className="w-full h-48 sm:h-56 bg-gray-100 rounded-t-lg overflow-hidden">
                           {primaryImage ? (
                             <Image
                               src={primaryImage.image_url}
@@ -811,7 +811,7 @@ export default function HomePage() {
                             ))}
                           </div>
                           <span className="text-xs text-gray-500">
-                            {reviewCount > 0 ? `${averageRating.toFixed(1)} (${reviewCount})` : 'No reviews'}
+                            {reviewCount > 0 ? `${averageRating.toFixed(1)} (${reviewCount})` : <span className="hidden sm:inline">No reviews</span>}
                           </span>
                         </div>
                         
@@ -883,17 +883,17 @@ export default function HomePage() {
       <section className="py-6 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Section Header */}
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-6 sm:mb-8">
             <div className="flex items-center space-x-3">
               <div className="bg-primary-500 rounded-lg p-2">
                 <Home className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">Trending in Home & Living</h2>
-                <p className="text-gray-600">Transform your space with trending home essentials</p>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Trending in Home & Living</h2>
+                <p className="text-xs sm:text-sm text-gray-600">Transform your space with trending home essentials</p>
               </div>
             </div>
-            <Link href="/categories/home-garden?sort=trending" className="bg-gray-100 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-200 transition-colors flex items-center space-x-2 border border-gray-200">
+            <Link href="/categories/home-garden?sort=trending" className="bg-gray-100 text-gray-700 px-3 sm:px-6 py-1.5 sm:py-2 text-sm sm:text-base whitespace-nowrap self-start sm:self-auto rounded-lg hover:bg-gray-200 transition-colors flex items-center space-x-2 border border-gray-200">
               <span>View All</span>
               <ChevronRight className="h-4 w-4" />
             </Link>
@@ -937,10 +937,10 @@ export default function HomePage() {
                   const reviewCount = stats.totalReviews;
                   
                   return (
-                    <Link key={product.id} href={`/products/${product.slug}`} className="flex-shrink-0 w-64 bg-white rounded-lg shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 group">
+                    <Link key={product.id} href={`/products/${product.slug}`} className="flex-shrink-0 w-56 sm:w-64 bg-white rounded-lg shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 group">
                       <div className="relative">
                         {/* Product Image */}
-                        <div className="w-full h-56 bg-gray-100 rounded-t-lg overflow-hidden">
+                        <div className="w-full h-48 sm:h-56 bg-gray-100 rounded-t-lg overflow-hidden">
                           {primaryImage ? (
                             <Image
                               src={primaryImage.image_url}
@@ -994,7 +994,7 @@ export default function HomePage() {
                             ))}
                           </div>
                           <span className="text-xs text-gray-500">
-                            {reviewCount > 0 ? `${averageRating.toFixed(1)} (${reviewCount})` : 'No reviews'}
+                            {reviewCount > 0 ? `${averageRating.toFixed(1)} (${reviewCount})` : <span className="hidden sm:inline">No reviews</span>}
                           </span>
                         </div>
                         
@@ -1068,7 +1068,7 @@ export default function HomePage() {
       {/* All Products Section */}
       <section className="py-6 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
             {loading ? (
               // Loading skeleton
               [...Array(20)].map((_, index) => (
@@ -1162,7 +1162,7 @@ export default function HomePage() {
                           ))}
                         </div>
                         <span className="text-xs text-gray-500">
-                          {reviewCount > 0 ? `${averageRating.toFixed(1)} (${reviewCount})` : 'No reviews'}
+                          {reviewCount > 0 ? `${averageRating.toFixed(1)} (${reviewCount})` : <span className="hidden sm:inline">No reviews</span>}
                         </span>
                       </div>
                       
@@ -1200,7 +1200,7 @@ export default function HomePage() {
           {/* Loading More Products */}
           {loadingMore && (
             <div className="flex justify-center mt-8">
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 w-full">
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6 w-full">
                 {[...Array(10)].map((_, index) => (
                   <div key={`loading-${index}`} className="bg-white rounded-lg shadow-sm border border-gray-100 animate-pulse">
                     <div className="w-full h-56 bg-gray-200 rounded-t-lg"></div>

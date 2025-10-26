@@ -85,9 +85,9 @@ export default function LimitedTimeDeals({ className = '', maxDeals = 4 }: Limit
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="animate-pulse">
             <div className="h-8 bg-gray-200 rounded w-64 mb-4"></div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="bg-white/90 rounded-xl h-48"></div>
+                <div key={i} className="bg-white/90 rounded-xl h-40 sm:h-48"></div>
               ))}
             </div>
           </div>
@@ -115,27 +115,27 @@ export default function LimitedTimeDeals({ className = '', maxDeals = 4 }: Limit
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         {/* Section Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-6 sm:mb-8">
           <div className="flex items-center space-x-4">
             <div className="bg-primary-500 rounded-xl p-3 shadow-lg">
-              <ZapIcon className="h-7 w-7 text-white animate-pulse" />
+              <ZapIcon className="h-6 w-6 sm:h-7 sm:w-7 text-white animate-pulse" />
             </div>
             <div>
-              <h2 className="text-3xl font-bold text-primary-600">
+              <h2 className="text-xl sm:text-3xl font-bold text-primary-600">
                 Limited Time Deals
               </h2>
-              <p className="text-gray-600 font-medium">Don't miss out on these exclusive offers</p>
+              <p className="text-xs sm:text-sm text-gray-600 font-medium">Don't miss out on these exclusive offers</p>
             </div>
           </div>
 
-          <Link href="/products?deals=limited" className="bg-white/80 backdrop-blur-sm text-gray-700 px-6 py-3 rounded-xl hover:bg-white transition-all duration-300 flex items-center space-x-2 border border-primary-200 shadow-lg hover:shadow-xl">
+          <Link href="/products?deals=limited" className="bg-white/80 backdrop-blur-sm text-gray-700 px-3 sm:px-6 py-1.5 sm:py-3 text-sm sm:text-base whitespace-nowrap self-start sm:self-auto rounded-lg sm:rounded-xl hover:bg-white transition-all duration-300 flex items-center space-x-2 border border-primary-200 shadow-lg hover:shadow-xl">
             <span className="font-medium">View All Deals</span>
             <ChevronRightIcon className="h-4 w-4" />
           </Link>
         </div>
 
         {/* Deals Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {deals.map((deal, index) => {
             const colorScheme = colorSchemes[index % colorSchemes.length];
             
@@ -146,7 +146,7 @@ export default function LimitedTimeDeals({ className = '', maxDeals = 4 }: Limit
                 onClick={() => handleDealClick(deal)}
               >
                 <div className={`absolute inset-0 ${colorScheme.hover} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}></div>
-                <div className="relative p-6">
+                <div className="relative p-4 sm:p-6">
                   <div className="text-center">
                     {/* Badge */}
                     <div className={`${colorScheme.bg} text-white text-xs px-3 py-1 rounded-full font-bold mb-3 inline-block`}>
@@ -154,16 +154,16 @@ export default function LimitedTimeDeals({ className = '', maxDeals = 4 }: Limit
                     </div>
                     
                     {/* Title */}
-                    <h3 className="text-lg font-bold text-gray-900 mb-2">{deal.title}</h3>
+                    <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-2">{deal.title}</h3>
                     
                     {/* Description/Offer */}
-                    <p className={`text-2xl font-bold ${colorScheme.text} mb-2`}>
+                    <p className={`text-xl sm:text-2xl font-bold ${colorScheme.text} mb-2`}>
                       {deal.description || 'Special Offer'}
                     </p>
                     
                     {/* Button */}
                     <div 
-                      className={`${colorScheme.button} text-white px-4 py-2 rounded-lg transition-colors text-sm font-medium`}
+                      className={`${colorScheme.button} text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg transition-colors text-sm font-medium`}
                     >
                       {deal.button_text || 'Shop Now'}
                     </div>

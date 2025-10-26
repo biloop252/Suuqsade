@@ -28,14 +28,14 @@ import {
   Building2,
   CreditCard,
   MapPin,
-  RefreshCw,
   Image,
   Percent,
   Ticket,
   Star,
   DollarSign,
   User,
-  MessageSquare
+  MessageSquare,
+  FileText
 } from 'lucide-react';
 
 interface AdminLayoutWrapperProps {
@@ -81,6 +81,7 @@ export default function AdminLayoutWrapper({ children }: AdminLayoutWrapperProps
     },
     { name: 'Categories', href: '/admin/categories', icon: FolderTree },
     { name: 'Brands', href: '/admin/brands', icon: Award },
+    { name: 'Pages', href: '/admin/pages', icon: FileText },
     { name: 'Attributes', href: '/admin/attributes', icon: Tag },
     { name: 'Variants', href: '/admin/variants', icon: Layers },
     { name: 'Vendors', href: '/admin/vendors', icon: Building2 },
@@ -350,10 +351,10 @@ export default function AdminLayoutWrapper({ children }: AdminLayoutWrapperProps
       {/* Content area with sidebar and main content */}
       <div className="flex">
         {/* Desktop sidebar - Below header */}
-        <div className={`hidden lg:block transition-all duration-300 ${
+        <div className={`hidden lg:block transition-all duration-300 lg:sticky lg:top-16 self-start ${
           sidebarCollapsed ? 'lg:w-16' : 'lg:w-64'
         }`}>
-          <div className="flex flex-col h-[calc(100vh-4rem)] overflow-y-auto bg-white shadow-lg border-r border-gray-200">
+          <div className="flex flex-col max-h-[calc(100vh-4rem)] overflow-y-auto bg-white shadow-lg border-r border-gray-200">
             <nav className="flex-1 space-y-1 px-2 py-4">
               {navigation.map((item) => (
                 <div key={item.name}>

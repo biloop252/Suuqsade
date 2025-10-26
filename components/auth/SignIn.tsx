@@ -127,17 +127,8 @@ export default function SignIn() {
   };
 
   const handleFacebookSignIn = async () => {
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'facebook',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`
-        }
-      });
-      if (error) setError(error.message);
-    } catch (err) {
-      setError('Failed to sign in with Facebook');
-    }
+    // Show coming soon message instead of starting OAuth
+    setError('Coming soon: Facebook login');
   };
 
   return (

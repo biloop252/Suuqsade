@@ -10,7 +10,8 @@ import {
   User,
   Shield,
   UserCheck,
-  UserX
+  UserX,
+  Plus
 } from 'lucide-react';
 import Pagination from './Pagination';
 
@@ -22,6 +23,7 @@ export default function UsersManagement() {
   const [editingUser, setEditingUser] = useState<Profile | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -30,18 +32,22 @@ export default function UsersManagement() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('is_active', true)
-        .order('created_at', { ascending: false });
+      const params = new URLSearchParams({
+        page: '1',
+        limit: '500',
+        search: searchTerm,
+        role: selectedRole,
+      });
 
-      if (error) {
-        console.error('Error fetching users:', error);
-        return;
-      }
+      // Check for test admin local session
+      const isTestAdmin = typeof window !== 'undefined' && localStorage.getItem('admin_session') === 'true';
+      const headers: Record<string, string> = {};
+      if (isTestAdmin) headers['x-test-admin'] = 'true';
 
-      setUsers(data || []);
+      const res = await fetch(`/api/admin/users?${params.toString()}`, { headers });
+      if (!res.ok) throw new Error('Failed to fetch users');
+      const data = await res.json();
+      setUsers(data.users || []);
     } catch (error) {
       console.error('Error:', error);
     } finally {
@@ -51,17 +57,16 @@ export default function UsersManagement() {
 
   const updateUserRole = async (userId: string, newRole: string) => {
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ role: newRole })
-        .eq('id', userId);
-
-      if (error) throw error;
-
-      // Update local state
-      setUsers(users.map(user => 
-        user.id === userId ? { ...user, role: newRole as UserRole } : user
-      ));
+      const isTestAdmin = typeof window !== 'undefined' && localStorage.getItem('admin_session') === 'true';
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (isTestAdmin) headers['x-test-admin'] = 'true';
+      const res = await fetch(`/api/admin/users/${userId}`, {
+        method: 'PATCH',
+        headers,
+        body: JSON.stringify({ role: newRole }),
+      });
+      if (!res.ok) throw new Error('Failed to update role');
+      setUsers(users.map(user => user.id === userId ? { ...user, role: newRole as UserRole } : user));
     } catch (error) {
       console.error('Error updating user role:', error);
     }
@@ -156,6 +161,13 @@ export default function UsersManagement() {
             Manage user accounts and their roles
           </p>
         </div>
+        <button
+          onClick={() => setShowCreateModal(true)}
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Add User
+        </button>
       </div>
 
       {/* Search and Filters */}
@@ -309,6 +321,17 @@ export default function UsersManagement() {
           onUpdate={updateUserRole}
         />
       )}
+
+      {/* Create User Modal */}
+      {showCreateModal && (
+        <CreateUserModal
+          onClose={() => setShowCreateModal(false)}
+          onCreated={() => {
+            setShowCreateModal(false);
+            fetchUsers();
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -389,6 +412,141 @@ function EditUserModal({
                 className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 disabled:opacity-50"
               >
                 {loading ? 'Updating...' : 'Update Role'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Create User Modal Component
+function CreateUserModal({ 
+  onClose, 
+  onCreated 
+}: { 
+  onClose: () => void; 
+  onCreated: () => void; 
+}) {
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [role, setRole] = useState<UserRole>('customer');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const roleOptions = [
+    { value: 'customer', label: 'Customer' },
+    { value: 'staff', label: 'Staff' },
+    { value: 'admin', label: 'Admin' },
+    { value: 'super_admin', label: 'Super Admin' }
+  ];
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const isTestAdmin = typeof window !== 'undefined' && localStorage.getItem('admin_session') === 'true';
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (isTestAdmin) headers['x-test-admin'] = 'true';
+
+      const res = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          email,
+          first_name: firstName,
+          last_name: lastName,
+          role,
+          password: password || undefined,
+        })
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || 'Failed to create user');
+      }
+      onCreated();
+    } catch (err) {
+      // eslint-disable-next-line no-alert
+      alert(err instanceof Error ? err.message : 'Failed to create user');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+      <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div className="mt-3">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Add New User</h3>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                <input
+                  type="text"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                <input
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+              <select
+                value={role}
+                onChange={(e) => setRole(e.target.value as UserRole)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+              >
+                {roleOptions.map(r => (
+                  <option key={r.value} value={r.value}>{r.label}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Password (optional)</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Leave blank to auto-generate"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+              />
+            </div>
+            <div className="flex justify-end space-x-3 pt-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 disabled:opacity-50"
+              >
+                {loading ? 'Creating...' : 'Create User'}
               </button>
             </div>
           </form>

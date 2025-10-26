@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { Logo as SystemLogo } from '@/components/common/SystemImageDisplay';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { useCart } from '@/lib/cart-context';
@@ -164,7 +165,7 @@ export default function Navigation() {
   return (
     <div className="bg-white shadow-sm">
       {/* Top Header - Hidden on mobile */}
-      <div className="bg-white border-b border-gray-100 desktop-only">
+      <div className="bg-white border-b border-gray-100 hidden md:block">
         <div className="container-responsive">
           <div className="flex justify-between items-center h-10 text-sm">
             <div className="flex items-center space-x-4 lg:space-x-6 overflow-x-auto scrollbar-hide">
@@ -191,22 +192,19 @@ export default function Navigation() {
       {/* Main Navigation */}
       <div className="bg-white">
         <div className="container-responsive">
-          <div className="flex items-center justify-between h-16 sm:h-20 lg:h-24">
+          <div className="flex items-center justify-between h-14 sm:h-20 lg:h-24">
             {/* Logo */}
             <Link href="/" className="flex-shrink-0">
               <div className="flex items-center">
-                <Image
-                  src="https://uwautfehppioudadfgcc.supabase.co/storage/v1/object/public/brand-logos/Logo1.png"
-                  alt="Suuqsade Logo"
+                <SystemLogo
                   width={240}
                   height={80}
                   className="h-12 sm:h-16 lg:h-20 w-auto object-contain"
-                  priority
                 />
               </div>
             </Link>
 
-            {/* Search Bar - Hidden on mobile */}
+            {/* Search Bar - Visible below on mobile */}
             <div className="hidden md:flex flex-1 max-w-2xl mx-4 lg:mx-8">
               <SearchSuggestions
                 value={searchTerm}
@@ -350,22 +348,25 @@ export default function Navigation() {
               </div>
             )}
 
-            {/* Mobile Menu Button */}
-            <div className="md:hidden">
-              <button
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                  className="text-gray-600 hover:text-primary-500 p-2 transition-colors rounded-lg hover:bg-gray-50 min-h-[44px] min-w-[44px] flex items-center justify-center"
-              >
-                {isMobileMenuOpen ? (
-                  <XIcon className="h-6 w-6" />
-                ) : (
-                  <MenuIcon className="h-6 w-6" />
-                )}
-              </button>
-            </div>
+            {/* Mobile actions already shown; no hamburger needed */}
           </div>
         </div>
       </div>
+      </div>
+
+      {/* Mobile Search Bar */}
+      <div className="md:hidden bg-white border-b border-gray-100">
+        <div className="container-responsive py-2">
+          <SearchSuggestions
+            value={searchTerm}
+            onChange={setSearchTerm}
+            onSubmit={handleSearch}
+            placeholder="Write the product, category or brand you are looking for"
+            suggestions={suggestions}
+            loading={loading}
+            className="w-full"
+          />
+        </div>
       </div>
 
       {/* Category Navigation */}

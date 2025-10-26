@@ -226,7 +226,7 @@ export default function BrandPage() {
           <div className="animate-pulse">
             <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
             <div className="h-4 bg-gray-200 rounded w-1/2 mb-8"></div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
               {[...Array(8)].map((_, i) => (
                 <div key={i} className="bg-white rounded-lg shadow-sm p-6">
                   <div className="h-48 bg-gray-200 rounded mb-4"></div>
@@ -308,7 +308,18 @@ export default function BrandPage() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Sidebar */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+            {/* Mobile Filter Toggle */}
+            <div className="lg:hidden mb-4">
+              <button
+                onClick={() => setShowFilters(prev => !prev)}
+                className="flex items-center justify-between w-full px-4 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                <span className="flex items-center gap-2 text-sm text-gray-700"><FilterIcon className="h-4 w-4 text-gray-600" /> Filters</span>
+                {showFilters ? <XIcon className="h-4 w-4 text-gray-600" /> : null}
+              </button>
+            </div>
+
+            <div className={`bg-white rounded-lg shadow-sm p-6 mb-6 ${showFilters ? 'block' : 'hidden lg:block'}`}>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900">Filters</h3>
                 <button
@@ -442,7 +453,7 @@ export default function BrandPage() {
             ) : (
               <div className={
                 viewMode === 'grid'
-                  ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'
+                  ? 'grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6'
                   : 'space-y-4'
               }>
                 {products.map((product) => (

@@ -56,7 +56,7 @@ const ProfileSidebar = memo(function ProfileSidebar({ activeTab, onTabChange }: 
   ], []);
 
   return (
-    <div className="w-64 bg-white border-r border-gray-200 h-full">
+    <div className="bg-white h-full">
       <div className="p-4">
         <h2 className="text-lg font-semibold text-gray-900 mb-6">My Account</h2>
         
@@ -70,14 +70,14 @@ const ProfileSidebar = memo(function ProfileSidebar({ activeTab, onTabChange }: 
                 <button
                   key={item.id}
                   onClick={() => onTabChange(item.id)}
-                  className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                  className={`w-full flex items-center justify-between px-3 py-3 text-sm font-medium rounded-md transition-colors ${
                     activeTab === item.id
                       ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-600'
                       : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
                   }`}
                 >
                   <div className="flex items-center">
-                    <item.icon className="h-4 w-4 mr-3" />
+                    <item.icon className="h-5 w-5 mr-3" />
                     {item.label}
                   </div>
                 </button>

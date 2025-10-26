@@ -34,6 +34,7 @@ export default function SettingsManagement({ onClose }: SettingsManagementProps)
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [savingImages, setSavingImages] = useState(false);
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [selectedFiles, setSelectedFiles] = useState<Record<string, File>>({});
   const [imagePreview, setImagePreview] = useState<Record<string, string>>({});
@@ -222,6 +223,44 @@ export default function SettingsManagement({ onClose }: SettingsManagementProps)
       alert(`Failed to upload image: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setUploading(false);
+    }
+  };
+
+  const saveSelectedImages = async () => {
+    const entries = Object.entries(selectedFiles) as [SystemImageType, File][];
+    if (entries.length === 0) return;
+    setSavingImages(true);
+    try {
+      const failed: string[] = [];
+      for (const [imageType, file] of entries) {
+        try {
+          const formData = new FormData();
+          formData.append('file', file);
+          formData.append('image_type', imageType);
+          formData.append('alt_text', `${imageType} image`);
+          formData.append('is_active', 'true');
+          const response = await fetch('/api/admin/settings/images', {
+            method: 'POST',
+            body: formData,
+          });
+          if (!response.ok) {
+            failed.push(imageType);
+          }
+        } catch (_) {
+          failed.push(imageType);
+        }
+      }
+      await fetchImages();
+      // Clear all selections and previews
+      setSelectedFiles({});
+      setImagePreview({});
+      if (failed.length > 0) {
+        alert(`Some images failed to upload: ${failed.join(', ')}`);
+      } else {
+        alert('Images saved successfully!');
+      }
+    } finally {
+      setSavingImages(false);
     }
   };
 
@@ -544,22 +583,6 @@ export default function SettingsManagement({ onClose }: SettingsManagementProps)
                           <div className="mt-4 flex justify-center space-x-2">
                             <button
                               onClick={() => {
-                                if (selectedFile) {
-                                  uploadImage(imageType.value, selectedFile);
-                                }
-                              }}
-                              disabled={uploading || !selectedFile}
-                              className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-                            >
-                              {uploading ? (
-                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                              ) : (
-                                <Upload className="h-4 w-4 mr-2" />
-                              )}
-                              Upload
-                            </button>
-                            <button
-                              onClick={() => {
                                 setSelectedFiles(prev => {
                                   const newFiles = { ...prev };
                                   delete newFiles[imageType.value];
@@ -577,6 +600,7 @@ export default function SettingsManagement({ onClose }: SettingsManagementProps)
                               Cancel
                             </button>
                           </div>
+                          <p className="mt-2 text-xs text-gray-500 text-center">This image will be uploaded when you click Save Images below.</p>
                         </div>
                       )}
                     </div>
@@ -632,6 +656,21 @@ export default function SettingsManagement({ onClose }: SettingsManagementProps)
               </div>
             );
           })}
+          {/* Save Images Button */}
+          <div className="flex justify-end">
+            <button
+              onClick={saveSelectedImages}
+              disabled={savingImages || Object.keys(selectedFiles).length === 0}
+              className="px-6 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            >
+              {savingImages ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <Save className="h-4 w-4 mr-2" />
+              )}
+              {savingImages ? 'Saving...' : 'Save Images'}
+            </button>
+          </div>
         </div>
       )}
     </div>

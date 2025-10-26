@@ -404,7 +404,8 @@ export default function CartPage() {
             {/* Cart Items */}
             <div className="lg:col-span-2">
               <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-                <div className="overflow-x-auto">
+                {/* Desktop/Table View */}
+                <div className="overflow-x-auto hidden md:block">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
@@ -523,12 +524,82 @@ export default function CartPage() {
                     </tbody>
                   </table>
                 </div>
+
+                {/* Mobile Card List */}
+                <div className="md:hidden divide-y divide-gray-100">
+                  {cartItems.map((item) => {
+                    const primaryImage = item.product.images?.find(img => img.is_primary) || item.product.images?.[0];
+                    let originalPrice = item.product.price;
+                    if (item.variant_id && item.product.variants) {
+                      const variant = item.product.variants.find((v: any) => v.id === item.variant_id);
+                      if (variant && variant.price) {
+                        originalPrice = variant.price;
+                      }
+                    }
+                    const itemDiscounts = productDiscounts[item.product.id] || [];
+                    const { final_price } = calculateBestDiscount({ price: originalPrice }, itemDiscounts);
+
+                    return (
+                      <div key={item.id} className="p-4">
+                        <div className="flex items-start gap-4">
+                          <div className="w-20 h-20 flex-shrink-0 rounded-md overflow-hidden bg-gray-100">
+                            {primaryImage ? (
+                              <img src={primaryImage.image_url} alt={primaryImage.alt_text || item.product.name} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">No image</div>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <a href={`/products/${item.product.slug}`} className="block text-sm font-medium text-gray-900 hover:text-primary-600 line-clamp-2">
+                              {item.product.name}
+                            </a>
+                            {item.product.brand && (
+                              <p className="text-xs text-gray-500 mt-0.5">{item.product.brand.name}</p>
+                            )}
+                            <div className="mt-2 flex items-center justify-between">
+                              <span className="text-base font-semibold text-gray-900">${final_price.toFixed(2)}</span>
+                              <button
+                                onClick={() => removeItem(item.id)}
+                                disabled={updating === item.id}
+                                className="text-red-600 hover:text-red-700 text-sm"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                            <div className="mt-3 flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                  disabled={updating === item.id || item.quantity <= 1}
+                                  className="p-1 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  <MinusIcon className="h-4 w-4" />
+                                </button>
+                                <span className="px-3 py-1 border border-gray-300 rounded min-w-[40px] text-center text-sm">{item.quantity}</span>
+                                <button
+                                  onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                  disabled={updating === item.id}
+                                  className="p-1 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50"
+                                >
+                                  <PlusIcon className="h-4 w-4" />
+                                </button>
+                              </div>
+                              <div className="text-sm font-medium text-gray-900">
+                                ${(final_price * item.quantity).toFixed(2)}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
             {/* Order Summary */}
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-lg shadow-sm p-6 sticky top-8">
+              <div className="bg-white rounded-lg shadow-sm p-6 lg:sticky lg:top-8">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">Order Summary</h2>
                 
                 {/* Coupon Code Section */}

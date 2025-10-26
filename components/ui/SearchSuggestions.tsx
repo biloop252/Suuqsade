@@ -136,7 +136,9 @@ export default function SearchSuggestions({
     <div className={`relative ${className}`}>
       <form onSubmit={handleSubmit} className="relative">
         <div className="relative">
-          <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <div className="absolute left-0 top-0 bottom-0 flex items-center justify-center px-3 bg-gray-100 rounded-l-lg">
+            <SearchIcon className="h-5 w-5 text-gray-400" />
+          </div>
           <input
             ref={inputRef}
             type="text"
@@ -145,7 +147,7 @@ export default function SearchSuggestions({
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             onFocus={() => value.length > 0 && setIsOpen(true)}
-            className="w-full pl-10 pr-20 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm"
+            className="w-full pl-12 pr-20 py-2.5 bg-gray-50 focus:bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-gray-200 text-sm transition-colors"
             autoComplete="off"
           />
           {value && (
@@ -159,7 +161,7 @@ export default function SearchSuggestions({
           )}
           <button
             type="submit"
-            className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-primary-500 text-white p-1.5 rounded hover:bg-primary-600"
+            className="absolute right-0 top-0 bottom-0 bg-primary-500 text-white px-3 rounded-r-lg hover:bg-primary-600 flex items-center justify-center"
           >
             <SearchIcon className="h-4 w-4" />
           </button>

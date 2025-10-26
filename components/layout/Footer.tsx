@@ -2,6 +2,8 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { usePublicSettings, getAppDescription, getContactEmail, getPhoneNumber } from '@/hooks/useSettings';
+import { Logo as SystemLogo } from '@/components/common/SystemImageDisplay';
 import { 
   FacebookIcon, 
   TwitterIcon, 
@@ -28,6 +30,12 @@ import PromotionalBanner from '@/components/promotional/PromotionalBanner';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
+  const { settings } = usePublicSettings();
+  const appName = settings.app_name || 'Suuqsade Marketplace';
+  const appDescription = getAppDescription(settings);
+  const contactEmail = getContactEmail(settings);
+  const phoneNumber = getPhoneNumber(settings);
+  const address = settings.address || '123 Commerce Street\nBusiness District, BD 12345';
 
   const categories = [
     { name: 'Electronics', icon: SmartphoneIcon, href: '/categories/electronics' },
@@ -41,37 +49,28 @@ export default function Footer() {
   ];
 
   const customerService = [
-    { name: 'Help Center', href: '/help' },
+    { name: 'Help Center', href: '/support' },
     { name: 'Contact Us', href: '/contact' },
-    { name: 'Track Your Order', href: '/track-order' },
+    { name: 'Track Your Order', href: '/profile?tab=all-orders' },
     { name: 'Returns & Refunds', href: '/returns' },
-    { name: 'Size Guide', href: '/size-guide' },
-    { name: 'Shipping Info', href: '/shipping' },
+    { name: 'Shipping Policy', href: '/shipping-policy' },
   ];
 
   const company = [
     { name: 'About Us', href: '/about' },
-    { name: 'Careers', href: '/careers' },
-    { name: 'Press', href: '/press' },
-    { name: 'Blog', href: '/blog' },
-    { name: 'Investor Relations', href: '/investors' },
-    { name: 'Sustainability', href: '/sustainability' },
   ];
 
   const legal = [
-    { name: 'Privacy Policy', href: '/privacy' },
-    { name: 'Terms of Service', href: '/terms' },
-    { name: 'Cookie Policy', href: '/cookies' },
-    { name: 'Accessibility', href: '/accessibility' },
-    { name: 'Sitemap', href: '/sitemap' },
+    { name: 'Privacy Policy', href: '/privacy-policy' },
+    { name: 'Terms of Service', href: '/terms-of-service' },
   ];
 
   const socialLinks = [
-    { name: 'Facebook', icon: FacebookIcon, href: 'https://facebook.com/suuqsade' },
-    { name: 'Twitter', icon: TwitterIcon, href: 'https://twitter.com/suuqsade' },
-    { name: 'Instagram', icon: InstagramIcon, href: 'https://instagram.com/suuqsade' },
-    { name: 'YouTube', icon: YoutubeIcon, href: 'https://youtube.com/suuqsade' },
-  ];
+    { name: 'Facebook', icon: FacebookIcon, href: settings.facebook_url },
+    { name: 'Twitter', icon: TwitterIcon, href: settings.twitter_url },
+    { name: 'Instagram', icon: InstagramIcon, href: settings.instagram_url },
+    { name: 'YouTube', icon: YoutubeIcon, href: settings.youtube_url },
+  ].filter(s => !!s.href);
 
   return (
     <footer className="bg-gray-100 text-gray-800 border-t border-primary-500">
@@ -88,24 +87,119 @@ export default function Footer() {
       </div>
 
       {/* Main Footer Content */}
-      <div className="container-responsive py-8 sm:py-12">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+      <div className="container-responsive py-6 sm:py-12">
+        {/* Mobile layout (accordion-style) */}
+        <div className="block sm:hidden space-y-4">
+          {/* Company Info */}
+          <div>
+            <div className="mb-4 flex items-center justify-center">
+              <SystemLogo width={160} height={54} className="h-10 w-auto object-contain" />
+            </div>
+            <p className="text-gray-600 text-sm leading-relaxed text-center">
+              {appDescription}
+            </p>
+            <div className="mt-4 space-y-3">
+              <div className="flex items-center text-gray-600 text-sm">
+                <MailIcon className="h-4 w-4 mr-3 text-primary-500 flex-shrink-0" />
+                <span className="break-all">{contactEmail}</span>
+              </div>
+              <div className="flex items-center text-gray-600 text-sm">
+                <PhoneIcon className="h-4 w-4 mr-3 text-primary-500 flex-shrink-0" />
+                <span>{phoneNumber}</span>
+              </div>
+              <div className="flex items-start text-gray-600 text-sm">
+                <MapPinIcon className="h-4 w-4 mr-3 mt-0.5 text-primary-500 flex-shrink-0" />
+                <span dangerouslySetInnerHTML={{ __html: address.replace(/\n/g, '<br />') }} />
+              </div>
+            </div>
+          </div>
+
+          {/* Sections as accordions */}
+          <details className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <summary className="list-none px-4 py-3 font-semibold text-gray-900 flex items-center justify-between">
+              <span>Shop by Category</span>
+              <span className="text-gray-400">▾</span>
+            </summary>
+            <div className="px-2 pb-3 grid grid-cols-2 gap-1">
+              {categories.map((category) => (
+                <Link key={category.name} href={category.href} className="text-gray-600 hover:text-primary-500 transition-colors text-sm py-2 px-2 rounded-lg hover:bg-gray-50 flex items-center">
+                  <category.icon className="h-4 w-4 mr-2 flex-shrink-0" />
+                  {category.name}
+                </Link>
+              ))}
+            </div>
+          </details>
+
+          <details className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <summary className="list-none px-4 py-3 font-semibold text-gray-900 flex items-center justify-between">
+              <span>Customer Service</span>
+              <span className="text-gray-400">▾</span>
+            </summary>
+            <ul className="px-2 pb-3 space-y-1">
+              {customerService.map((item) => (
+                <li key={item.name}>
+                  <Link href={item.href} className="block text-gray-600 hover:text-primary-500 transition-colors text-sm py-2 px-2 rounded-lg hover:bg-gray-50">
+                    {item.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </details>
+
+          <details className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <summary className="list-none px-4 py-3 font-semibold text-gray-900 flex items-center justify-between">
+              <span>Company</span>
+              <span className="text-gray-400">▾</span>
+            </summary>
+            <ul className="px-2 pb-3 space-y-1">
+              {company.map((item) => (
+                <li key={item.name}>
+                  <Link href={item.href} className="block text-gray-600 hover:text-primary-500 transition-colors text-sm py-2 px-2 rounded-lg hover:bg-gray-50">
+                    {item.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </details>
+
+          <details className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <summary className="list-none px-4 py-3 font-semibold text-gray-900 flex items-center justify-between">
+              <span>Legal</span>
+              <span className="text-gray-400">▾</span>
+            </summary>
+            <ul className="px-2 pb-3 space-y-1">
+              {legal.map((item) => (
+                <li key={item.name}>
+                  <Link href={item.href} className="block text-gray-600 hover:text-primary-500 transition-colors text-sm py-2 px-2 rounded-lg hover:bg-gray-50">
+                    {item.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </details>
+
+          {/* Newsletter */}
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <h4 className="text-base font-semibold mb-2 text-primary-500">Newsletter</h4>
+            <p className="text-gray-600 text-sm mb-3">Get the latest deals and updates</p>
+            <div className="flex flex-col gap-2">
+              <input type="email" placeholder="Enter your email" className="px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm" />
+              <button className="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm">Subscribe</button>
+            </div>
+          </div>
+        </div>
+
+        {/* Desktop/Tablet layout */}
+        <div className="hidden sm:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
           
           {/* Company Info */}
           <div className="sm:col-span-2 lg:col-span-1">
             <div className="mb-6">
               <div className="mb-4">
-                <Image
-                  src="https://uwautfehppioudadfgcc.supabase.co/storage/v1/object/public/brand-logos/Logo1.png"
-                  alt="Suuqsade Logo"
-                  width={200}
-                  height={67}
-                  className="h-12 sm:h-16 w-auto object-contain"
-                />
+                <SystemLogo width={200} height={67} className="h-12 sm:h-16 w-auto object-contain" />
               </div>
               <p className="text-gray-600 text-sm sm:text-base leading-relaxed">
-                Your trusted online marketplace for quality products. We bring you the best deals 
-                from top brands with fast delivery and excellent customer service.
+                {appDescription}
               </p>
             </div>
             
@@ -113,15 +207,15 @@ export default function Footer() {
             <div className="space-y-3">
               <div className="flex items-center text-gray-600 text-sm sm:text-base">
                 <MailIcon className="h-4 w-4 mr-3 text-primary-500 flex-shrink-0" />
-                <span>support@suuqsade.com</span>
+                <span>{contactEmail}</span>
               </div>
               <div className="flex items-center text-gray-600 text-sm sm:text-base">
                 <PhoneIcon className="h-4 w-4 mr-3 text-primary-500 flex-shrink-0" />
-                <span>+1 (555) 123-4567</span>
+                <span>{phoneNumber}</span>
               </div>
               <div className="flex items-start text-gray-600 text-sm sm:text-base">
                 <MapPinIcon className="h-4 w-4 mr-3 mt-0.5 text-primary-500 flex-shrink-0" />
-                <span>123 Commerce Street<br />Business District, BD 12345</span>
+                <span dangerouslySetInnerHTML={{ __html: address.replace(/\n/g, '<br />') }} />
               </div>
             </div>
           </div>
@@ -246,7 +340,7 @@ export default function Footer() {
                 {socialLinks.map((social) => (
                   <a
                     key={social.name}
-                    href={social.href}
+                    href={social.href as string}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="bg-gray-200 hover:bg-primary-500 hover:text-white rounded-lg p-2 sm:p-3 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
@@ -281,7 +375,7 @@ export default function Footer() {
         <div className="container-responsive py-4 sm:py-6">
           <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
             <div className="text-gray-600 text-xs sm:text-sm text-center sm:text-left">
-              © {currentYear} Suuqsade Marketplace. All rights reserved.
+              © {currentYear} {appName}. All rights reserved.
             </div>
             
             <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-6 text-xs sm:text-sm text-gray-600">

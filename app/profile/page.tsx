@@ -45,9 +45,14 @@ export default function ProfilePage() {
             <p className="text-gray-600 mt-2">Manage your account and preferences</p>
           </div>
           
-          <div className="flex bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            <ProfileSidebar activeTab={activeTab} onTabChange={handleTabChange} />
-            <ProfileContent activeTab={activeTab} />
+          <div className="flex flex-col md:flex-row bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            {/* Sidebar collapses on mobile */}
+            <div className="md:w-64 w-full md:border-r border-gray-200">
+              <ProfileSidebar activeTab={activeTab} onTabChange={handleTabChange} />
+            </div>
+            <div className="flex-1">
+              <ProfileContent activeTab={activeTab} />
+            </div>
           </div>
         </div>
       </div>

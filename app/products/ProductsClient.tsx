@@ -6,7 +6,7 @@ import { ProductWithDetails, Category, Brand } from '@/types/database';
 import { ProductDiscount } from '@/lib/discount-utils';
 import ProductCard from '@/components/products/ProductCard';
 import ProductFilters from '@/components/products/ProductFilters';
-import { SortAsc, SortDesc, Search } from 'lucide-react';
+import { SortAsc, SortDesc, Search, Filter, X } from 'lucide-react';
 
 interface ProductsClientProps {
   initialProducts: ProductWithDetails[];
@@ -48,6 +48,7 @@ export default function ProductsClient({
   const [sortBy, setSortBy] = useState(initialFilters.sortBy);
   const [sortOrder, setSortOrder] = useState(initialFilters.sortOrder);
   const [productDiscounts, setProductDiscounts] = useState(initialProductDiscounts);
+	const [showFilters, setShowFilters] = useState(false);
 
   // Update URL when filters change
   useEffect(() => {
@@ -96,6 +97,18 @@ export default function ProductsClient({
       {/* Controls */}
       <div className="mb-6">
         <div className="flex flex-col lg:flex-row gap-4 items-center justify-end">
+					{/* Mobile Filter Toggle */}
+					<div className="w-full lg:hidden">
+						<button
+							onClick={() => setShowFilters(!showFilters)}
+							className="flex items-center justify-between w-full px-4 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+						>
+							<span className="flex items-center gap-2 text-sm text-gray-700"><Filter className="h-4 w-4 text-gray-600" /> Filters</span>
+							{showFilters ? (
+								<X className="h-4 w-4 text-gray-600" />
+							) : null}
+						</button>
+					</div>
           {/* Controls */}
           <div className="flex items-center gap-4">
             {/* Sort */}
@@ -128,20 +141,22 @@ export default function ProductsClient({
         </div>
       </div>
 
-      <div className="flex gap-6">
+			<div className="flex flex-col lg:flex-row gap-6">
         {/* Filters Sidebar */}
-        <div className="w-64 flex-shrink-0">
-          <ProductFilters
-            filters={filters}
-            onFilterChange={handleFilterChange}
-            onClearFilters={clearFilters}
-          />
-        </div>
+				<div className={`w-full lg:w-64 flex-shrink-0 ${showFilters ? 'block' : 'hidden lg:block'}`}>
+					<div className="bg-white rounded-lg shadow-sm lg:sticky lg:top-4">
+						<ProductFilters
+							filters={filters}
+							onFilterChange={handleFilterChange}
+							onClearFilters={clearFilters}
+						/>
+					</div>
+				</div>
 
         {/* Products Grid/List */}
         <div className="flex-1">
           {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6">
               {[...Array(6)].map((_, i) => (
                 <div key={i} className="bg-white rounded-lg shadow-sm p-6 animate-pulse">
                   <div className="w-full h-48 bg-gray-200 rounded-md mb-4"></div>
@@ -152,7 +167,7 @@ export default function ProductsClient({
               ))}
             </div>
           ) : products.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6">
               {products.map((product) => (
                 <ProductCard
                   key={product.id}
@@ -181,4 +196,10 @@ export default function ProductsClient({
     </>
   );
 }
+
+
+
+
+
+
 

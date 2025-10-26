@@ -324,7 +324,7 @@ export default function ProductDetailPage() {
           <span className="text-gray-900">{product.name}</span>
         </nav>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
           {/* Product Images */}
           <div className="lg:col-span-4">
             <div className="aspect-square bg-white rounded-lg shadow-sm overflow-hidden mb-4">
@@ -350,7 +350,7 @@ export default function ProductDetailPage() {
 
             {/* Thumbnail Images */}
             {images.length > 1 && (
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2">
                 {images.map((image, index) => (
                   <button
                     key={image.id}
@@ -376,9 +376,9 @@ export default function ProductDetailPage() {
               </div>
             )}
 
-            {/* Product Description */}
+            {/* Product Description (desktop only) */}
             {product.description && (
-              <div className="mt-6">
+              <div className="mt-6 hidden lg:block">
                 <div className="p-6">
                   <h2 className="text-lg font-semibold text-gray-900 mb-3">Product Description</h2>
                   <div className="prose prose-gray max-w-none">
@@ -394,7 +394,7 @@ export default function ProductDetailPage() {
           {/* Product Details */}
           <div className="lg:col-span-5">
             <div className="mb-6">
-              <h1 className="text-3xl font-bold text-gray-900 mb-4">{product.name}</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">{product.name}</h1>
               
               {product.brand && (
                 <Link
@@ -406,10 +406,10 @@ export default function ProductDetailPage() {
               )}
               
               {/* Price */}
-              <div className="flex items-center space-x-4 mb-4">
-                <span className="text-3xl font-bold text-gray-900">${currentPrice.toFixed(2)}</span>
+              <div className="flex items-center space-x-3 sm:space-x-4 mb-4">
+                <span className="text-2xl sm:text-3xl font-bold text-gray-900">${currentPrice.toFixed(2)}</span>
                 {hasDiscount && currentPrice < originalPrice && (
-                  <span className="text-xl text-gray-500 line-through">${originalPrice.toFixed(2)}</span>
+                  <span className="text-lg sm:text-xl text-gray-500 line-through">${originalPrice.toFixed(2)}</span>
                 )}
                 {hasDiscount && (
                   <DiscountBadge
@@ -426,23 +426,23 @@ export default function ProductDetailPage() {
                   {[...Array(5)].map((_, i) => (
                     <Star
                       key={i}
-                      className={`h-5 w-5 ${
+                      className={`h-4 w-4 sm:h-5 sm:w-5 ${
                         i < Math.round(reviewStats.averageRating) ? 'text-yellow-400 fill-current' : 'text-gray-300'
                       }`}
                     />
                   ))}
                 </div>
-                <span className="text-sm text-gray-600">
+                <span className="text-xs sm:text-sm text-gray-600">
                   {reviewStats.totalReviews > 0 
                     ? `(${reviewStats.averageRating.toFixed(1)}) • ${reviewStats.totalReviews} review${reviewStats.totalReviews !== 1 ? 's' : ''}`
-                    : 'No reviews yet'
+                    : <span className="hidden sm:inline">No reviews yet</span>
                   }
                 </span>
               </div>
 
               {/* Short Description */}
               {product.short_description && (
-                <p className="text-gray-600 mb-6">{product.short_description}</p>
+                <p className="text-gray-600 text-sm sm:text-base mb-6">{product.short_description}</p>
               )}
 
               {/* Discount Information */}
@@ -503,18 +503,18 @@ export default function ProductDetailPage() {
             </div>
 
             {/* Actions */}
-            <div className="flex space-x-4 mb-8">
+            <div className="flex flex-col sm:flex-row gap-3 sm:space-x-4 mb-8">
               <button
                 onClick={handleAddToCart}
                 disabled={addingToCart}
-                className="flex-1 bg-primary-600 text-white px-6 py-3 rounded-md font-medium hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                className="flex-1 bg-primary-600 text-white px-5 py-3 rounded-md font-medium hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               >
                 <ShoppingCart className="h-5 w-5 mr-2" />
                 {addingToCart ? 'Adding...' : 'Add to Cart'}
               </button>
               <button
                 onClick={handleToggleFavorite}
-                className={`p-3 border rounded-md hover:bg-gray-50 ${
+                className={`p-3 border rounded-md hover:bg-gray-50 flex items-center justify-center ${
                   product && isFavorite(product.id)
                     ? 'border-red-300 bg-red-50 text-red-600'
                     : 'border-gray-300 text-gray-600'
@@ -545,11 +545,25 @@ export default function ProductDetailPage() {
               )}
             </div>
 
+            {/* Product Description (mobile below delivery) */}
+            {product.description && (
+              <div className="mb-8 block lg:hidden">
+                <div className="bg-white rounded-lg shadow-sm p-6">
+                  <h2 className="text-lg font-semibold text-gray-900 mb-3">Product Description</h2>
+                  <div className="prose prose-gray max-w-none">
+                    <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
+                      {product.description}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
           </div>
 
           {/* Seller Information */}
           <div className="lg:col-span-3">
-            <div className="bg-white rounded-lg shadow-sm p-6 sticky top-8">
+            <div className="bg-white rounded-lg shadow-sm p-6 lg:sticky lg:top-8">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Seller Information</h3>
               
               {(product as any).vendor ? (

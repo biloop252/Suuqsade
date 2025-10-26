@@ -18,9 +18,22 @@ export default function CategoriesDropdown({ className = '' }: CategoriesDropdow
   const [loading, setLoading] = useState(true);
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [isMobileView, setIsMobileView] = useState(false);
 
   useEffect(() => {
     fetchCategories();
+  }, []);
+
+  // Track viewport width to toggle mobile rendering
+  useEffect(() => {
+    const updateViewport = () => {
+      if (typeof window !== 'undefined') {
+        setIsMobileView(window.innerWidth < 768);
+      }
+    };
+    updateViewport();
+    window.addEventListener('resize', updateViewport);
+    return () => window.removeEventListener('resize', updateViewport);
   }, []);
 
   // Close dropdown when clicking outside
@@ -98,6 +111,17 @@ export default function CategoriesDropdown({ className = '' }: CategoriesDropdow
     setHoveredCategory(categoryId);
   };
 
+  const handleCategoryClick = (categoryId: string) => {
+    // On mobile, when a parent category is clicked, drill down to its subcategories
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      if (categoryHierarchy[categoryId] && categoryHierarchy[categoryId].length > 0) {
+        setHoveredCategory(categoryId);
+        return;
+      }
+    }
+    setIsOpen(false);
+  };
+
   // Recursive function to render all category levels
   const renderCategoryLevel = (parentId: string, level: number = 0): JSX.Element[] => {
     const children = categoryHierarchy[parentId] || [];
@@ -126,10 +150,11 @@ export default function CategoriesDropdown({ className = '' }: CategoriesDropdow
       <button 
         className="flex items-center space-x-2 text-gray-700 hover:text-primary-500 transition-colors"
         onClick={() => setIsOpen(!isOpen)}
+        aria-label="Categories"
       >
-        <MenuIcon className="h-4 w-4" />
-        <span className="font-medium text-sm">ALL CATEGORIES</span>
-        <span className="bg-secondary-500 text-gray-900 text-xs px-2 py-0.5 rounded-full">New</span>
+        <MenuIcon className="h-5 w-5" />
+        <span className="font-medium text-sm hidden md:inline">ALL CATEGORIES</span>
+        <span className="bg-secondary-500 text-gray-900 text-xs px-2 py-0.5 rounded-full hidden md:inline">New</span>
         <ChevronDownIcon className={`h-4 w-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
@@ -139,6 +164,53 @@ export default function CategoriesDropdown({ className = '' }: CategoriesDropdow
             <div className="px-8 py-12 text-center text-gray-500">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500 mx-auto mb-4"></div>
               Loading categories...
+            </div>
+          ) : isMobileView ? (
+            <div className="min-h-[320px] p-4">
+              {hoveredCategory ? (
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <button
+                      className="text-sm text-gray-600 hover:text-primary-600"
+                      onClick={() => setHoveredCategory(null)}
+                    >
+                      ← Back
+                    </button>
+                    <button className="text-gray-400 hover:text-gray-600" onClick={() => setIsOpen(false)}>✕</button>
+                  </div>
+                  <div className="grid grid-cols-1 gap-2">
+                    {(categoryHierarchy[hoveredCategory] || []).map((subcategory) => (
+                      <Link
+                        key={subcategory.id}
+                        href={`/categories/${subcategory.slug}`}
+                        className="block text-sm text-gray-700 hover:text-primary-600 px-2 py-2 rounded"
+                        onClick={(e) => {
+                          if (categoryHierarchy[subcategory.id] && categoryHierarchy[subcategory.id].length > 0) {
+                            e.preventDefault();
+                            setHoveredCategory(subcategory.id);
+                          } else {
+                            setIsOpen(false);
+                          }
+                        }}
+                      >
+                        {subcategory.name}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-2">
+                  {categories.map((category) => (
+                    <button
+                      key={category.id}
+                      className="text-left text-sm text-gray-700 hover:text-primary-600 px-2 py-2 rounded"
+                      onClick={() => handleCategoryClick(category.id)}
+                    >
+                      {category.name}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           ) : (
             <div className="flex min-h-[400px] flex-col sm:flex-row">

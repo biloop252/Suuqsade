@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { ProductWithDetails } from '@/types/database';
 import { 
   Heart, 
-  ShoppingCart, 
+  ShoppingBasket, 
   Star,
   Eye,
   Percent
@@ -199,12 +199,12 @@ export default function ProductCard({ product, viewMode = 'grid', discountData }
                   </Link>
                 )}
                 <Link href={`/products/${product.slug}`}>
-                  <h3 className="text-lg font-semibold text-gray-900 hover:text-primary-500 mt-1 mb-2 transition-colors">
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-900 hover:text-primary-500 mt-1 mb-2 transition-colors">
                     {product.name}
                   </h3>
                 </Link>
                 {product.short_description && (
-                  <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+                  <p className="text-gray-600 text-xs sm:text-sm mb-3 line-clamp-2">
                     {product.short_description}
                   </p>
                 )}
@@ -215,7 +215,7 @@ export default function ProductCard({ product, viewMode = 'grid', discountData }
                     {[...Array(5)].map((_, i) => (
                       <Star
                         key={i}
-                        className={`h-4 w-4 ${
+                        className={`h-3 w-3 sm:h-4 sm:w-4 ${
                           i < getStarDisplay(reviewStats.averageRating).filledStars 
                             ? 'text-yellow-400 fill-current' 
                             : 'text-gray-300'
@@ -232,10 +232,14 @@ export default function ProductCard({ product, viewMode = 'grid', discountData }
                 </div>
 
                 {/* Price */}
-                <div className="flex items-center space-x-2">
-                  <span className="text-xl font-bold text-gray-900">${currentPrice.toFixed(2)}</span>
-                  {hasDiscount && currentPrice < originalPrice && (
-                    <span className="text-lg text-gray-500 line-through">${originalPrice.toFixed(2)}</span>
+                <div className="flex flex-col">
+                  {hasDiscount && currentPrice < originalPrice ? (
+                    <>
+                      <span className="text-base sm:text-xl font-bold text-gray-900">${currentPrice.toFixed(2)}</span>
+                      <span className="text-xs sm:text-sm text-gray-500 line-through">${originalPrice.toFixed(2)}</span>
+                    </>
+                  ) : (
+                    <span className="text-base sm:text-xl font-bold text-gray-900">${currentPrice.toFixed(2)}</span>
                   )}
                 </div>
               </div>
@@ -247,7 +251,7 @@ export default function ProductCard({ product, viewMode = 'grid', discountData }
                   disabled={addingToCart}
                   className="flex items-center justify-center px-4 py-2 bg-primary-500 text-white rounded-md hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
                 >
-                  <ShoppingCart className="h-4 w-4 mr-2" />
+                  <ShoppingBasket className="h-4 w-4 mr-2" />
                   {addingToCart ? 'Adding...' : 'Add to Cart'}
                 </button>
                 <button
@@ -312,14 +316,14 @@ export default function ProductCard({ product, viewMode = 'grid', discountData }
           }`}>
             <button
               onClick={handleToggleFavorite}
-              className={`p-2 bg-white rounded-full shadow-md hover:bg-gray-50 ${
+              className={`w-10 h-10 flex items-center justify-center bg-white rounded-full shadow-md hover:bg-gray-50 ${
                 isFavorite(product.id) ? 'text-red-600' : 'text-gray-600'
               }`}
             >
               <Heart className={`h-4 w-4 ${isFavorite(product.id) ? 'fill-current' : ''}`} />
             </button>
-            <button className="p-2 bg-white rounded-full shadow-md hover:bg-gray-50">
-              <Eye className="h-4 w-4 text-gray-600" />
+            <button className="w-10 h-10 flex items-center justify-center bg-white rounded-full shadow-md hover:bg-gray-50 text-gray-600">
+              <Eye className="h-4 w-4" />
             </button>
           </div>
         </div>
@@ -336,13 +340,13 @@ export default function ProductCard({ product, viewMode = 'grid', discountData }
         )}
         
         <Link href={`/products/${product.slug}`}>
-          <h3 className="text-lg font-semibold text-gray-900 hover:text-primary-500 mt-1 mb-2 line-clamp-2 transition-colors">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900 hover:text-primary-500 mt-1 mb-2 line-clamp-2 transition-colors">
             {product.name}
           </h3>
         </Link>
 
         {product.short_description && (
-          <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+          <p className="text-gray-600 text-xs sm:text-sm mb-3 line-clamp-2">
             {product.short_description}
           </p>
         )}
@@ -353,7 +357,7 @@ export default function ProductCard({ product, viewMode = 'grid', discountData }
             {[...Array(5)].map((_, i) => (
               <Star
                 key={i}
-                className={`h-4 w-4 ${
+                className={`h-3 w-3 sm:h-4 sm:w-4 ${
                   i < getStarDisplay(reviewStats.averageRating).filledStars 
                     ? 'text-yellow-400 fill-current' 
                     : 'text-gray-300'
@@ -361,29 +365,30 @@ export default function ProductCard({ product, viewMode = 'grid', discountData }
               />
             ))}
           </div>
-          <span className="text-sm text-gray-600">
-            {reviewStats.totalReviews > 0 
-              ? `(${reviewStats.averageRating.toFixed(1)})` 
-              : 'No reviews'
-            }
+          <span className="text-xs text-gray-500">
+            {reviewStats.totalReviews > 0 ? formatRatingText(reviewStats.averageRating, reviewStats.totalReviews) : <span className="hidden sm:inline">No reviews</span>}
           </span>
         </div>
 
         {/* Price */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <span className="text-xl font-bold text-gray-900">${currentPrice.toFixed(2)}</span>
-            {hasDiscount && currentPrice < originalPrice && (
-              <span className="text-lg text-gray-500 line-through">${originalPrice.toFixed(2)}</span>
+          <div className="flex flex-col">
+            {hasDiscount && currentPrice < originalPrice ? (
+              <>
+                <span className="text-lg font-bold text-gray-900">${currentPrice.toFixed(2)}</span>
+                <span className="text-sm text-gray-500 line-through">${originalPrice.toFixed(2)}</span>
+              </>
+            ) : (
+              <span className="text-lg font-bold text-gray-900">${currentPrice.toFixed(2)}</span>
             )}
           </div>
           
           <button
             onClick={handleAddToCart}
             disabled={addingToCart}
-            className="p-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-10 h-10 flex items-center justify-center bg-primary-600 text-white rounded-full hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <ShoppingCart className="h-4 w-4" />
+            <ShoppingBasket className="h-4 w-4" />
           </button>
         </div>
       </div>
