@@ -151,6 +151,60 @@ suuqsade-marketplace/
 - `npm run db:generate` - Generate TypeScript types from Supabase
 - `npm run db:push` - Push database changes to Supabase
 
+## Customers REST API
+
+All endpoints are under `/api/customers`. Unless noted, responses are JSON. For authenticated endpoints, include `Authorization: Bearer <supabase_access_token>`.
+
+- Products
+  - GET `/api/customers/products`
+    - Query: `q`, `category`, `brand`, `vendor`, `min_price`, `max_price`, `sort` (newest|price_asc|price_desc), `page`, `page_size`
+    - Returns: `{ items: Product[], pagination: { page, page_size, total, total_pages } }`
+  - GET `/api/customers/products/:slug`
+    - Returns a single product with category, brand, vendor, images, variants, reviews, tags
+  - GET `/api/customers/products/:slug/related`
+    - Returns related products by category or brand
+
+- Categories
+  - GET `/api/customers/categories`
+    - Returns flat list of active categories
+  - GET `/api/customers/categories/tree`
+    - Returns nested tree built from `parent_id`
+
+- Brands
+  - GET `/api/customers/brands`
+    - Returns active brands
+  - GET `/api/customers/brands/:slug`
+    - Returns brand plus up to 24 latest products
+
+- Cart (auth required)
+  - GET `/api/customers/cart`
+    - Returns current user's cart items with product expansions
+  - POST `/api/customers/cart` body: `{ product_id, variant_id?, quantity }`
+    - Upserts item or increases quantity
+  - PATCH `/api/customers/cart` body: `{ id, quantity }`
+    - Updates quantity; if quantity <= 0, deletes item
+  - DELETE `/api/customers/cart?id=...` or `/api/customers/cart?all=true`
+    - Deletes one item by id or clears cart
+
+- Addresses (auth required)
+  - GET `/api/customers/addresses`
+  - POST `/api/customers/addresses` body requires: `type, first_name, last_name, address_line_1, city, state, postal_code, country`
+  - PATCH `/api/customers/addresses/:id`
+  - DELETE `/api/customers/addresses/:id`
+
+- Orders (auth required)
+  - GET `/api/customers/orders`
+  - POST `/api/customers/orders` body: `{ items: [{ product_id, variant_id?, quantity }...], shipping_address_id, billing_address_id?, payment_method?, notes? }`
+    - Calculates subtotal on server and creates order + items
+
+- Coupons (auth required)
+  - POST `/api/customers/coupons/validate` body: `{ code, order_amount }`
+    - Returns `{ valid: boolean, coupon?, reason? }`
+
+- Vendors
+  - GET `/api/customers/vendors/:id`
+    - Returns vendor profile plus up to 24 latest products
+
 ## Authentication Flow
 
 1. **Sign Up**: Users create accounts with email/password or OAuth
