@@ -6,6 +6,7 @@ export type ReturnStatus = 'pending' | 'approved' | 'rejected' | 'completed';
 export type PromotionalMediaType = 'slider' | 'banner' | 'popup' | 'video' | 'custom';
 export type PromotionalMediaPosition = 'homepage_top' | 'homepage_middle' | 'homepage_bottom' | 'homepage_middle_slider' | 'category_page' | 'product_page' | 'sidebar' | 'footer' | 'popup' | 'header' | 'checkout_page' | 'cart_page' | 'limited_time_deals';
 export type PromotionalMediaTarget = '_self' | '_blank' | '_parent' | '_top';
+export type HomepageSectionType = 'category' | 'popular' | 'trending' | 'new_arrivals' | 'brand' | 'tag' | 'best_selling' | 'recommended' | 'flash_deals';
 export type DiscountType = 'percentage' | 'fixed_amount' | 'free_shipping';
 export type DiscountStatus = 'active' | 'inactive' | 'expired';
 export type CouponStatus = 'active' | 'inactive' | 'expired' | 'used_up';
@@ -394,6 +395,28 @@ export interface PromotionalMediaCategory {
   promotional_media_id: string;
   category_id: string;
   created_at: string;
+}
+
+export interface HomepageSection {
+  id: string;
+  title: string;
+  subtitle?: string;
+  description?: string;
+  section_type: HomepageSectionType;
+  background_image_url?: string;
+  background_color: string;
+  text_color: string;
+  category_id?: string;
+  brand_id?: string;
+  tag_id?: string;
+  product_limit?: number;
+  display_order: number;
+  is_active: boolean;
+  start_date?: string;
+  end_date?: string;
+  created_by?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 // Extended types with relationships

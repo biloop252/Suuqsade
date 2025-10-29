@@ -8,7 +8,6 @@ import {
   Heart, 
   ShoppingBasket, 
   Star,
-  Eye,
   Percent
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
@@ -26,9 +25,12 @@ interface ProductCardProps {
     discounts: ProductDiscount[];
     discountInfo: { final_price: number; discount_amount: number; has_discount: boolean };
   };
+  hideBrand?: boolean;
+  variant?: 'default' | 'compact';
+  alwaysShowActions?: boolean;
 }
 
-export default function ProductCard({ product, viewMode = 'grid', discountData }: ProductCardProps) {
+export default function ProductCard({ product, viewMode = 'grid', discountData, hideBrand = true, variant = 'compact', alwaysShowActions = false }: ProductCardProps) {
   const { user } = useAuth();
   const { addToCart } = useCart();
   const { isFavorite, toggleFavorite } = useFavorites();
@@ -190,16 +192,8 @@ export default function ProductCard({ product, viewMode = 'grid', discountData }
           <div className="flex-1 p-6">
             <div className="flex justify-between items-start">
               <div className="flex-1">
-                {product.brand && (
-                  <Link
-                    href={`/brands/${product.brand.slug}`}
-                    className="text-primary-500 hover:text-orange-600 text-sm font-medium"
-                  >
-                    {product.brand.name}
-                  </Link>
-                )}
                 <Link href={`/products/${product.slug}`}>
-                  <h3 className="text-base sm:text-lg font-semibold text-gray-900 hover:text-primary-500 mt-1 mb-2 transition-colors">
+                  <h3 className={`${variant === 'compact' ? 'text-sm font-medium' : 'text-base sm:text-lg font-semibold'} text-[#851F8F] hover:text-[#851F8F] mt-1 mb-2 transition-colors`}>
                     {product.name}
                   </h3>
                 </Link>
@@ -249,7 +243,7 @@ export default function ProductCard({ product, viewMode = 'grid', discountData }
                 <button
                   onClick={handleAddToCart}
                   disabled={addingToCart}
-                  className="flex items-center justify-center px-4 py-2 bg-primary-500 text-white rounded-md hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+                  className="flex items-center justify-center px-4 py-2 bg-[#851F8F] text-white rounded-md hover:bg-[#851F8F] disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
                 >
                   <ShoppingBasket className="h-4 w-4 mr-2" />
                   {addingToCart ? 'Adding...' : 'Add to Cart'}
@@ -274,12 +268,12 @@ export default function ProductCard({ product, viewMode = 'grid', discountData }
 
   return (
     <div
-      className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 group border border-gray-100"
+      className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 group border border-gray-100 h-full flex flex-col"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       <Link href={`/products/${product.slug}`}>
-        <div className="aspect-square bg-gray-100 rounded-t-lg overflow-hidden relative">
+        <div className={`${variant === 'compact' ? 'h-40 sm:h-44' : 'aspect-square'} bg-gray-100 rounded-t-lg overflow-hidden relative`}>
           {primaryImage ? (
             <Image
               src={primaryImage.image_url}
@@ -312,7 +306,7 @@ export default function ProductCard({ product, viewMode = 'grid', discountData }
           
           {/* Quick Actions */}
           <div className={`absolute top-2 right-2 flex flex-col space-y-2 transition-opacity duration-300 ${
-            isHovered ? 'opacity-100' : 'opacity-0'
+            alwaysShowActions ? 'opacity-100' : (isHovered ? 'opacity-100' : 'opacity-0')
           }`}>
             <button
               onClick={handleToggleFavorite}
@@ -322,37 +316,29 @@ export default function ProductCard({ product, viewMode = 'grid', discountData }
             >
               <Heart className={`h-4 w-4 ${isFavorite(product.id) ? 'fill-current' : ''}`} />
             </button>
-            <button className="w-10 h-10 flex items-center justify-center bg-white rounded-full shadow-md hover:bg-gray-50 text-gray-600">
-              <Eye className="h-4 w-4" />
-            </button>
           </div>
         </div>
       </Link>
 
-      <div className="p-4">
-        {product.brand && (
-          <Link
-            href={`/brands/${product.brand.slug}`}
-            className="text-primary-500 hover:text-orange-600 text-sm font-medium"
-          >
-            {product.brand.name}
-          </Link>
-        )}
+      <div className={`${variant === 'compact' ? 'p-3' : 'p-4'} flex flex-col flex-1`}>
         
         <Link href={`/products/${product.slug}`}>
-          <h3 className="text-base sm:text-lg font-semibold text-gray-900 hover:text-primary-500 mt-1 mb-2 line-clamp-2 transition-colors">
+          <h3 className={`${variant === 'compact' ? 'text-sm font-medium' : 'text-base sm:text-lg font-semibold'} text-[#851F8F] hover:text-[#851F8F] mt-1 mb-2 line-clamp-2 transition-colors`}>
             {product.name}
           </h3>
         </Link>
 
-        {product.short_description && (
-          <p className="text-gray-600 text-xs sm:text-sm mb-3 line-clamp-2">
+        {/* Description with fixed space to keep cards even */}
+        {product.short_description ? (
+          <p className={`${variant === 'compact' ? 'text-xs' : 'text-xs sm:text-sm'} text-gray-600 mb-3 line-clamp-2 ${variant === 'compact' ? 'min-h-[32px]' : 'min-h-[36px]'}`}>
             {product.short_description}
           </p>
+        ) : (
+          <div className={`${variant === 'compact' ? 'min-h-[32px]' : 'min-h-[36px]'} mb-3 opacity-0 select-none`}>.</div>
         )}
 
         {/* Rating */}
-        <div className="flex items-center space-x-2 mb-3">
+        <div className="flex items-center space-x-2 mb-3 min-h-5">
           <div className="flex items-center">
             {[...Array(5)].map((_, i) => (
               <Star
@@ -371,22 +357,22 @@ export default function ProductCard({ product, viewMode = 'grid', discountData }
         </div>
 
         {/* Price */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mt-auto">
           <div className="flex flex-col">
             {hasDiscount && currentPrice < originalPrice ? (
               <>
-                <span className="text-lg font-bold text-gray-900">${currentPrice.toFixed(2)}</span>
-                <span className="text-sm text-gray-500 line-through">${originalPrice.toFixed(2)}</span>
+                <span className={`${variant === 'compact' ? 'text-base' : 'text-lg'} font-bold text-gray-900`}>${currentPrice.toFixed(2)}</span>
+                <span className={`${variant === 'compact' ? 'text-xs' : 'text-sm'} text-gray-500 line-through`}>${originalPrice.toFixed(2)}</span>
               </>
             ) : (
-              <span className="text-lg font-bold text-gray-900">${currentPrice.toFixed(2)}</span>
+              <span className={`${variant === 'compact' ? 'text-base' : 'text-lg'} font-bold text-gray-900`}>${currentPrice.toFixed(2)}</span>
             )}
           </div>
           
           <button
             onClick={handleAddToCart}
             disabled={addingToCart}
-            className="w-10 h-10 flex items-center justify-center bg-primary-600 text-white rounded-full hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-10 h-10 flex items-center justify-center bg-[#851F8F] text-white rounded-full hover:bg-[#851F8F] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <ShoppingBasket className="h-4 w-4" />
           </button>
