@@ -36,8 +36,25 @@ export async function GET(request: NextRequest) {
 				start_date,
 				end_date,
 				language_code,
+				action_type,
+				action_params,
 				created_at,
-				updated_at
+				updated_at,
+				slider_items (
+					id,
+					promotional_media_id,
+					image_url,
+					mobile_image_url,
+					link_url,
+					button_text,
+					target,
+					display_order,
+					is_active,
+					action_type,
+					action_params,
+					created_at,
+					updated_at
+				)
 			`)
 			.eq('banner_position', position)
 			.eq('is_active', true)
@@ -50,7 +67,23 @@ export async function GET(request: NextRequest) {
 			return NextResponse.json({ error: error.message }, { status: 500 })
 		}
 
-		return NextResponse.json({ items: data ?? [] })
+		// Process the data to filter and sort slider_items
+		const processedData = (data ?? []).map((item: any) => {
+			if (item.slider_items && Array.isArray(item.slider_items)) {
+				// Filter active slider items and sort by display_order
+				item.slider_items = item.slider_items
+					.filter((si: any) => si.is_active === true)
+					.sort((a: any, b: any) => {
+						if (a.display_order !== b.display_order) {
+							return a.display_order - b.display_order
+						}
+						return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+					})
+			}
+			return item
+		})
+
+		return NextResponse.json({ items: processedData })
 	} catch (err) {
 		const message = err instanceof Error ? err.message : 'Unknown error'
 		return NextResponse.json({ error: message }, { status: 500 })

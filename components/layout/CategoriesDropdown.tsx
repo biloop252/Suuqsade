@@ -128,7 +128,7 @@ export default function CategoriesDropdown({ className = '' }: CategoriesDropdow
     return children.map((category) => (
       <div key={category.id}>
         <Link
-          href={`/categories/${category.slug}`}
+          href={`/categories/${category.id}`}
           className="block text-sm text-gray-600 hover:text-primary-500 hover:bg-primary-50 px-2 py-1.5 rounded transition-colors duration-200 font-medium"
           onClick={() => setIsOpen(false)}
         >
@@ -182,7 +182,7 @@ export default function CategoriesDropdown({ className = '' }: CategoriesDropdow
                     {(categoryHierarchy[hoveredCategory] || []).map((subcategory) => (
                       <Link
                         key={subcategory.id}
-                        href={`/categories/${subcategory.slug}`}
+                        href={`/categories/${subcategory.id}`}
                         className="block text-sm text-gray-700 hover:text-primary-600 px-2 py-2 rounded"
                         onClick={(e) => {
                           if (categoryHierarchy[subcategory.id] && categoryHierarchy[subcategory.id].length > 0) {
@@ -229,7 +229,7 @@ export default function CategoriesDropdown({ className = '' }: CategoriesDropdow
                         onMouseEnter={() => handleCategoryHover(category.id)}
                       >
                         <Link
-                          href={`/categories/${category.slug}`}
+                          href={`/categories/${category.id}`}
                           className="flex items-center justify-between px-6 py-3 text-sm font-medium"
                           onClick={() => setIsOpen(false)}
                         >
@@ -281,7 +281,7 @@ export default function CategoriesDropdown({ className = '' }: CategoriesDropdow
                         </div>
                         <div className="space-y-1">
                           <Link
-                            href={`/categories/${subcategory.slug}`}
+                            href={`/categories/${subcategory.id}`}
                             className="block text-sm text-gray-600 hover:text-primary-500 hover:bg-primary-50 px-2 py-1.5 rounded transition-colors duration-200 font-medium"
                             onClick={() => setIsOpen(false)}
                           >

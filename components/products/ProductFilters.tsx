@@ -6,25 +6,52 @@ import { Category, Brand } from '@/types/database';
 import { XIcon } from 'lucide-react';
 import { Accordion, AccordionItem } from '@/components/ui/Accordion';
 
+interface VendorFilter {
+  id: string;
+  business_name: string;
+  status?: string;
+}
+
 interface ProductFiltersProps {
   filters: {
     categories: string[];
     brands: string[];
+    vendors: string[];
     minPrice: string;
     maxPrice: string;
+    discountMin: string;
   };
+  categories?: Category[];
+  brands?: Brand[];
+  vendors?: VendorFilter[];
   onFilterChange: (filters: any) => void;
   onClearFilters: () => void;
 }
 
-export default function ProductFilters({ filters, onFilterChange, onClearFilters }: ProductFiltersProps) {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [brands, setBrands] = useState<Brand[]>([]);
-  const [loading, setLoading] = useState(true);
+export default function ProductFilters({ 
+  filters, 
+  categories: propCategories, 
+  brands: propBrands, 
+  vendors: propVendors,
+  onFilterChange, 
+  onClearFilters 
+}: ProductFiltersProps) {
+  const [categories, setCategories] = useState<Category[]>(propCategories || []);
+  const [brands, setBrands] = useState<Brand[]>(propBrands || []);
+  const [vendors, setVendors] = useState<VendorFilter[]>(propVendors || []);
+  const [loading, setLoading] = useState(!propCategories || !propBrands || !propVendors);
 
   useEffect(() => {
-    fetchFiltersData();
-  }, []);
+    // If props are provided, use them; otherwise fetch
+    if (propCategories && propBrands && propVendors) {
+      setCategories(propCategories);
+      setBrands(propBrands);
+      setVendors(propVendors);
+      setLoading(false);
+    } else {
+      fetchFiltersData();
+    }
+  }, [propCategories, propBrands, propVendors]);
 
   const fetchFiltersData = async () => {
     try {
@@ -45,6 +72,13 @@ export default function ProductFilters({ filters, onFilterChange, onClearFilters
         .eq('is_active', true)
         .order('name');
 
+      // Fetch vendors
+      const { data: vendorsData, error: vendorsError } = await supabase
+        .from('vendor_profiles')
+        .select('id, business_name, status')
+        .eq('status', 'active')
+        .order('business_name');
+
       if (categoriesError) {
         console.error('Error fetching categories:', categoriesError);
       } else {
@@ -55,6 +89,12 @@ export default function ProductFilters({ filters, onFilterChange, onClearFilters
         console.error('Error fetching brands:', brandsError);
       } else {
         setBrands(brandsData || []);
+      }
+
+      if (vendorsError) {
+        console.error('Error fetching vendors:', vendorsError);
+      } else {
+        setVendors(vendorsData || []);
       }
     } catch (error) {
       console.error('Error:', error);
@@ -148,6 +188,35 @@ export default function ProductFilters({ filters, onFilterChange, onClearFilters
         </div>
       </AccordionItem>
 
+      {/* Vendors Accordion */}
+      <AccordionItem title="Vendors" defaultOpen={false}>
+        <div className="max-h-48 overflow-y-auto space-y-2 pr-2">
+          {vendors.map((vendor) => {
+            const isChecked = filters.vendors.includes(vendor.id);
+            
+            const handleVendorChange = (vendorId: string, checked: boolean) => {
+              if (checked) {
+                onFilterChange({ vendors: [...filters.vendors, vendorId] });
+              } else {
+                onFilterChange({ vendors: filters.vendors.filter(id => id !== vendorId) });
+              }
+            };
+            
+            return (
+              <label key={vendor.id} className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={isChecked}
+                  onChange={(e) => handleVendorChange(vendor.id, e.target.checked)}
+                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                />
+                <span className="ml-2 text-sm text-gray-700">{vendor.business_name}</span>
+              </label>
+            );
+          })}
+        </div>
+      </AccordionItem>
+
       {/* Price Range Accordion */}
       <AccordionItem title="Price Range" defaultOpen={false}>
         <div className="space-y-3">
@@ -170,6 +239,26 @@ export default function ProductFilters({ filters, onFilterChange, onClearFilters
               onChange={(e) => onFilterChange({ maxPrice: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             />
+          </div>
+        </div>
+      </AccordionItem>
+
+      {/* Discount Percentage Accordion */}
+      <AccordionItem title="Discount" defaultOpen={false}>
+        <div className="space-y-3">
+          <div>
+            <label className="block text-xs text-gray-600 mb-1">Minimum Discount (%)</label>
+            <input
+              type="number"
+              min="0"
+              max="100"
+              step="1"
+              placeholder="0"
+              value={filters.discountMin}
+              onChange={(e) => onFilterChange({ discountMin: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            />
+            <p className="text-xs text-gray-500 mt-1">Show products with at least this discount percentage</p>
           </div>
         </div>
       </AccordionItem>

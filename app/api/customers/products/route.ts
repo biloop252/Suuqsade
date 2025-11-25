@@ -15,11 +15,16 @@ export async function GET(request: NextRequest) {
     const minPrice = searchParams.get('min_price')
     const maxPrice = searchParams.get('max_price')
     const sort = (searchParams.get('sort') as SortOption) || 'newest'
-    const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10))
-    const pageSize = Math.min(50, Math.max(1, parseInt(searchParams.get('page_size') || '20', 10)))
+    const fetchAll = searchParams.get('all') === 'true'
+    
+    // If fetching all, skip pagination. Otherwise use pagination with increased limit
+    const page = fetchAll ? 1 : Math.max(1, parseInt(searchParams.get('page') || '1', 10))
+    const pageSize = fetchAll 
+      ? 10000 // Large limit when fetching all (practical limit to prevent memory issues)
+      : Math.min(1000, Math.max(1, parseInt(searchParams.get('page_size') || '20', 10))) // Increased max from 50 to 1000
 
     const from = (page - 1) * pageSize
-    const to = from + pageSize - 1
+    const to = fetchAll ? 9999 : from + pageSize - 1 // Large range when fetching all
 
     let query = supabase
       .from('products')
@@ -60,19 +65,25 @@ export async function GET(request: NextRequest) {
         break
     }
 
-    const { data, error, count } = await query.range(from, to)
+    // When fetching all, don't use range() to get all results
+    const { data, error, count } = fetchAll 
+      ? await query
+      : await query.range(from, to)
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
+    // Get total count if not already fetched
+    const totalCount = count ?? (fetchAll ? data?.length ?? 0 : 0)
+
     return NextResponse.json({
       items: data ?? [],
       pagination: {
-        page,
-        page_size: pageSize,
-        total: count ?? 0,
-        total_pages: count ? Math.ceil(count / pageSize) : 0
+        page: fetchAll ? 1 : page,
+        page_size: fetchAll ? totalCount : pageSize,
+        total: totalCount,
+        total_pages: fetchAll ? 1 : (totalCount ? Math.ceil(totalCount / pageSize) : 0)
       }
     })
   } catch (err) {

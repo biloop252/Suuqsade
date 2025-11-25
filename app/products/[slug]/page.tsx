@@ -474,7 +474,7 @@ export default function ProductDetailPage() {
           {product.category && (
             <>
               <span>/</span>
-              <Link href={`/categories/${product.category.slug}`} className="hover:text-primary-600">
+              <Link href={`/categories/${product.category.id}`} className="hover:text-primary-600">
                 {product.category.name}
               </Link>
             </>
@@ -835,7 +835,7 @@ export default function ProductDetailPage() {
             <div className="flex flex-wrap gap-2">
               {product.category && (
                 <Link
-                  href={`/categories/${product.category.slug}`}
+                  href={`/categories/${product.category.id}`}
                   className="px-2.5 py-1 text-xs bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200"
                 >
                   #{product.category.name}

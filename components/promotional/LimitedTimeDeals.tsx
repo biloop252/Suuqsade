@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { PromotionalMedia } from '@/types/database';
 import { ZapIcon, ChevronRightIcon } from 'lucide-react';
@@ -12,6 +13,7 @@ interface LimitedTimeDealsProps {
 }
 
 export default function LimitedTimeDeals({ className = '', maxDeals = 4 }: LimitedTimeDealsProps) {
+  const router = useRouter();
   const [deals, setDeals] = useState<PromotionalMedia[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -46,6 +48,8 @@ export default function LimitedTimeDeals({ className = '', maxDeals = 4 }: Limit
           start_date,
           end_date,
           language_code,
+          action_type,
+          action_params,
           created_at,
           updated_at
         `)
@@ -69,13 +73,103 @@ export default function LimitedTimeDeals({ className = '', maxDeals = 4 }: Limit
     }
   };
 
-  const handleDealClick = (deal: PromotionalMedia) => {
-    if (deal.link_url) {
-      if (deal.target === '_blank') {
-        window.open(deal.link_url, '_blank');
-      } else {
-        window.location.href = deal.link_url;
+  const buildActionUrl = (deal: PromotionalMedia): string | null => {
+    // If no action_type, fall back to link_url
+    if (!deal?.action_type) {
+      return deal?.link_url || null;
+    }
+
+    // Parse action_params if it's a string (shouldn't happen with Supabase but just in case)
+    let params: Record<string, any> = {};
+    if (deal?.action_params) {
+      if (typeof deal.action_params === 'string') {
+        try {
+          params = JSON.parse(deal.action_params);
+        } catch (e) {
+          console.error('Error parsing action_params:', e);
+          return deal?.link_url || null;
+        }
+      } else if (typeof deal.action_params === 'object' && deal.action_params !== null) {
+        params = deal.action_params;
       }
+    }
+
+    // Check if params is empty object
+    const hasParams = Object.keys(params).length > 0;
+
+    // If action_type requires params but params are empty, fall back to link_url
+    const actionTypesRequiringParams = ['open_category', 'open_product', 'open_brand', 'open_url', 'open_filtered_products'];
+    if (actionTypesRequiringParams.includes(deal.action_type) && !hasParams) {
+      return deal?.link_url || null;
+    }
+
+    let url: string | null = null;
+
+    switch (deal.action_type) {
+      case 'open_category':
+        if (params.categoryId !== undefined && params.categoryId !== null && params.categoryId !== '') {
+          url = `/categories/${params.categoryId}`;
+        }
+        break;
+
+      case 'open_product':
+        if (params.productId !== undefined && params.productId !== null && params.productId !== '') {
+          url = `/products/${params.productId}`;
+        }
+        break;
+
+      case 'open_brand':
+        if (params.brand !== undefined && params.brand !== null && params.brand !== '') {
+          url = `/brands/${params.brand}`;
+        }
+        break;
+
+      case 'open_flash_sale':
+        url = '/products?flashSale=true';
+        break;
+
+      case 'open_filtered_products': {
+        const queryParams = new URLSearchParams();
+        
+        if (params.categoryId) queryParams.set('categoryId', params.categoryId);
+        if (params.brand) queryParams.set('brand', params.brand);
+        if (params.vendorId) queryParams.set('vendor', params.vendorId);
+        if (params.minPrice) queryParams.set('minPrice', params.minPrice);
+        if (params.maxPrice) queryParams.set('maxPrice', params.maxPrice);
+        if (params.discountMin) queryParams.set('discountMin', params.discountMin);
+        if (params.flashSale) queryParams.set('flashSale', 'true');
+        if (params.color) queryParams.set('color', params.color);
+        if (params.size) queryParams.set('size', params.size);
+
+        url = `/products?${queryParams.toString()}`;
+        break;
+      }
+
+      case 'open_url':
+        if (params.url !== undefined && params.url !== null && params.url !== '') {
+          url = params.url;
+        }
+        break;
+    }
+
+    return url || deal?.link_url || null;
+  };
+
+  const handleDealClick = (deal: PromotionalMedia) => {
+    const url = buildActionUrl(deal);
+    
+    if (!url) return;
+
+    // Check if it's an external URL
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      if (deal.target === '_blank') {
+        window.open(url, '_blank');
+      } else {
+        window.location.href = url;
+      }
+    } else {
+      // Internal navigation
+      router.push(url);
     }
   };
 

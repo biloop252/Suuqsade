@@ -61,7 +61,7 @@ export default function CategoriesPage() {
             {categories.map((category) => (
               <Link
                 key={category.id}
-                href={`/categories/${category.slug}`}
+                href={`/categories/${category.id}`}
                 className="group"
               >
                 <div className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow duration-300">

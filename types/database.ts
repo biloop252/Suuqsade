@@ -6,6 +6,7 @@ export type ReturnStatus = 'pending' | 'approved' | 'rejected' | 'completed';
 export type PromotionalMediaType = 'slider' | 'banner' | 'popup' | 'video' | 'custom';
 export type PromotionalMediaPosition = 'homepage_top' | 'homepage_middle' | 'homepage_bottom' | 'homepage_middle_slider' | 'category_page' | 'product_page' | 'sidebar' | 'footer' | 'popup' | 'header' | 'checkout_page' | 'cart_page' | 'limited_time_deals';
 export type PromotionalMediaTarget = '_self' | '_blank' | '_parent' | '_top';
+export type BannerActionType = 'open_category' | 'open_product' | 'open_brand' | 'open_flash_sale' | 'open_filtered_products' | 'open_url';
 export type HomepageSectionType = 'category' | 'popular' | 'trending' | 'new_arrivals' | 'brand' | 'tag' | 'best_selling' | 'recommended' | 'flash_deals';
 export type DiscountType = 'percentage' | 'fixed_amount' | 'free_shipping';
 export type DiscountStatus = 'active' | 'inactive' | 'expired';
@@ -386,6 +387,8 @@ export interface PromotionalMedia {
   language_code: string;
   store_id?: string;
   created_by?: string;
+  action_type?: BannerActionType;
+  action_params?: Record<string, any>;
   created_at: string;
   updated_at: string;
 }

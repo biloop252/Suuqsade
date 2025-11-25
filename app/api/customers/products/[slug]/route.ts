@@ -12,7 +12,7 @@ export async function GET(_request: NextRequest, { params }: { params: { slug: s
         *,
         category:categories(*),
         brand:brands(*),
-        vendor:vendor_profiles(business_name, business_description, city, country, logo_url),
+        vendor:vendor_profiles(id, business_name, business_description, city, country, logo_url),
         images:product_images(*),
         variants:product_variants(*),
         reviews:reviews(*),

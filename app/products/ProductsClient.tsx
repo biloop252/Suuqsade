@@ -8,10 +8,17 @@ import ProductCard from '@/components/products/ProductCard';
 import ProductFilters from '@/components/products/ProductFilters';
 import { SortAsc, SortDesc, Search, Filter, X } from 'lucide-react';
 
+interface VendorFilter {
+  id: string;
+  business_name: string;
+  status?: string;
+}
+
 interface ProductsClientProps {
   initialProducts: ProductWithDetails[];
   initialCategories: Category[];
   initialBrands: Brand[];
+  initialVendors: VendorFilter[];
   initialProductDiscounts: Record<string, {
     discounts: ProductDiscount[];
     discountInfo: { final_price: number; discount_amount: number; has_discount: boolean };
@@ -19,8 +26,10 @@ interface ProductsClientProps {
   initialFilters: {
     categories: string[];
     brands: string[];
+    vendors: string[];
     minPrice: string;
     maxPrice: string;
+    discountMin: string;
     sortBy: string;
     sortOrder: 'asc' | 'desc';
   };
@@ -30,6 +39,7 @@ export default function ProductsClient({
   initialProducts,
   initialCategories,
   initialBrands,
+  initialVendors,
   initialProductDiscounts,
   initialFilters
 }: ProductsClientProps) {
@@ -39,19 +49,40 @@ export default function ProductsClient({
   const [loading, setLoading] = useState(false);
   const [categories] = useState(initialCategories);
   const [brands] = useState(initialBrands);
+  const [vendors] = useState(initialVendors);
   const [filters, setFilters] = useState({
     categories: initialFilters.categories,
     brands: initialFilters.brands,
+    vendors: initialFilters.vendors,
     minPrice: initialFilters.minPrice,
-    maxPrice: initialFilters.maxPrice
+    maxPrice: initialFilters.maxPrice,
+    discountMin: initialFilters.discountMin || ''
   });
   const [sortBy, setSortBy] = useState(initialFilters.sortBy);
   const [sortOrder, setSortOrder] = useState(initialFilters.sortOrder);
   const [productDiscounts, setProductDiscounts] = useState(initialProductDiscounts);
-	const [showFilters, setShowFilters] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [isInitialMount, setIsInitialMount] = useState(true);
 
-  // Update URL when filters change
+  // Sync products state when initialProducts prop changes (after server re-fetch)
   useEffect(() => {
+    setProducts(initialProducts);
+    setProductDiscounts(initialProductDiscounts);
+    setLoading(false);
+  }, [initialProducts, initialProductDiscounts]);
+
+  // Sync state with URL params on mount
+  useEffect(() => {
+    setIsInitialMount(false);
+  }, []);
+
+  // Update URL when filters change and refresh data
+  useEffect(() => {
+    // Skip on initial mount to avoid unnecessary navigation
+    if (isInitialMount) return;
+
+    setLoading(true); // Show loading state while fetching
+
     const params = new URLSearchParams();
     
     if (filters.categories.length > 0) {
@@ -60,11 +91,17 @@ export default function ProductsClient({
     if (filters.brands.length > 0) {
       params.set('brand', filters.brands[0]);
     }
+    if (filters.vendors.length > 0) {
+      params.set('vendor', filters.vendors[0]);
+    }
     if (filters.minPrice) {
       params.set('minPrice', filters.minPrice);
     }
     if (filters.maxPrice) {
       params.set('maxPrice', filters.maxPrice);
+    }
+    if (filters.discountMin) {
+      params.set('discountMin', filters.discountMin);
     }
     if (sortBy !== 'name') {
       params.set('sort', sortBy);
@@ -73,20 +110,26 @@ export default function ProductsClient({
       params.set('order', sortOrder);
     }
 
-    const newUrl = params.toString() ? `?${params.toString()}` : '/products';
-    router.replace(newUrl, { scroll: false });
-  }, [filters, sortBy, sortOrder, router]);
+    const newUrl = params.toString() ? `/products?${params.toString()}` : '/products';
+    
+    // Use router.push to trigger a server-side re-fetch
+    // This will cause the page component to re-render with new data
+    router.push(newUrl, { scroll: false });
+  }, [filters, sortBy, sortOrder, router, isInitialMount]);
 
   const handleFilterChange = (newFilters: any) => {
     setFilters(prev => ({ ...prev, ...newFilters }));
+    setLoading(true); // Show loading state when filters change
   };
 
   const clearFilters = () => {
     setFilters({
       categories: [],
       brands: [],
+      vendors: [],
       minPrice: '',
-      maxPrice: ''
+      maxPrice: '',
+      discountMin: ''
     });
     setSortBy('name');
     setSortOrder('asc');
@@ -147,6 +190,9 @@ export default function ProductsClient({
 					<div className="bg-white rounded-lg shadow-sm lg:sticky lg:top-4">
 						<ProductFilters
 							filters={filters}
+							categories={categories}
+							brands={brands}
+							vendors={vendors}
 							onFilterChange={handleFilterChange}
 							onClearFilters={clearFilters}
 						/>

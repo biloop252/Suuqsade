@@ -2,8 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { PromotionalMedia, Category, PromotionalMediaType, PromotionalMediaPosition } from '@/types/database';
+import { PromotionalMedia, Category, PromotionalMediaType, PromotionalMediaPosition, Brand, BannerActionType, ProductWithDetails } from '@/types/database';
 import { Upload, X, Image as ImageIcon, Monitor, Smartphone } from 'lucide-react';
+
+interface VendorFilter {
+  id: string;
+  business_name: string;
+  status?: string;
+}
 
 interface PromotionalMediaFormProps {
   media?: PromotionalMedia | null;
@@ -21,6 +27,8 @@ interface SliderItem {
   target: '_self' | '_blank' | '_parent' | '_top';
   display_order: number;
   is_active: boolean;
+  action_type?: BannerActionType;
+  action_params?: Record<string, any>;
 }
 
 interface FormData {
@@ -45,6 +53,8 @@ interface FormData {
   store_id: string;
   categories: string[];
   slider_items: SliderItem[]; // New field for slider items
+  action_type?: BannerActionType;
+  action_params?: Record<string, any>;
 }
 
 interface SelectedFiles {
@@ -56,6 +66,9 @@ interface SelectedFiles {
 
 export default function PromotionalMediaForm({ media, categories, onClose, onSuccess }: PromotionalMediaFormProps) {
   const [sliderCount, setSliderCount] = useState(1);
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [products, setProducts] = useState<ProductWithDetails[]>([]);
+  const [vendors, setVendors] = useState<VendorFilter[]>([]);
   
   const [formData, setFormData] = useState<FormData>({
     title: media?.title || '',
@@ -78,7 +91,9 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
     language_code: media?.language_code || 'en',
     store_id: media?.store_id || '',
     categories: [],
-    slider_items: []
+    slider_items: [],
+    action_type: media?.action_type,
+    action_params: media?.action_params || {}
   });
 
   const [uploading, setUploading] = useState(false);
@@ -89,6 +104,134 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
     slider_files: [],
     slider_item_files: {}
   });
+
+  // Fetch brands, products, and vendors for action params
+  useEffect(() => {
+    fetchBrands();
+    fetchProducts();
+    fetchVendors();
+  }, []);
+
+  // Update form data when media prop changes (for editing)
+  useEffect(() => {
+    if (media) {
+      setFormData({
+        title: media.title || '',
+        subtitle: media.subtitle || '',
+        description: media.description || '',
+        media_type: media.media_type || 'banner',
+        image_url: media.image_url || '',
+        mobile_image_url: media.mobile_image_url || '',
+        video_url: media.video_url || '',
+        link_url: media.link_url || '',
+        button_text: media.button_text || '',
+        target: media.target || '_self',
+        banner_position: media.banner_position || 'homepage_top',
+        display_order: media.display_order || 0,
+        background_color: media.background_color || '#ffffff',
+        text_color: media.text_color || '#000000',
+        is_active: media.is_active ?? true,
+        start_date: media.start_date ? new Date(media.start_date).toISOString().split('T')[0] : '',
+        end_date: media.end_date ? new Date(media.end_date).toISOString().split('T')[0] : '',
+        language_code: media.language_code || 'en',
+        store_id: media.store_id || '',
+        categories: [],
+        slider_items: [],
+        action_type: media.action_type || undefined,
+        action_params: media.action_params || {}
+      });
+    } else {
+      // Reset form when media is null (new item)
+      setFormData({
+        title: '',
+        subtitle: '',
+        description: '',
+        media_type: 'banner',
+        image_url: '',
+        mobile_image_url: '',
+        video_url: '',
+        link_url: '',
+        button_text: '',
+        target: '_self',
+        banner_position: 'homepage_top',
+        display_order: 0,
+        background_color: '#ffffff',
+        text_color: '#000000',
+        is_active: true,
+        start_date: '',
+        end_date: '',
+        language_code: 'en',
+        store_id: '',
+        categories: [],
+        slider_items: [],
+        action_type: undefined,
+        action_params: {}
+      });
+    }
+  }, [media]);
+
+  const fetchBrands = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('brands')
+        .select('*')
+        .eq('is_active', true)
+        .order('name');
+      
+      if (error) {
+        console.error('Error fetching brands:', error);
+      } else {
+        setBrands(data || []);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
+  const fetchProducts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select(`
+          *,
+          category:categories(*),
+          brand:brands(*)
+        `)
+        .eq('is_active', true)
+        .order('name')
+        .limit(100); // Limit to first 100 for performance
+      
+      if (error) {
+        console.error('Error fetching products:', error);
+      } else {
+        setProducts(data || []);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
+  const fetchVendors = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('vendor_profiles')
+        .select(`
+          id,
+          business_name,
+          status
+        `)
+        .eq('status', 'active')
+        .order('business_name');
+      
+      if (error) {
+        console.error('Error fetching vendors:', error);
+      } else {
+        setVendors(data || []);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
 
   // Handle media type changes
   useEffect(() => {
@@ -104,7 +247,9 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
             button_text: '',
             target: '_self' as const,
             display_order: index,
-            is_active: true
+            is_active: true,
+            action_type: undefined,
+            action_params: {}
           }))
         }));
       }
@@ -152,7 +297,9 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
             button_text: item.button_text,
             target: item.target,
             display_order: item.display_order,
-            is_active: item.is_active
+            is_active: item.is_active,
+            action_type: item.action_type || undefined,
+            action_params: item.action_params || {}
           }))
         }));
       }
@@ -193,6 +340,24 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
     }));
   };
 
+  const handleActionParamsChange = (key: string, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      action_params: {
+        ...prev.action_params,
+        [key]: value
+      }
+    }));
+  };
+
+  const handleActionTypeChange = (actionType: BannerActionType | '') => {
+    setFormData(prev => ({
+      ...prev,
+      action_type: actionType || undefined,
+      action_params: {} // Reset action params when action type changes
+    }));
+  };
+
   const handleCategoryChange = (categoryId: string, checked: boolean) => {
     setFormData(prev => ({
       ...prev,
@@ -217,7 +382,9 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
           button_text: '',
           target: '_self' as const,
           display_order: index,
-          is_active: true
+          is_active: true,
+          action_type: undefined,
+          action_params: {}
         };
       });
       
@@ -233,6 +400,34 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
       ...prev,
       slider_items: prev.slider_items.map((item, i) => 
         i === index ? { ...item, [field]: value } : item
+      )
+    }));
+  };
+
+  const handleSliderItemActionTypeChange = (index: number, actionType: BannerActionType | '') => {
+    setFormData(prev => ({
+      ...prev,
+      slider_items: prev.slider_items.map((item, i) => 
+        i === index ? { 
+          ...item, 
+          action_type: actionType || undefined,
+          action_params: {} // Reset action params when action type changes
+        } : item
+      )
+    }));
+  };
+
+  const handleSliderItemActionParamsChange = (index: number, key: string, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      slider_items: prev.slider_items.map((item, i) => 
+        i === index ? { 
+          ...item, 
+          action_params: {
+            ...item.action_params,
+            [key]: value
+          }
+        } : item
       )
     }));
   };
@@ -361,6 +556,16 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
       // Remove categories and slider_items from the data being sent to the database
       const { categories, slider_items, ...mediaDataWithoutCategories } = formData;
       
+      // Prepare action_params - clean empty values
+      const actionParams = formData.action_params || {};
+      const cleanedActionParams: Record<string, any> = {};
+      Object.keys(actionParams).forEach(key => {
+        const value = actionParams[key];
+        if (value !== '' && value !== null && value !== undefined) {
+          cleanedActionParams[key] = value;
+        }
+      });
+      
       // For sliders, use the first image as the main image_url
       const mediaData = {
         ...mediaDataWithoutCategories,
@@ -372,7 +577,9 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
         display_order: parseInt(formData.display_order.toString()),
         start_date: formData.start_date ? new Date(formData.start_date).toISOString() : null,
         end_date: formData.end_date ? new Date(formData.end_date).toISOString() : null,
-        store_id: formData.store_id || null
+        store_id: formData.store_id || null,
+        action_type: formData.action_type || null,
+        action_params: Object.keys(cleanedActionParams).length > 0 ? cleanedActionParams : null
       };
 
       let result;
@@ -407,16 +614,30 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
             .eq('promotional_media_id', result.id);
 
           // Insert new slider items
-          const sliderItemInserts = updatedSliderItems.map(item => ({
-            promotional_media_id: result.id,
-            image_url: item.image_url,
-            mobile_image_url: item.mobile_image_url,
-            link_url: item.link_url,
-            button_text: item.button_text,
-            target: item.target,
-            display_order: item.display_order,
-            is_active: item.is_active
-          }));
+          const sliderItemInserts = updatedSliderItems.map(item => {
+            // Clean action_params - remove empty values
+            const actionParams = item.action_params || {};
+            const cleanedActionParams: Record<string, any> = {};
+            Object.keys(actionParams).forEach(key => {
+              const value = actionParams[key];
+              if (value !== '' && value !== null && value !== undefined) {
+                cleanedActionParams[key] = value;
+              }
+            });
+
+            return {
+              promotional_media_id: result.id,
+              image_url: item.image_url,
+              mobile_image_url: item.mobile_image_url,
+              link_url: item.link_url,
+              button_text: item.button_text,
+              target: item.target,
+              display_order: item.display_order,
+              is_active: item.is_active,
+              action_type: item.action_type || null,
+              action_params: Object.keys(cleanedActionParams).length > 0 ? cleanedActionParams : null
+            };
+          });
 
           const { error: sliderError } = await supabase
             .from('slider_items')
@@ -758,7 +979,224 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                               <option value="_parent">Parent Window</option>
                               <option value="_top">Top Window</option>
                             </select>
-                        </div>
+                          </div>
+
+                          {/* Action Type and Parameters for Slider Item */}
+                          <div className="space-y-4 border-t pt-4 mt-4">
+                            <h5 className="text-sm font-medium text-gray-900">Slider Item Action</h5>
+                            
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">Action Type</label>
+                              <select
+                                value={item.action_type || ''}
+                                onChange={(e) => handleSliderItemActionTypeChange(index, e.target.value as BannerActionType | '')}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                              >
+                                <option value="">None (Use Link URL)</option>
+                                <option value="open_category">Open Category</option>
+                                <option value="open_product">Open Product</option>
+                                <option value="open_brand">Open Brand</option>
+                                <option value="open_flash_sale">Open Flash Sale</option>
+                                <option value="open_filtered_products">Open Filtered Products</option>
+                                <option value="open_url">Open Custom URL</option>
+                              </select>
+                            </div>
+
+                            {/* Dynamic Fields Based on Action Type */}
+                            {item.action_type === 'open_category' && (
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
+                                <select
+                                  value={item.action_params?.categoryId || ''}
+                                  onChange={(e) => handleSliderItemActionParamsChange(index, 'categoryId', e.target.value)}
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                  required
+                                >
+                                  <option value="">Select a category</option>
+                                  {categories.map(category => (
+                                    <option key={category.id} value={category.id}>{category.name}</option>
+                                  ))}
+                                </select>
+                              </div>
+                            )}
+
+                            {item.action_type === 'open_product' && (
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Product *</label>
+                                <select
+                                  value={item.action_params?.productId || ''}
+                                  onChange={(e) => handleSliderItemActionParamsChange(index, 'productId', e.target.value)}
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                  required
+                                >
+                                  <option value="">Select a product</option>
+                                  {products.map(product => (
+                                    <option key={product.id} value={product.id}>{product.name}</option>
+                                  ))}
+                                </select>
+                              </div>
+                            )}
+
+                            {item.action_type === 'open_brand' && (
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Brand *</label>
+                                <select
+                                  value={item.action_params?.brand || ''}
+                                  onChange={(e) => handleSliderItemActionParamsChange(index, 'brand', e.target.value)}
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                  required
+                                >
+                                  <option value="">Select a brand</option>
+                                  {brands.map(brand => (
+                                    <option key={brand.id} value={brand.slug || brand.id}>{brand.name}</option>
+                                  ))}
+                                </select>
+                              </div>
+                            )}
+
+                            {item.action_type === 'open_flash_sale' && (
+                              <div className="space-y-2">
+                                <p className="text-sm text-gray-600">Flash sale will open the flash sale products page</p>
+                              </div>
+                            )}
+
+                            {item.action_type === 'open_filtered_products' && (
+                              <div className="space-y-4">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                  <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                                    <select
+                                      value={item.action_params?.categoryId || ''}
+                                      onChange={(e) => handleSliderItemActionParamsChange(index, 'categoryId', e.target.value)}
+                                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                    >
+                                      <option value="">Any category</option>
+                                      {categories.map(category => (
+                                        <option key={category.id} value={category.id}>{category.name}</option>
+                                      ))}
+                                    </select>
+                                  </div>
+
+                                  <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Brand</label>
+                                    <select
+                                      value={item.action_params?.brand || ''}
+                                      onChange={(e) => handleSliderItemActionParamsChange(index, 'brand', e.target.value)}
+                                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                    >
+                                      <option value="">Any brand</option>
+                                      {brands.map(brand => (
+                                        <option key={brand.id} value={brand.slug || brand.id}>{brand.name}</option>
+                                      ))}
+                                    </select>
+                                  </div>
+
+                                  <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Vendor</label>
+                                    <select
+                                      value={item.action_params?.vendorId || ''}
+                                      onChange={(e) => handleSliderItemActionParamsChange(index, 'vendorId', e.target.value)}
+                                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                    >
+                                      <option value="">Any vendor</option>
+                                      {vendors.map(vendor => (
+                                        <option key={vendor.id} value={vendor.id}>{vendor.business_name}</option>
+                                      ))}
+                                    </select>
+                                  </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Min Price</label>
+                                    <input
+                                      type="number"
+                                      value={item.action_params?.minPrice || ''}
+                                      onChange={(e) => handleSliderItemActionParamsChange(index, 'minPrice', e.target.value)}
+                                      placeholder="0"
+                                      min="0"
+                                      step="0.01"
+                                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                    />
+                                  </div>
+
+                                  <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Max Price</label>
+                                    <input
+                                      type="number"
+                                      value={item.action_params?.maxPrice || ''}
+                                      onChange={(e) => handleSliderItemActionParamsChange(index, 'maxPrice', e.target.value)}
+                                      placeholder="1000"
+                                      min="0"
+                                      step="0.01"
+                                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                    />
+                                  </div>
+                                </div>
+
+                                <div>
+                                  <label className="block text-sm font-medium text-gray-700 mb-1">Min Discount (%)</label>
+                                  <input
+                                    type="number"
+                                    value={item.action_params?.discountMin || ''}
+                                    onChange={(e) => handleSliderItemActionParamsChange(index, 'discountMin', e.target.value)}
+                                    placeholder="0"
+                                    min="0"
+                                    max="100"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                  />
+                                </div>
+
+                                <div className="flex items-center">
+                                  <input
+                                    type="checkbox"
+                                    checked={item.action_params?.flashSale || false}
+                                    onChange={(e) => handleSliderItemActionParamsChange(index, 'flashSale', e.target.checked)}
+                                    className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
+                                  />
+                                  <label className="ml-2 block text-sm text-gray-900">Flash Sale Only</label>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Color</label>
+                                    <input
+                                      type="text"
+                                      value={item.action_params?.color || ''}
+                                      onChange={(e) => handleSliderItemActionParamsChange(index, 'color', e.target.value)}
+                                      placeholder="e.g., Red, Blue"
+                                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                    />
+                                  </div>
+
+                                  <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Size</label>
+                                    <input
+                                      type="text"
+                                      value={item.action_params?.size || ''}
+                                      onChange={(e) => handleSliderItemActionParamsChange(index, 'size', e.target.value)}
+                                      placeholder="e.g., Small, Medium, Large"
+                                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            {item.action_type === 'open_url' && (
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Custom URL *</label>
+                                <input
+                                  type="url"
+                                  value={item.action_params?.url || ''}
+                                  onChange={(e) => handleSliderItemActionParamsChange(index, 'url', e.target.value)}
+                                  placeholder="https://example.com"
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                  required
+                                />
+                              </div>
+                            )}
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -876,6 +1314,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                   />
+                  <p className="mt-1 text-xs text-gray-500">Leave empty if using Action Type below</p>
                 </div>
 
                 <div>
@@ -887,6 +1326,223 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                   />
+                </div>
+
+                {/* Action Type and Parameters */}
+                <div className="space-y-4 border-t pt-4">
+                  <h4 className="text-md font-medium text-gray-900">Banner Action</h4>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Action Type</label>
+                    <select
+                      value={formData.action_type || ''}
+                      onChange={(e) => handleActionTypeChange(e.target.value as BannerActionType | '')}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    >
+                      <option value="">None (Use Link URL)</option>
+                      <option value="open_category">Open Category</option>
+                      <option value="open_product">Open Product</option>
+                      <option value="open_brand">Open Brand</option>
+                      <option value="open_flash_sale">Open Flash Sale</option>
+                      <option value="open_filtered_products">Open Filtered Products</option>
+                      <option value="open_url">Open Custom URL</option>
+                    </select>
+                  </div>
+
+                  {/* Dynamic Fields Based on Action Type */}
+                  {formData.action_type === 'open_category' && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
+                      <select
+                        value={formData.action_params?.categoryId || ''}
+                        onChange={(e) => handleActionParamsChange('categoryId', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        required
+                      >
+                        <option value="">Select a category</option>
+                        {categories.map(category => (
+                          <option key={category.id} value={category.id}>{category.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  {formData.action_type === 'open_product' && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Product *</label>
+                      <select
+                        value={formData.action_params?.productId || ''}
+                        onChange={(e) => handleActionParamsChange('productId', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        required
+                      >
+                        <option value="">Select a product</option>
+                        {products.map(product => (
+                          <option key={product.id} value={product.id}>{product.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  {formData.action_type === 'open_brand' && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Brand *</label>
+                      <select
+                        value={formData.action_params?.brand || ''}
+                        onChange={(e) => handleActionParamsChange('brand', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        required
+                      >
+                        <option value="">Select a brand</option>
+                        {brands.map(brand => (
+                          <option key={brand.id} value={brand.slug || brand.id}>{brand.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  {formData.action_type === 'open_flash_sale' && (
+                    <div className="space-y-2">
+                      <p className="text-sm text-gray-600">Flash sale will open the flash sale products page</p>
+                    </div>
+                  )}
+
+                  {formData.action_type === 'open_filtered_products' && (
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                          <select
+                            value={formData.action_params?.categoryId || ''}
+                            onChange={(e) => handleActionParamsChange('categoryId', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                          >
+                            <option value="">Any category</option>
+                            {categories.map(category => (
+                              <option key={category.id} value={category.id}>{category.name}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Brand</label>
+                          <select
+                            value={formData.action_params?.brand || ''}
+                            onChange={(e) => handleActionParamsChange('brand', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                          >
+                            <option value="">Any brand</option>
+                            {brands.map(brand => (
+                              <option key={brand.id} value={brand.slug || brand.id}>{brand.name}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Vendor</label>
+                          <select
+                            value={formData.action_params?.vendorId || ''}
+                            onChange={(e) => handleActionParamsChange('vendorId', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                          >
+                            <option value="">Any vendor</option>
+                            {vendors.map(vendor => (
+                              <option key={vendor.id} value={vendor.id}>{vendor.business_name}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Min Price</label>
+                          <input
+                            type="number"
+                            value={formData.action_params?.minPrice || ''}
+                            onChange={(e) => handleActionParamsChange('minPrice', e.target.value)}
+                            placeholder="0"
+                            min="0"
+                            step="0.01"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Max Price</label>
+                          <input
+                            type="number"
+                            value={formData.action_params?.maxPrice || ''}
+                            onChange={(e) => handleActionParamsChange('maxPrice', e.target.value)}
+                            placeholder="1000"
+                            min="0"
+                            step="0.01"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Min Discount (%)</label>
+                        <input
+                          type="number"
+                          value={formData.action_params?.discountMin || ''}
+                          onChange={(e) => handleActionParamsChange('discountMin', e.target.value)}
+                          placeholder="0"
+                          min="0"
+                          max="100"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        />
+                      </div>
+
+                      <div className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={formData.action_params?.flashSale || false}
+                          onChange={(e) => handleActionParamsChange('flashSale', e.target.checked)}
+                          className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
+                        />
+                        <label className="ml-2 block text-sm text-gray-900">Flash Sale Only</label>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Color</label>
+                          <input
+                            type="text"
+                            value={formData.action_params?.color || ''}
+                            onChange={(e) => handleActionParamsChange('color', e.target.value)}
+                            placeholder="e.g., Red, Blue"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Size</label>
+                          <input
+                            type="text"
+                            value={formData.action_params?.size || ''}
+                            onChange={(e) => handleActionParamsChange('size', e.target.value)}
+                            placeholder="e.g., Small, Medium, Large"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {formData.action_type === 'open_url' && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Custom URL *</label>
+                      <input
+                        type="url"
+                        value={formData.action_params?.url || ''}
+                        onChange={(e) => handleActionParamsChange('url', e.target.value)}
+                        placeholder="https://example.com"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        required
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

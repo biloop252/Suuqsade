@@ -107,7 +107,7 @@ export default function SearchSuggestions({
     if (suggestion.type === 'product') {
       router.push(`/products/${suggestion.slug || suggestion.id}`);
     } else if (suggestion.type === 'category') {
-      router.push(`/categories/${suggestion.slug || suggestion.id}`);
+      router.push(`/categories/${suggestion.id}`);
     } else if (suggestion.type === 'brand') {
       // Navigate to products page with brand filter
       router.push(`/products?brand=${suggestion.id}`);

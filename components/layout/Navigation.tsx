@@ -198,8 +198,8 @@ export default function Navigation() {
               <div className="flex items-center">
                 <SystemLogo
                   width={240}
-                  height={80}
-                  className="h-12 sm:h-16 lg:h-20 w-auto object-contain"
+                  height={50}
+                  className="h-[50px] w-auto object-contain"
                 />
               </div>
             </Link>
@@ -397,11 +397,11 @@ export default function Navigation() {
                 ))
               ) : (
                 categories.map((category, index) => {
-                  const isActive = pathname === `/categories/${category.slug}`;
+                  const isActive = pathname === `/categories/${category.id}`;
                   return (
                     <Link 
                       key={category.id}
-                      href={`/categories/${category.slug}`} 
+                      href={`/categories/${category.id}`} 
                       className={`transition-colors text-xs sm:text-sm flex-shrink-0 px-1 sm:px-2 py-1 min-h-[44px] flex items-center ${
                         isActive 
                           ? 'text-primary-500 border-b-2 border-primary-500 font-medium' 

@@ -31,6 +31,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ valid: false, reason: 'min_amount' })
     }
 
+    // Check overall usage limit (total usage across all users)
+    if (coupon.usage_limit && coupon.used_count >= coupon.usage_limit) {
+      return NextResponse.json({ valid: false, reason: 'usage_limit_reached' })
+    }
+
+    // Check per-user usage limit
     const { count } = await supabase
       .from('discount_usage')
       .select('*', { count: 'exact', head: true })

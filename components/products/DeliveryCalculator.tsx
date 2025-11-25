@@ -12,6 +12,44 @@ import {
   AlertCircle
 } from 'lucide-react';
 
+// Normalize and match cities robustly (handles case, accents, punctuation, and common aliases)
+const CITY_ALIASES: Record<string, string> = {
+ されています: '', // noop placeholder to keep object non-empty in minifiers
+ されています2: ''
+};
+
+// Populate known aliases
+CITY_ALIASES['hargeysa'] = 'hargeisa';
+
+function normalizeCityValue(value: string | undefined | null): string {
+  if (!value) return '';
+  // Remove accents, trim, lowercase, drop the word "city", and strip non-alphanumerics
+  const withoutAccents = value.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return withoutAccents
+    .trim()
+    .toLowerCase()
+    .replace(/\bcity\b/g, '')
+    .replace(/[^a-z0-9]/g, '');
+}
+
+function canonicalizeCity(value: string | undefined | null): string {
+  const normalized = normalizeCityValue(value);
+  return CITY_ALIASES[normalized] || normalized;
+}
+
+function isCityMatch(a: string | undefined | null, b: string | undefined | null): boolean {
+  const ca = canonicalizeCity(a);
+  const cb = canonicalizeCity(b);
+  if (!ca || !cb) return false;
+  return ca === cb || ca.includes(cb) || cb.includes(ca);
+}
+
+function coerceRates(rates: any): any[] {
+  if (Array.isArray(rates)) return rates;
+  if (rates == null) return [];
+  return [rates];
+}
+
 interface DeliveryOption {
   pickup_location_id: string;
   pickup_location_name: string;
@@ -55,6 +93,11 @@ export default function DeliveryCalculator({
 
   useEffect(() => {
     if (productId && deliveryCity && deliveryCountry) {
+      console.log('[DeliveryCalculator] Trigger calculate with:', {
+        productId,
+        deliveryCity,
+        deliveryCountry
+      });
       calculateDeliveryOptions();
     }
   }, [productId, deliveryCity, deliveryCountry]);
@@ -64,7 +107,12 @@ export default function DeliveryCalculator({
     setError(null);
 
     try {
-      // First check if delivery is allowed to this city
+      console.log('[DeliveryCalculator] Starting calculation', {
+        productId,
+        deliveryCity,
+        deliveryCountry
+      });
+      // Check if delivery is allowed to this city (non-blocking; we will still look for options)
       const { data: deliveryZone, error: zoneError } = await supabase
         .from('product_delivery_zones')
         .select('is_allowed')
@@ -72,20 +120,10 @@ export default function DeliveryCalculator({
         .eq('city', deliveryCity)
         .eq('country', deliveryCountry)
         .eq('is_allowed', true)
-        .single();
+        .maybeSingle();
 
-      if (zoneError || !deliveryZone) {
-        setDeliverySummary({
-          can_deliver: false,
-          has_free_delivery: false,
-          cheapest_price: 0,
-          fastest_days: 0,
-          total_options: 0,
-          error_message: 'Delivery not allowed to this location'
-        });
-        setLoading(false);
-        return;
-      }
+      const zoneAllowed = Boolean(deliveryZone?.is_allowed);
+      console.log('[DeliveryCalculator] Zone check:', { zoneAllowed, deliveryZone, zoneError });
 
       // Get delivery options using the new structure
       const { data: options, error: optionsError } = await supabase
@@ -107,7 +145,6 @@ export default function DeliveryCalculator({
           )
         `)
         .eq('product_id', productId)
-        .eq('delivery_rate.delivery_city', deliveryCity)
         .eq('delivery_rate.is_active', true);
 
       if (optionsError) {
@@ -115,9 +152,36 @@ export default function DeliveryCalculator({
         setError('Unable to calculate delivery options');
         return;
       }
+      console.log('[DeliveryCalculator] Raw options from DB:', { count: options?.length || 0, options });
+
+      // Inspect rate cities for diagnostics
+      const rateCities = (options || []).flatMap((opt: any) =>
+        coerceRates(opt?.delivery_rate).map((r: any) => r?.delivery_city)
+      );
+      console.log('[DeliveryCalculator] Rate cities from DB:', rateCities);
+
+      // Filter options for the target city using robust normalization, across ANY rate in each option
+      const optionsForCity: any[] = (options || [])
+        .map((opt: any) => {
+          const matchingRate = coerceRates(opt?.delivery_rate).find((r: any) =>
+            isCityMatch(r?.delivery_city, deliveryCity)
+          );
+          if (matchingRate) {
+            return { ...opt, _matching_rate: matchingRate };
+          }
+          return null;
+        })
+        .filter(Boolean) as any[];
+
+      console.log('[DeliveryCalculator] Options after city filter:', {
+        normalizedCity: canonicalizeCity(deliveryCity),
+        count: optionsForCity.length,
+        optionsForCity
+      });
 
       // Get pickup locations for the matching cities
-      const pickupCities = Array.from(new Set(options?.map(opt => opt.delivery_rate?.[0]?.pickup_city).filter(Boolean) || []));
+      const pickupCities = Array.from(new Set(optionsForCity.map((opt: any) => opt._matching_rate?.pickup_city).filter(Boolean) || []));
+      console.log('[DeliveryCalculator] Pickup cities:', pickupCities);
       
       let pickupLocations: any[] = [];
       if (pickupCities.length > 0) {
@@ -130,28 +194,31 @@ export default function DeliveryCalculator({
         if (!locationsError) {
           pickupLocations = locations || [];
         }
+        console.log('[DeliveryCalculator] Pickup locations fetched:', { count: pickupLocations.length, pickupLocations, locationsError });
       }
 
       // Transform the data to match the expected interface
-      const transformedOptions: DeliveryOption[] = (options || [])
-        .filter(opt => opt.delivery_rate)
-        .map(opt => {
-          const pickupLocation = pickupLocations.find(pl => pl.city === opt.delivery_rate?.[0]?.pickup_city);
+      const transformedOptions: DeliveryOption[] = (optionsForCity || [])
+        .filter((opt: any) => opt._matching_rate)
+        .map((opt: any) => {
+          const rate = opt._matching_rate;
+          const pickupLocation = pickupLocations.find(pl => pl.city === rate?.pickup_city);
           return {
             pickup_location_id: pickupLocation?.id || '',
             pickup_location_name: pickupLocation?.name || 'Unknown Location',
-            pickup_city: opt.delivery_rate?.[0]?.pickup_city || '',
-            delivery_method_id: opt.delivery_rate?.[0]?.delivery_method?.[0]?.id || '',
-            delivery_method_name: opt.delivery_rate?.[0]?.delivery_method?.[0]?.name || 'Unknown Method',
+            pickup_city: rate?.pickup_city || '',
+            delivery_method_id: rate?.delivery_method?.[0]?.id || '',
+            delivery_method_name: rate?.delivery_method?.[0]?.name || 'Unknown Method',
             is_free_delivery: opt.is_free_delivery,
-            delivery_price: opt.delivery_rate?.[0]?.price || 0,
-            estimated_min_days: opt.delivery_rate?.[0]?.estimated_min_days || 0,
-            estimated_max_days: opt.delivery_rate?.[0]?.estimated_max_days || 0
+            delivery_price: rate?.price || 0,
+            estimated_min_days: rate?.estimated_min_days || 0,
+            estimated_max_days: rate?.estimated_max_days || 0
           };
         })
         .filter(opt => opt.pickup_location_id); // Only include options with valid pickup locations
 
       setDeliveryOptions(transformedOptions);
+      console.log('[DeliveryCalculator] Transformed options:', { count: transformedOptions.length, transformedOptions });
 
       // Calculate summary
       if (transformedOptions.length > 0) {
@@ -159,28 +226,35 @@ export default function DeliveryCalculator({
         const cheapestPrice = Math.min(...transformedOptions.map(opt => opt.delivery_price));
         const fastestDays = Math.min(...transformedOptions.map(opt => opt.estimated_min_days));
 
-        setDeliverySummary({
+        const summary = {
           can_deliver: true,
           has_free_delivery: hasFreeDelivery,
           cheapest_price: cheapestPrice,
           fastest_days: fastestDays,
           total_options: transformedOptions.length
-        });
+        } as const;
+        console.log('[DeliveryCalculator] Summary (can deliver):', summary);
+        setDeliverySummary(summary as any);
       } else {
-        setDeliverySummary({
+        const summary = {
           can_deliver: false,
           has_free_delivery: false,
           cheapest_price: 0,
           fastest_days: 0,
           total_options: 0,
-          error_message: 'No delivery options available for this location'
-        });
+          error_message: zoneAllowed
+            ? 'No delivery options available for this location'
+            : 'Delivery not allowed to this location'
+        } as const;
+        console.warn('[DeliveryCalculator] Summary (cannot deliver):', summary);
+        setDeliverySummary(summary as any);
       }
     } catch (error) {
       console.error('Error calculating delivery options:', error);
       setError('Unable to calculate delivery options');
     } finally {
       setLoading(false);
+      console.log('[DeliveryCalculator] Calculation finished');
     }
   };
 

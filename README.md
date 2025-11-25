@@ -155,6 +155,19 @@ suuqsade-marketplace/
 
 All endpoints are under `/api/customers`. Unless noted, responses are JSON. For authenticated endpoints, include `Authorization: Bearer <supabase_access_token>`.
 
+- Locations
+  - GET `/api/customers/locations/countries`
+    - Returns: `{ countries: { id, name }[] }`
+  - GET `/api/customers/locations/cities?country_id=...`
+    - Query: `country_id` (required), `level?` (optional; defaults 1 and falls back to 2)
+    - Returns: `{ cities: { id, name, level }[], level_used }`
+  - GET `/api/customers/locations/districts?city_id=...`
+    - Query: `city_id` (required)
+    - Returns: `{ districts: { id, name }[] }`
+  - GET `/api/customers/locations/neighborhoods?district_id=...`
+    - Query: `district_id` (required)
+    - Returns: `{ neighborhoods: { id, name }[] }`
+
 - Products
   - GET `/api/customers/products`
     - Query: `q`, `category`, `brand`, `vendor`, `min_price`, `max_price`, `sort` (newest|price_asc|price_desc), `page`, `page_size`
@@ -188,7 +201,7 @@ All endpoints are under `/api/customers`. Unless noted, responses are JSON. For 
 
 - Addresses (auth required)
   - GET `/api/customers/addresses`
-  - POST `/api/customers/addresses` body requires: `type, first_name, last_name, address_line_1, city, state, postal_code, country`
+  - POST `/api/customers/addresses` body requires: `type, first_name, last_name, address_line_1, city, country` (optional: `state`, `postal_code`, `address_line_2`, `company`, `phone`, `is_default`)
   - PATCH `/api/customers/addresses/:id`
   - DELETE `/api/customers/addresses/:id`
 

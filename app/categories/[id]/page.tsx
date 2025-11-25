@@ -38,10 +38,10 @@ export default function CategoryPage() {
   }>>({});
 
   useEffect(() => {
-    if (params.slug) {
+    if (params.id) {
       fetchCategoryAndProducts();
     }
-  }, [params.slug]);
+  }, [params.id]);
 
   // Apply filters and sorting
   useEffect(() => {
@@ -135,11 +135,11 @@ export default function CategoryPage() {
     try {
       setLoading(true);
       
-      // Fetch category
+      // Fetch category by ID
       const { data: categoryData, error: categoryError } = await supabase
         .from('categories')
         .select('*')
-        .eq('slug', params.slug)
+        .eq('id', params.id)
         .eq('is_active', true)
         .single();
 
@@ -472,3 +472,10 @@ export default function CategoryPage() {
     </div>
   );
 }
+
+
+
+
+
+
+

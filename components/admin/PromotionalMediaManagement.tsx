@@ -104,6 +104,8 @@ export default function PromotionalMediaManagement() {
           language_code,
           store_id,
           created_by,
+          action_type,
+          action_params,
           created_at,
           updated_at
         `)

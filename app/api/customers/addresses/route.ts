@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     const userId = await getAuthenticatedUserId(request)
     const body = await request.json()
 
-    const required = ['type','first_name','last_name','address_line_1','city','state','postal_code','country']
+			const required = ['type','first_name','address_line_1','city','country']
     for (const k of required) {
       if (!body?.[k]) return NextResponse.json({ error: `${k} is required` }, { status: 400 })
     }
