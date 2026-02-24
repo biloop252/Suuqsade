@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { createClient } from '@/lib/supabase';
 
 interface Page {
   id: string;
@@ -18,18 +19,18 @@ interface Page {
 
 async function getPage(slug: string): Promise<Page | null> {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/pages?slug=${slug}`, {
-      cache: 'no-store'
-    });
+    const supabase = createClient();
+    const normalized = slug.trim().toLowerCase().replace(/\s+/g, '-').replace(/-+/g, '-');
+    const { data: page, error } = await supabase
+      .from('pages')
+      .select('*')
+      .eq('status', 'published')
+      .ilike('slug', normalized)
+      .maybeSingle();
 
-    if (!response.ok) {
-      return null;
-    }
-
-    const data = await response.json();
-    return data.page || null;
+    if (error) return null;
+    return page as unknown as Page;
   } catch (error) {
-    console.error('Error fetching page:', error);
     return null;
   }
 }

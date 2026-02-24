@@ -169,9 +169,6 @@ export default function Navigation() {
         <div className="container-responsive">
           <div className="flex justify-between items-center h-10 text-sm">
             <div className="flex items-center space-x-4 lg:space-x-6 overflow-x-auto scrollbar-hide">
-              <Link href="/coupons" className="text-gray-600 hover:text-primary-500 transition-colors text-xs sm:text-sm whitespace-nowrap">
-                My Discount Coupons
-              </Link>
               <Link href="/sell" className="text-gray-600 hover:text-primary-500 transition-colors text-xs sm:text-sm whitespace-nowrap">
                 Sell on Suuqsade
               </Link>

@@ -115,16 +115,25 @@ export async function POST(request: NextRequest) {
     const supabase = createClient();
     const body = await request.json();
 
-    // Validate required fields
+    // Validate required fields and normalize slug
     if (!body.title || !body.slug || !body.content) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+    const slug = (body.slug || '')
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-+|-+$/g, '');
+    if (!slug) {
+      return NextResponse.json({ error: 'Slug is required' }, { status: 400 });
     }
 
     // Check if slug already exists
     const { data: existingPage } = await supabase
       .from('pages')
       .select('id')
-      .eq('slug', body.slug)
+      .eq('slug', slug)
       .single();
 
     if (existingPage) {
@@ -161,7 +170,7 @@ export async function POST(request: NextRequest) {
 
     // Create page
     const insertData: any = {
-      slug: body.slug,
+      slug,
       title: body.title,
       content: body.content,
       meta_title: body.meta_title || null,

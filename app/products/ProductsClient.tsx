@@ -76,44 +76,34 @@ export default function ProductsClient({
     setIsInitialMount(false);
   }, []);
 
-  // Update URL when filters change and refresh data
+  // Build params from current state
+  const buildParams = () => {
+    const params = new URLSearchParams();
+    filters.categories.forEach((id) => params.append('categoryId', id));
+    filters.brands.forEach((id) => params.append('brand', id));
+    filters.vendors.forEach((id) => params.append('vendor', id));
+    if (filters.minPrice) params.set('minPrice', filters.minPrice);
+    if (filters.maxPrice) params.set('maxPrice', filters.maxPrice);
+    if (filters.discountMin) params.set('discountMin', filters.discountMin);
+    if (sortBy !== 'name') params.set('sort', sortBy);
+    if (sortOrder !== 'asc') params.set('order', sortOrder);
+    return params;
+  };
+
+  // Only push when URL would actually change (fixes View All stuck loading)
   useEffect(() => {
-    // Skip on initial mount to avoid unnecessary navigation
     if (isInitialMount) return;
 
-    setLoading(true); // Show loading state while fetching
+    const params = buildParams();
+    const newQuery = params.toString();
+    const currentQuery = typeof window !== 'undefined' ? window.location.search.slice(1) : '';
+    const currentParams = new URLSearchParams(currentQuery);
+    const same =
+      Array.from(params.entries()).sort().join() === Array.from(currentParams.entries()).sort().join();
+    if (same) return;
 
-    const params = new URLSearchParams();
-    
-    if (filters.categories.length > 0) {
-      params.set('category', filters.categories[0]);
-    }
-    if (filters.brands.length > 0) {
-      params.set('brand', filters.brands[0]);
-    }
-    if (filters.vendors.length > 0) {
-      params.set('vendor', filters.vendors[0]);
-    }
-    if (filters.minPrice) {
-      params.set('minPrice', filters.minPrice);
-    }
-    if (filters.maxPrice) {
-      params.set('maxPrice', filters.maxPrice);
-    }
-    if (filters.discountMin) {
-      params.set('discountMin', filters.discountMin);
-    }
-    if (sortBy !== 'name') {
-      params.set('sort', sortBy);
-    }
-    if (sortOrder !== 'asc') {
-      params.set('order', sortOrder);
-    }
-
-    const newUrl = params.toString() ? `/products?${params.toString()}` : '/products';
-    
-    // Use router.push to trigger a server-side re-fetch
-    // This will cause the page component to re-render with new data
+    setLoading(true);
+    const newUrl = newQuery ? `/products?${newQuery}` : '/products';
     router.push(newUrl, { scroll: false });
   }, [filters, sortBy, sortOrder, router, isInitialMount]);
 
@@ -166,6 +156,7 @@ export default function ProductsClient({
                 <option value="price">Price</option>
                 <option value="newest">Newest</option>
                 <option value="rating">Rating</option>
+                {sortBy === 'best_selling' && <option value="best_selling">Best selling</option>}
               </select>
             </div>
             

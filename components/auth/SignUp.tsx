@@ -19,6 +19,10 @@ export default function SignUp() {
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [pendingEmail, setPendingEmail] = useState('');
+  const [otp, setOtp] = useState('');
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
   const router = useRouter();
 
   // Redirect authenticated users to home page
@@ -87,7 +91,9 @@ export default function SignUp() {
       }
 
       if (data.user) {
+        setPendingEmail(formData.email);
         setSuccess(true);
+        setOtp('');
         // Clear form
         setFormData({
           email: '',
@@ -116,21 +122,56 @@ export default function SignUp() {
     }
   };
 
-  const handleFacebookSignUp = async () => {
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const code = otp.trim().replace(/\s/g, '');
+    if (!code || code.length < 6) {
+      setError('Please enter the 6-digit code from your email.');
+      return;
+    }
+    setOtpLoading(true);
+    setError('');
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'facebook',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`
-        }
+      const { error: verifyError } = await supabase.auth.verifyOtp({
+        email: pendingEmail,
+        token: code,
+        type: 'signup',
       });
-      if (error) setError(error.message);
+      if (verifyError) {
+        setError(verifyError.message);
+        return;
+      }
+      router.push('/');
+      router.refresh();
     } catch (err) {
-      setError('Failed to sign up with Facebook');
+      setError('Verification failed. Please try again.');
+    } finally {
+      setOtpLoading(false);
     }
   };
 
-  if (success) {
+  const handleResendOtp = async () => {
+    setResendLoading(true);
+    setError('');
+    try {
+      const { error: resendError } = await supabase.auth.resend({
+        type: 'signup',
+        email: pendingEmail,
+      });
+      if (resendError) {
+        setError(resendError.message);
+        return;
+      }
+      setOtp('');
+      setError('');
+    } catch (err) {
+      setError('Failed to resend code. Please try again.');
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
+  if (success && pendingEmail) {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -140,22 +181,76 @@ export default function SignUp() {
                 <UserPlusIcon className="h-6 w-6 text-green-600" />
               </div>
               <h2 className="text-3xl font-bold text-gray-900">
-                Check Your Email
+                Verify your email
               </h2>
               <p className="mt-2 text-sm text-gray-600">
-                We've sent you a confirmation link at <strong>{formData.email}</strong>
+                We sent a 6-digit code to <strong>{pendingEmail}</strong>
               </p>
-              <p className="mt-4 text-sm text-gray-500">
-                Please check your email and click the link to verify your account.
+              <p className="mt-1 text-sm text-gray-500">
+                Enter the code below to confirm your account.
               </p>
-              <div className="mt-6">
+            </div>
+
+            <div className="bg-white py-8 px-6 shadow-lg rounded-xl border border-gray-100">
+              <form onSubmit={handleVerifyOtp} className="space-y-6">
+                {error && (
+                  <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
+                    {error}
+                  </div>
+                )}
+                <div>
+                  <label htmlFor="otp" className="block text-sm font-medium text-gray-700 mb-2">
+                    Verification code
+                  </label>
+                  <input
+                    id="otp"
+                    name="otp"
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    maxLength={6}
+                    placeholder="000000"
+                    value={otp}
+                    onChange={(e) => {
+                      const v = e.target.value.replace(/\D/g, '').slice(0, 6);
+                      setOtp(v);
+                      if (error) setError('');
+                    }}
+                    className="input-field text-center text-lg tracking-[0.5em] font-mono"
+                  />
+                </div>
                 <button
-                  onClick={() => setSuccess(false)}
-                  className="text-primary-600 hover:text-primary-700 font-medium text-sm"
+                  type="submit"
+                  disabled={otpLoading || otp.replace(/\D/g, '').length !== 6}
+                  className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Try a different email
+                  {otpLoading ? 'Verifying...' : 'Verify and sign in'}
                 </button>
-              </div>
+                <div className="text-center space-y-2">
+                  <button
+                    type="button"
+                    onClick={handleResendOtp}
+                    disabled={resendLoading}
+                    className="text-primary-600 hover:text-primary-700 font-medium text-sm disabled:opacity-50"
+                  >
+                    {resendLoading ? 'Sending...' : 'Resend code'}
+                  </button>
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSuccess(false);
+                        setPendingEmail('');
+                        setOtp('');
+                        setError('');
+                      }}
+                      className="text-gray-500 hover:text-gray-700 text-sm"
+                    >
+                      Use a different email
+                    </button>
+                  </div>
+                </div>
+              </form>
             </div>
           </div>
         </div>
@@ -288,10 +383,10 @@ export default function SignUp() {
                 </div>
               </div>
 
-              <div className="mt-6 grid grid-cols-2 gap-3">
+              <div className="mt-6 flex justify-center">
                 <button
                   onClick={handleGoogleSignUp}
-                  className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors"
+                  className="w-full max-w-xs inline-flex justify-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors"
                 >
                   <svg className="w-5 h-5" viewBox="0 0 24 24">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -300,16 +395,6 @@ export default function SignUp() {
                     <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                   </svg>
                   <span className="ml-2">Google</span>
-                </button>
-
-                <button
-                  onClick={handleFacebookSignUp}
-                  className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors"
-                >
-                  <svg className="w-5 h-5" fill="#1877F2" viewBox="0 0 24 24">
-                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                  </svg>
-                  <span className="ml-2">Facebook</span>
                 </button>
               </div>
             </div>

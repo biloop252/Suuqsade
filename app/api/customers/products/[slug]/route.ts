@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createRequestClient } from '@/lib/supabase-server'
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 export async function GET(_request: NextRequest, { params }: { params: { slug: string } }) {
   try {
     const supabase = createRequestClient(_request)
     const { slug } = params
+    // Param can be slug (product name slug) or product id (e.g. from promotion links)
+    const isUuid = UUID_REGEX.test(slug)
 
-    const { data: product, error } = await supabase
+    const query = supabase
       .from('products')
       .select(`
         *,
@@ -18,9 +22,8 @@ export async function GET(_request: NextRequest, { params }: { params: { slug: s
         reviews:reviews(*),
         tag_assignments:product_tag_assignments(tag:product_tags(*))
       `)
-      .eq('slug', slug)
       .eq('is_active', true)
-      .single()
+    const { data: product, error } = await (isUuid ? query.eq('id', slug) : query.eq('slug', slug)).single()
 
     if (error) {
       if ((error as any).code === 'PGRST116') {

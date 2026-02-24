@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import { supabase } from '@/lib/supabase';
+import { createServiceRoleClient } from '@/lib/supabase-server';
 import { ProductWithDetails, Category, Brand } from '@/types/database';
 import { ProductDiscount, getBatchProductDiscounts, calculateBestDiscount } from '@/lib/discount-utils';
 import dynamicImport from 'next/dynamic';
@@ -16,10 +17,10 @@ const ProductsClient = dynamicImport(() => import('./ProductsClient'), {
 
 interface ProductsPageProps {
   searchParams: {
-    brand?: string;
-    category?: string;
-    categoryId?: string;
-    vendor?: string;
+    brand?: string | string[];
+    category?: string | string[];
+    categoryId?: string | string[];
+    vendor?: string | string[];
     sort?: string;
     order?: 'asc' | 'desc';
     minPrice?: string;
@@ -29,6 +30,50 @@ interface ProductsPageProps {
     color?: string;
     size?: string;
   };
+}
+
+/** Normalize URL param to string array (supports multiple categoryId= & brand= & vendor=). */
+function paramToArray(v: string | string[] | undefined): string[] {
+  if (v == null || v === '') return [];
+  return Array.isArray(v) ? v.filter(Boolean) : [v];
+}
+
+/** Given selected category IDs and full category list, return selected IDs plus all descendant IDs (for parent categories). */
+function expandCategoryIdsWithDescendants(selectedIds: string[], allCategories: Category[]): string[] {
+  if (selectedIds.length === 0) return [];
+  const byParent = new Map<string, Category[]>();
+  const byId = new Map<string, Category>();
+  allCategories.forEach((c) => {
+    byId.set(c.id, c);
+    const pid = c.parent_id ?? '';
+    if (!byParent.has(pid)) byParent.set(pid, []);
+    byParent.get(pid)!.push(c);
+  });
+  const result = new Set<string>();
+  function addDescendants(id: string) {
+    result.add(id);
+    const children = byParent.get(id) ?? [];
+    children.forEach((child) => addDescendants(child.id));
+  }
+  selectedIds.forEach((id) => addDescendants(id));
+  return Array.from(result);
+}
+
+/** Server-only: aggregate units sold per product from order_items (no DB schema change). */
+async function getProductUnitsSold(): Promise<Map<string, number>> {
+  const map = new Map<string, number>();
+  try {
+    const admin = createServiceRoleClient();
+    const { data, error } = await admin.from('order_items').select('product_id, quantity').limit(10000);
+    if (error) return map;
+    (data || []).forEach((row: { product_id: string; quantity: number }) => {
+      const id = row.product_id;
+      map.set(id, (map.get(id) ?? 0) + (row.quantity ?? 0));
+    });
+  } catch {
+    // no service role or RLS: fallback to empty map (products keep current order)
+  }
+  return map;
 }
 
 async function getProducts(filters: {
@@ -44,19 +89,25 @@ async function getProducts(filters: {
   color?: string;
   size?: string;
 }) {
+  const isRating = filters.sortBy === 'rating';
+  const isBestSelling = filters.sortBy === 'best_selling';
+  const needsReviews = isRating || isBestSelling;
+
+  const baseSelect = `
+    *,
+    category:categories(*),
+    brand:brands(*),
+    vendor:vendor_profiles(business_name, city, country),
+    images:product_images(*),
+    variants:product_variants(*)
+    ${needsReviews ? ', reviews:reviews(rating)' : ''}
+  `;
+
   let query = supabase
     .from('products')
-    .select(`
-      *,
-      category:categories(*),
-      brand:brands(*),
-      vendor:vendor_profiles(business_name, city, country),
-      images:product_images(*),
-      variants:product_variants(*)
-    `)
+    .select(baseSelect)
     .eq('is_active', true);
 
-  // Apply filters
   if (filters.categories.length > 0) {
     query = query.in('category_id', filters.categories);
   }
@@ -73,23 +124,41 @@ async function getProducts(filters: {
     query = query.lte('price', parseFloat(filters.maxPrice));
   }
 
-  // Apply sorting
-  const sortColumn = filters.sortBy === 'price' ? 'price' : 'name';
-  query = query.order(sortColumn, { ascending: filters.sortOrder === 'asc' });
+  // DB order only for name/price/newest; rating and best_selling sorted in app
+  if (!isRating && !isBestSelling) {
+    const sortColumn = filters.sortBy === 'price' ? 'price' : filters.sortBy === 'newest' ? 'created_at' : 'name';
+    query = query.order(sortColumn, { ascending: filters.sortOrder === 'asc' });
+  } else {
+    query = query.order('created_at', { ascending: false });
+  }
 
   const { data, error } = await query;
-
   if (error) {
     console.error('Error fetching products:', error);
     return [];
   }
 
-  let products = data || [];
+  let products = (data || []) as any[];
 
-  // Apply additional filters that require discount/product data
-  if (filters.flashSale || filters.discountMin || filters.color || filters.size) {
-    // We'll filter these in the application layer after fetching discounts
-    // For now, return all products and filter in the page component
+  if (filters.sortBy === 'rating') {
+    const asc = filters.sortOrder === 'asc';
+    products = [...products].sort((a, b) => {
+      const avg = (r: { rating?: number }[]) =>
+        r?.length ? r.reduce((s, x) => s + (x?.rating ?? 0), 0) / r.length : 0;
+      const ra = avg(a.reviews || []);
+      const rb = avg(b.reviews || []);
+      return asc ? ra - rb : rb - ra;
+    });
+  }
+
+  if (filters.sortBy === 'best_selling') {
+    const unitsByProduct = await getProductUnitsSold();
+    const asc = filters.sortOrder === 'asc';
+    products = [...products].sort((a, b) => {
+      const ua = unitsByProduct.get(a.id) ?? 0;
+      const ub = unitsByProduct.get(b.id) ?? 0;
+      return asc ? ua - ub : ub - ua;
+    });
   }
 
   return products;
@@ -133,18 +202,20 @@ async function getFiltersData() {
 }
 
 export default async function ProductsPage({ searchParams }: ProductsPageProps) {
-  // Parse search parameters
-  const categoryIds: string[] = [];
-  if (searchParams.category) categoryIds.push(searchParams.category);
-  if (searchParams.categoryId) categoryIds.push(searchParams.categoryId);
+  // Parse search parameters (support multiple categoryId, brand, vendor)
+  const categoryIds = [
+    ...paramToArray(searchParams.category),
+    ...paramToArray(searchParams.categoryId)
+  ];
+  const brandFilter = paramToArray(searchParams.brand);
+  const vendorFilter = paramToArray(searchParams.vendor);
 
-  // Handle brand - can be slug or ID
-  const brandFilter = searchParams.brand ? [searchParams.brand] : [];
-  // Handle vendor
-  const vendorFilter = searchParams.vendor ? [searchParams.vendor] : [];
+  // Fetch filter options first so we can expand parent categories
+  const filtersData = await getFiltersData();
+  const expandedCategoryIds = expandCategoryIdsWithDescendants(categoryIds, filtersData.categories);
 
   const filters = {
-    categories: categoryIds,
+    categories: expandedCategoryIds,
     brands: brandFilter,
     vendors: vendorFilter,
     minPrice: searchParams.minPrice || '',
@@ -157,11 +228,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     size: searchParams.size
   };
 
-  // Fetch data in parallel
-  const [products, filtersData] = await Promise.all([
-    getProducts(filters),
-    getFiltersData()
-  ]);
+  const products = await getProducts(filters);
 
   // Process discounts for products
   let productDiscounts: Record<string, {
@@ -270,9 +337,9 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
             initialVendors={filtersData.vendors}
             initialProductDiscounts={productDiscounts}
             initialFilters={{
-              categories: filters.categories,
-              brands: filters.brands,
-              vendors: filters.vendors,
+              categories: categoryIds,
+              brands: brandFilter,
+              vendors: vendorFilter,
               minPrice: filters.minPrice,
               maxPrice: filters.maxPrice,
               discountMin: filters.discountMin || '',

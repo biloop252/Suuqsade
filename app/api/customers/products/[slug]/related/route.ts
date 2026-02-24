@@ -1,17 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createRequestClient } from '@/lib/supabase-server'
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 export async function GET(request: NextRequest, { params }: { params: { slug: string } }) {
   try {
     const supabase = createRequestClient(request)
     const { slug } = params
+    const isUuid = UUID_REGEX.test(slug)
 
-    // Fetch current product to get category and brand
-    const { data: current, error: currentErr } = await supabase
+    // Fetch current product to get category and brand (param can be slug or product id)
+    const query = supabase
       .from('products')
       .select('id, category_id, brand_id')
-      .eq('slug', slug)
-      .single()
+    const { data: current, error: currentErr } = await (isUuid ? query.eq('id', slug) : query.eq('slug', slug)).single()
 
     if (currentErr || !current) {
       return NextResponse.json({ items: [] })

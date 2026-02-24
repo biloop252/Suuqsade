@@ -349,12 +349,6 @@ export default function CheckoutPage() {
     }, 0);
   };
 
-  const calculateTax = () => {
-    const subtotal = calculateSubtotalWithProductDiscounts();
-    const discountedSubtotal = subtotal - discountAmount; // discountAmount is coupon discount
-    return discountedSubtotal * 0.08; // 8% tax on discounted amount
-  };
-
   const [shippingCost, setShippingCost] = useState(0);
   const [shippingLoading, setShippingLoading] = useState(false);
   const [productDeliveryCosts, setProductDeliveryCosts] = useState<{[key: string]: {name: string, cost: number, isFree: boolean, method?: string, estimatedDays?: number}}>({});
@@ -601,13 +595,16 @@ export default function CheckoutPage() {
 
   const calculateTotal = () => {
     const subtotal = calculateSubtotalWithProductDiscounts();
-    const tax = calculateTax();
     const shipping = calculateShipping();
-    const couponDiscount = discountAmount; // This is the coupon discount
-    const autoDiscount = automaticDiscountAmount; // This is the automatic discount
-    
-    return subtotal + tax + shipping - couponDiscount - autoDiscount;
+    const couponDiscount = discountAmount;
+    const autoDiscount = automaticDiscountAmount;
+    return subtotal + shipping - couponDiscount - autoDiscount;
   };
+
+  const productsWithNoDelivery = Object.values(productDeliveryCosts).filter(
+    p => p.method === 'Not Available' || p.method === 'Error'
+  );
+  const hasUnavailableDelivery = productsWithNoDelivery.length > 0;
 
   // Coupon handling functions
   const handleApplyCoupon = async () => {
@@ -905,7 +902,7 @@ export default function CheckoutPage() {
           status: 'pending',
           total_amount: calculateTotal(),
           subtotal: calculateSubtotalWithProductDiscounts(),
-          tax_amount: calculateTax(),
+          tax_amount: 0,
           shipping_amount: calculateShipping(),
           discount_amount: discountAmount, // This is coupon discount
           product_discount_amount: totalProductDiscounts, // This is product discount
@@ -971,19 +968,22 @@ export default function CheckoutPage() {
       // Track discount usage
       await trackDiscountUsage(order.id);
 
-      // Create payment record for Cash on Delivery
+      // Create payment record (COD or Sifalo Pay)
+      const isSifaloPay = paymentMethod === 'sifalopay';
       const paymentData = {
         order_id: order.id,
         amount: calculateTotal(),
         currency: 'USD',
-        payment_method: 'cash_on_delivery',
+        payment_method: isSifaloPay ? 'sifalo_pay' : 'cash_on_delivery',
         status: 'pending',
-        transaction_id: `COD-${orderNumber}`,
-        gateway_response: {
-          method: 'cash_on_delivery',
-          status: 'pending',
-          message: 'Payment will be collected upon delivery'
-        }
+        transaction_id: isSifaloPay ? null : `COD-${orderNumber}`,
+        gateway_response: isSifaloPay
+          ? { method: 'sifalo_pay', status: 'pending' }
+          : {
+              method: 'cash_on_delivery',
+              status: 'pending',
+              message: 'Payment will be collected upon delivery'
+            }
       };
 
       console.log('Creating payment record:', paymentData);
@@ -998,6 +998,31 @@ export default function CheckoutPage() {
         console.warn('Payment record creation failed, but order was created successfully');
       } else {
         console.log('Payment record created successfully');
+      }
+
+      // Sifalo Pay: redirect to hosted checkout
+      if (isSifaloPay) {
+        try {
+          const initRes = await fetch('/api/checkout/sifalopay', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              amount: calculateTotal().toFixed(2),
+              order_id: order.id,
+            }),
+          });
+          const initData = await initRes.json();
+          if (!initRes.ok || !initData.checkoutUrl) {
+            showError('Payment Unavailable', initData?.error || 'Could not start payment. Please try again or use Cash on Delivery.');
+            return;
+          }
+          window.location.href = initData.checkoutUrl;
+          return;
+        } catch (err) {
+          console.error('Sifalo Pay initiate error:', err);
+          showError('Payment Unavailable', 'Could not redirect to payment. Please try again or use Cash on Delivery.');
+          return;
+        }
       }
 
       // Create delivery record
@@ -1227,7 +1252,7 @@ export default function CheckoutPage() {
 
                 <button
                   type="submit"
-                  disabled={addressProcessing || !selectedShippingAddressId}
+                  disabled={addressProcessing || !selectedShippingAddressId || hasUnavailableDelivery}
                   className="w-full bg-primary-600 text-white py-3 px-4 rounded-md font-medium hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                 >
                   {addressProcessing ? (
@@ -1244,6 +1269,11 @@ export default function CheckoutPage() {
                 {!addressProcessing && !selectedShippingAddressId && (
                   <p className="text-sm text-gray-500 text-center mt-2">
                     Please select a shipping address to continue
+                  </p>
+                )}
+                {!addressProcessing && selectedShippingAddressId && hasUnavailableDelivery && (
+                  <p className="text-sm text-red-600 text-center mt-2">
+                    Delivery is not available for some items to this address. Remove them from your cart or choose a different address.
                   </p>
                 )}
               </form>
@@ -1297,20 +1327,19 @@ export default function CheckoutPage() {
                             </div>
                           </div>
                         </label>
-                        <label className="flex items-center p-3 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50 opacity-50">
+                        <label className={`flex items-center p-3 border rounded-md cursor-pointer hover:bg-gray-50 ${paymentMethod === 'sifalopay' ? 'border-primary-500 bg-primary-50' : 'border-gray-300'}`}>
                           <input
                             type="radio"
                             name="paymentMethod"
-                            value="card"
-                            checked={paymentMethod === 'card'}
+                            value="sifalopay"
+                            checked={paymentMethod === 'sifalopay'}
                             onChange={(e) => setPaymentMethod(e.target.value)}
                             className="mr-3"
-                            disabled
                           />
-                          <CreditCardIcon className="h-5 w-5 mr-2 text-gray-400" />
+                          <CreditCardIcon className="h-5 w-5 mr-2 text-primary-600" />
                           <div>
-                            <div className="font-medium text-gray-500">Credit/Debit Card</div>
-                            <div className="text-sm text-gray-400">Coming soon</div>
+                            <div className="font-medium text-gray-900">Sifalo Pay</div>
+                            <div className="text-sm text-gray-500">Card, e-Dahab & other options</div>
                           </div>
                         </label>
                         <label className="flex items-center p-3 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50 opacity-50">
@@ -1482,10 +1511,17 @@ export default function CheckoutPage() {
                   <span className="text-gray-600">Subtotal</span>
                   <span className="font-medium">${calculateSubtotalWithProductDiscounts().toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Tax</span>
-                  <span className="font-medium">${calculateTax().toFixed(2)}</span>
-                </div>
+                {shippingAddress.city && shippingAddress.country && hasUnavailableDelivery && (
+                  <div className="rounded-md border border-red-200 bg-red-50 p-3">
+                    <p className="text-sm font-medium text-red-800">No delivery available to this address</p>
+                    <p className="text-xs text-red-700 mt-1">Delivery is not available for:</p>
+                    <ul className="mt-1 list-disc list-inside text-xs text-red-700 space-y-0.5">
+                      {productsWithNoDelivery.map((p) => (
+                        <li key={p.name}>{p.name}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Shipping</span>
@@ -1536,10 +1572,19 @@ export default function CheckoutPage() {
                   <div>
                     <h3 className="text-sm font-medium text-gray-900 mb-2">Payment Method:</h3>
                     <div className="flex items-center">
-                      <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mr-2">
-                        <span className="text-green-600 font-bold text-xs">$</span>
-                      </div>
-                      <span className="text-sm text-gray-600">Cash on Delivery</span>
+                      {paymentMethod === 'sifalopay' ? (
+                        <>
+                          <CreditCardIcon className="h-5 w-5 text-primary-600 mr-2" />
+                          <span className="text-sm text-gray-600">Sifalo Pay</span>
+                        </>
+                      ) : (
+                        <>
+                          <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mr-2">
+                            <span className="text-green-600 font-bold text-xs">$</span>
+                          </div>
+                          <span className="text-sm text-gray-600">Cash on Delivery</span>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>

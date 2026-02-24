@@ -4,6 +4,14 @@ import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string
 
+/** Server-only: bypasses RLS. Use only for server-side aggregation (e.g. units sold). */
+export function createServiceRoleClient() {
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseAnonKey
+  return createSupabaseClient(supabaseUrl, key, {
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+  })
+}
+
 export function createRequestClient(request: NextRequest) {
   const authHeader = request.headers.get('authorization') || request.headers.get('Authorization') || ''
   const token = authHeader?.toLowerCase().startsWith('bearer ')

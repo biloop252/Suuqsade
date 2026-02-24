@@ -1,17 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createRequestClient } from '@/lib/supabase-server'
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 export async function GET(request: NextRequest, { params }: { params: { slug: string } }) {
   try {
     const supabase = createRequestClient(request)
     const { slug } = params
+    const isUuid = UUID_REGEX.test(slug)
 
-    const { data: product, error: productError } = await supabase
+    const query = supabase
       .from('products')
       .select('id')
-      .eq('slug', slug)
       .eq('is_active', true)
-      .single()
+    const { data: product, error: productError } = await (isUuid ? query.eq('id', slug) : query.eq('slug', slug)).single()
 
     if (productError) {
       if ((productError as any).code === 'PGRST116') {

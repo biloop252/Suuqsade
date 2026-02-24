@@ -106,12 +106,26 @@ export async function PUT(
       return NextResponse.json({ error: 'Page not found' }, { status: 404 });
     }
 
+    // Normalize slug when updating: lowercase, spaces to hyphens
+    const slug =
+      body.slug != null
+        ? String(body.slug)
+            .trim()
+            .toLowerCase()
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-+|-+$/g, '')
+        : undefined;
+    if (slug !== undefined && !slug) {
+      return NextResponse.json({ error: 'Slug cannot be empty' }, { status: 400 });
+    }
+
     // If slug is being changed, check if new slug exists
-    if (body.slug) {
+    if (slug !== undefined) {
       const { data: slugExists } = await supabase
         .from('pages')
         .select('id')
-        .eq('slug', body.slug)
+        .eq('slug', slug)
         .neq('id', id)
         .single();
 
@@ -122,7 +136,7 @@ export async function PUT(
 
     // Update page
     console.log('🔍 PUT - About to update page with data:', {
-      slug: body.slug,
+      slug: slug ?? body.slug,
       title: body.title,
       content: body.content,
       meta_title: body.meta_title || null,
@@ -137,7 +151,7 @@ export async function PUT(
 
     // For test admin, we need to handle the foreign key constraint
     const updateData: any = {
-      slug: body.slug,
+      ...(slug !== undefined && { slug }),
       title: body.title,
       content: body.content,
       meta_title: body.meta_title || null,

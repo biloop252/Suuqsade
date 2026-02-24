@@ -7,7 +7,6 @@ import { useCart } from '@/lib/cart-context';
 import { useNotification } from '@/lib/notification-context';
 import { ProductWithDetails } from '@/types/database';
 import { getBatchProductDiscounts, calculateBestDiscount, ProductDiscount } from '@/lib/discount-utils';
-import { DiscountCalculator } from '@/lib/discount-calculator';
 import { 
   ShoppingCartIcon, 
   PlusIcon, 
@@ -47,9 +46,6 @@ export default function CartPage() {
   const [productDiscounts, setProductDiscounts] = useState<Record<string, ProductDiscount[]>>({});
   const [productDiscountAmounts, setProductDiscountAmounts] = useState<Record<string, number>>({});
   const [totalProductDiscounts, setTotalProductDiscounts] = useState(0);
-  const [availableAutomaticDiscounts, setAvailableAutomaticDiscounts] = useState<any[]>([]);
-  const [appliedAutomaticDiscount, setAppliedAutomaticDiscount] = useState<any>(null);
-  const [automaticDiscountAmount, setAutomaticDiscountAmount] = useState(0);
   
   // Coupon states
   const [couponCode, setCouponCode] = useState('');
@@ -68,7 +64,6 @@ export default function CartPage() {
   useEffect(() => {
     if (cartItems.length > 0) {
       fetchProductDiscounts();
-      fetchAutomaticDiscounts();
     }
   }, [cartItems]);
 
@@ -132,44 +127,6 @@ export default function CartPage() {
       setTotalProductDiscounts(totalDiscounts);
     } catch (error) {
       console.error('Error fetching product discounts:', error);
-    }
-  };
-
-  const fetchAutomaticDiscounts = async () => {
-    try {
-      const subtotal = calculateSubtotalWithProductDiscounts();
-      
-      // Fetch available automatic discounts
-      const { data: discounts, error } = await supabase
-        .from('discounts')
-        .select('*')
-        .eq('is_active', true)
-        .eq('status', 'active')
-        .eq('is_global', true) // Only global discounts for automatic application
-        .lte('start_date', new Date().toISOString())
-        .or(`end_date.is.null,end_date.gte.${new Date().toISOString()}`)
-        .lte('minimum_order_amount', subtotal)
-        .order('value', { ascending: false }); // Best discount first
-
-      if (error) {
-        console.error('Error fetching automatic discounts:', error);
-        return;
-      }
-
-      if (discounts && discounts.length > 0) {
-        setAvailableAutomaticDiscounts(discounts);
-        
-        // Apply the best automatic discount
-        const bestDiscount = discounts[0];
-        const discountAmount = DiscountCalculator.calculateDiscountAmount(bestDiscount, subtotal);
-        
-        if (discountAmount > 0) {
-          setAppliedAutomaticDiscount(bestDiscount);
-          setAutomaticDiscountAmount(discountAmount);
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching automatic discounts:', error);
     }
   };
 
@@ -243,25 +200,6 @@ export default function CartPage() {
     );
   };
 
-  const calculateSubtotal = () => {
-    return cartItems.reduce((total, item) => {
-      if (item.product) {
-        let price = item.product.price;
-        
-        // If item has a variant, use variant price instead of product price
-        if (item.variant_id && item.product.variants) {
-          const variant = item.product.variants.find((v: any) => v.id === item.variant_id);
-          if (variant && variant.price) {
-            price = variant.price;
-          }
-        }
-        
-        return total + (price * item.quantity);
-      }
-      return total;
-    }, 0);
-  };
-
   const calculateSubtotalWithProductDiscounts = () => {
     return cartItems.reduce((total, item) => {
       if (item.product) {
@@ -283,27 +221,31 @@ export default function CartPage() {
     }, 0);
   };
 
-  const calculateTax = () => {
-    const subtotal = calculateSubtotalWithProductDiscounts();
-    return subtotal * 0.08; // 8% tax on discounted amount
-  };
-
   const calculateTotal = () => {
     const subtotal = calculateSubtotalWithProductDiscounts();
-    const tax = calculateTax();
-    const autoDiscount = automaticDiscountAmount;
-    const couponDiscount = discountAmount; // This comes from cart context
-    
-    console.log('Cart Total Calculation:', {
-      subtotal,
-      tax,
-      autoDiscount,
-      couponDiscount,
-      appliedCoupon: appliedCoupon?.name,
-      finalTotal: subtotal + tax - autoDiscount - couponDiscount
-    });
-    
-    return subtotal + tax - autoDiscount - couponDiscount;
+    const couponDiscount = discountAmount;
+    return subtotal - couponDiscount;
+  };
+
+  const getItemStockQuantity = (item: CartItem): number => {
+    if (item.variant_id && item.product.variants) {
+      const variant = item.product.variants.find((v: any) => v.id === item.variant_id);
+      if (variant != null) return variant.stock_quantity ?? 0;
+    }
+    return item.product?.stock_quantity ?? 0;
+  };
+
+  const handleProceedToCheckout = () => {
+    const outOfStockItems = cartItems.filter((item) => getItemStockQuantity(item) <= 0);
+    if (outOfStockItems.length > 0) {
+      const names = outOfStockItems.map((item) => item.product?.name).filter(Boolean).join(', ');
+      showError(
+        'Remove out-of-stock items',
+        `Please remove the following out-of-stock item(s) to proceed: ${names}.`
+      );
+      return;
+    }
+    router.push('/checkout');
   };
 
   // Coupon handling functions
@@ -471,6 +413,9 @@ export default function CartPage() {
                                   {item.product.brand && (
                                     <p className="text-sm text-gray-500">{item.product.brand.name}</p>
                                   )}
+                                  <p className={`text-xs font-medium ${getItemStockQuantity(item) > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                    {getItemStockQuantity(item) > 0 ? 'In stock' : 'Out of stock'}
+                                  </p>
                                 </div>
                               </div>
                             </td>
@@ -556,6 +501,9 @@ export default function CartPage() {
                             {item.product.brand && (
                               <p className="text-xs text-gray-500 mt-0.5">{item.product.brand.name}</p>
                             )}
+                            <p className={`text-xs font-medium mt-0.5 ${getItemStockQuantity(item) > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              {getItemStockQuantity(item) > 0 ? 'In stock' : 'Out of stock'}
+                            </p>
                             <div className="mt-2 flex items-center justify-between">
                               <span className="text-base font-semibold text-gray-900">${final_price.toFixed(2)}</span>
                               <button
@@ -658,16 +606,8 @@ export default function CartPage() {
                 <div className="space-y-3 mb-6">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Subtotal</span>
-                    <span className="font-medium">${calculateSubtotal().toFixed(2)}</span>
+                    <span className="font-medium">${calculateSubtotalWithProductDiscounts().toFixed(2)}</span>
                   </div>
-                  
-                  {/* Product Discounts */}
-                  {totalProductDiscounts > 0 && (
-                    <div className="flex justify-between text-green-600">
-                      <span className="text-gray-600">Product Discounts</span>
-                      <span className="font-medium">-${totalProductDiscounts.toFixed(2)}</span>
-                    </div>
-                  )}
                   
                   {/* Coupon Discount - Show prominently */}
                   {discountAmount > 0 && appliedCoupon && (
@@ -677,19 +617,6 @@ export default function CartPage() {
                     </div>
                   )}
                   
-                  {/* Automatic Discount */}
-                  {automaticDiscountAmount > 0 && (
-                    <div className="flex justify-between text-green-600">
-                      <span className="text-gray-600">Automatic Discount ({appliedAutomaticDiscount?.name})</span>
-                      <span className="font-medium">-${automaticDiscountAmount.toFixed(2)}</span>
-                    </div>
-                  )}
-                  
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Tax</span>
-                    <span className="font-medium">${calculateTax().toFixed(2)}</span>
-                  </div>
-                  
                   <div className="border-t pt-3">
                     <div className="flex justify-between">
                       <span className="text-lg font-semibold text-gray-900">Total</span>
@@ -698,7 +625,7 @@ export default function CartPage() {
                   </div>
                   
                   {/* Savings Summary */}
-                  {(totalProductDiscounts > 0 || automaticDiscountAmount > 0 || discountAmount > 0) && (
+                  {(totalProductDiscounts > 0 || discountAmount > 0) && (
                     <div className="bg-green-50 border border-green-200 rounded-md p-3 mt-3">
                       <div className="flex items-center">
                         <div className="flex-shrink-0">
@@ -709,7 +636,7 @@ export default function CartPage() {
                         <div className="ml-3">
                           <h3 className="text-sm font-medium text-green-800">You're saving money!</h3>
                           <p className="text-sm text-green-700 mt-1">
-                            Total savings: ${(totalProductDiscounts + automaticDiscountAmount + discountAmount).toFixed(2)}
+                            Total savings: ${(totalProductDiscounts + discountAmount).toFixed(2)}
                           </p>
                         </div>
                       </div>
@@ -718,7 +645,7 @@ export default function CartPage() {
                 </div>
 
                 <button 
-                  onClick={() => router.push('/checkout')}
+                  onClick={handleProceedToCheckout}
                   className="w-full bg-primary-600 text-white py-3 px-4 rounded-md font-medium hover:bg-primary-700 mb-4"
                 >
                   Proceed to Checkout

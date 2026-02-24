@@ -1,6 +1,8 @@
 import PageEditor from '@/components/admin/PageEditor';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 
+export const dynamic = 'force-dynamic';
+
 interface Props {
   params: { id: string };
 }

@@ -35,7 +35,7 @@ export default function PageEditor({ mode, initialPage, pageId }: PageEditorProp
     meta_description: '',
     meta_keywords: '',
     page_type: 'static',
-    status: 'draft',
+    status: 'published',
     is_featured: false,
     sort_order: 0,
   });
@@ -45,11 +45,11 @@ export default function PageEditor({ mode, initialPage, pageId }: PageEditorProp
   const isEdit = mode === 'edit';
   const editorRef = useRef<RichTextEditorHandle | null>(null);
 
-  // On edit without initialPage, fetch client-side
+  // In edit mode always refetch so we show latest DB data (avoids stale initialPage/cache)
   useEffect(() => {
     let ignore = false;
     const fetchPage = async () => {
-      if (isEdit && !initialPage && pageId) {
+      if (isEdit && pageId) {
         try {
           const headers: Record<string, string> = {};
           if (typeof window !== 'undefined' && localStorage.getItem('admin_session') === 'true') {
@@ -58,14 +58,14 @@ export default function PageEditor({ mode, initialPage, pageId }: PageEditorProp
           const res = await fetch(`/api/admin/pages/${pageId}`, { headers });
           if (res.ok) {
             const data = await res.json();
-            if (!ignore) setFormData(data.page);
+            if (!ignore && data?.page) setFormData(data.page);
           }
         } catch (_) {}
       }
     };
     fetchPage();
     return () => { ignore = true; };
-  }, [isEdit, initialPage, pageId]);
+  }, [isEdit, pageId]);
 
   const generateSlug = (title: string) => {
     return title
@@ -136,6 +136,7 @@ export default function PageEditor({ mode, initialPage, pageId }: PageEditorProp
           body: JSON.stringify(payload),
         });
         if (!res.ok) throw new Error('Failed to update page');
+        router.push('/admin/pages');
       } else {
         const res = await fetch('/api/admin/pages', {
           method: 'POST',
@@ -143,8 +144,13 @@ export default function PageEditor({ mode, initialPage, pageId }: PageEditorProp
           body: JSON.stringify(payload),
         });
         if (!res.ok) throw new Error('Failed to create page');
+        const data = await res.json();
+        if (data?.page?.slug) {
+          router.push(`/${data.page.slug}`);
+          return;
+        }
+        router.push('/admin/pages');
       }
-      router.push('/admin/pages');
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error(err);
@@ -237,7 +243,12 @@ export default function PageEditor({ mode, initialPage, pageId }: PageEditorProp
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Content *</label>
-                <RichTextEditor ref={editorRef} value={formData.content} onChange={(html) => setFormData(prev => ({ ...prev, content: html }))} />
+                <RichTextEditor
+                  key={isEdit && pageId ? `page-${pageId}-${(formData as Page & { updated_at?: string }).updated_at ?? ''}` : 'new'}
+                  ref={editorRef}
+                  value={formData.content}
+                  onChange={(html) => setFormData(prev => ({ ...prev, content: html }))}
+                />
                 {errors.content && (
                   <p className="mt-1 text-sm text-red-600 flex items-center">
                     <AlertCircle className="h-4 w-4 mr-1" />

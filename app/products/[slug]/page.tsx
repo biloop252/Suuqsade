@@ -87,7 +87,9 @@ export default function ProductDetailPage() {
   const fetchProduct = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      // Route param can be slug (product name slug) or product id (e.g. from promotion links)
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(params.slug as string);
+      const query = supabase
         .from('products')
         .select(`
           *,
@@ -101,9 +103,8 @@ export default function ProductDetailPage() {
             tag:product_tags(*)
           )
         `)
-        .eq('slug', params.slug)
-        .eq('is_active', true)
-        .single();
+        .eq('is_active', true);
+      const { data, error } = await (isUuid ? query.eq('id', params.slug) : query.eq('slug', params.slug)).single();
 
       if (error) {
         console.error('Error fetching product:', error);

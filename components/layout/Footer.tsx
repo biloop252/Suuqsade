@@ -1,7 +1,7 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { usePublicSettings, getAppDescription, getContactEmail, getPhoneNumber } from '@/hooks/useSettings';
 import { Logo as SystemLogo } from '@/components/common/SystemImageDisplay';
 import { 
@@ -24,9 +24,28 @@ import {
   BookOpenIcon,
   CarIcon,
   BabyIcon,
-  SparklesIcon
+  SparklesIcon,
+  PackageIcon
 } from 'lucide-react';
 import PromotionalBanner from '@/components/promotional/PromotionalBanner';
+import { supabase } from '@/lib/supabase';
+
+const CATEGORY_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  'electronics': SmartphoneIcon,
+  'fashion': ShirtIcon,
+  'home': HomeIcon,
+  'home & garden': HomeIcon,
+  'sports': GamepadIcon,
+  'books': BookOpenIcon,
+  'beauty': SparklesIcon,
+  'automotive': CarIcon,
+  'toys': BabyIcon,
+};
+
+function getCategoryIcon(name: string) {
+  const key = name.toLowerCase();
+  return CATEGORY_ICONS[key] ?? PackageIcon;
+}
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -37,16 +56,26 @@ export default function Footer() {
   const phoneNumber = getPhoneNumber(settings);
   const address = settings.address || '123 Commerce Street\nBusiness District, BD 12345';
 
-  const categories = [
-    { name: 'Electronics', icon: SmartphoneIcon, href: '/categories/electronics' },
-    { name: 'Fashion', icon: ShirtIcon, href: '/categories/fashion' },
-    { name: 'Home & Garden', icon: HomeIcon, href: '/categories/home-garden' },
-    { name: 'Sports', icon: GamepadIcon, href: '/categories/sports' },
-    { name: 'Books', icon: BookOpenIcon, href: '/categories/books' },
-    { name: 'Beauty', icon: SparklesIcon, href: '/categories/beauty' },
-    { name: 'Automotive', icon: CarIcon, href: '/categories/automotive' },
-    { name: 'Toys', icon: BabyIcon, href: '/categories/toys' },
-  ];
+  const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('categories')
+          .select('id, name')
+          .eq('is_active', true)
+          .is('parent_id', null)
+          .order('sort_order')
+          .order('name');
+
+        if (!error) setCategories(data || []);
+      } catch {
+        // ignore
+      }
+    };
+    fetchCategories();
+  }, []);
 
   const customerService = [
     { name: 'Help Center', href: '/support' },
@@ -121,12 +150,15 @@ export default function Footer() {
               <span className="text-gray-400">▾</span>
             </summary>
             <div className="px-2 pb-3 grid grid-cols-2 gap-1">
-              {categories.map((category) => (
-                <Link key={category.name} href={category.href} className="text-gray-600 hover:text-primary-500 transition-colors text-sm py-2 px-2 rounded-lg hover:bg-gray-50 flex items-center">
-                  <category.icon className="h-4 w-4 mr-2 flex-shrink-0" />
-                  {category.name}
-                </Link>
-              ))}
+              {categories.map((category) => {
+                const Icon = getCategoryIcon(category.name);
+                return (
+                  <Link key={category.id} href={`/categories/${category.id}`} className="text-gray-600 hover:text-primary-500 transition-colors text-sm py-2 px-2 rounded-lg hover:bg-gray-50 flex items-center">
+                    <Icon className="h-4 w-4 mr-2 flex-shrink-0" />
+                    {category.name}
+                  </Link>
+                );
+              })}
             </div>
           </details>
 
@@ -178,15 +210,6 @@ export default function Footer() {
             </ul>
           </details>
 
-          {/* Newsletter */}
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
-            <h4 className="text-base font-semibold mb-2 text-primary-500">Newsletter</h4>
-            <p className="text-gray-600 text-sm mb-3">Get the latest deals and updates</p>
-            <div className="flex flex-col gap-2">
-              <input type="email" placeholder="Enter your email" className="px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm" />
-              <button className="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm">Subscribe</button>
-            </div>
-          </div>
         </div>
 
         {/* Desktop/Tablet layout */}
@@ -224,16 +247,19 @@ export default function Footer() {
           <div>
             <h4 className="text-base sm:text-lg font-semibold mb-4 text-primary-500">Shop by Category</h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {categories.map((category) => (
-                <Link 
-                  key={category.name} 
-                  href={category.href}
-                  className="flex items-center text-gray-600 hover:text-primary-500 transition-colors text-sm py-2 px-2 rounded-lg hover:bg-gray-50 min-h-[44px]"
-                >
-                  <category.icon className="h-4 w-4 mr-2 flex-shrink-0" />
-                  {category.name}
-                </Link>
-              ))}
+              {categories.map((category) => {
+                const Icon = getCategoryIcon(category.name);
+                return (
+                  <Link 
+                    key={category.id} 
+                    href={`/categories/${category.id}`}
+                    className="flex items-center text-gray-600 hover:text-primary-500 transition-colors text-sm py-2 px-2 rounded-lg hover:bg-gray-50 min-h-[44px]"
+                  >
+                    <Icon className="h-4 w-4 mr-2 flex-shrink-0" />
+                    {category.name}
+                  </Link>
+                );
+              })}
             </div>
           </div>
 
@@ -331,40 +357,23 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Social Media & Newsletter */}
+        {/* Social Media - centered */}
         <div className="border-t border-gray-300 mt-6 sm:mt-8 pt-6 sm:pt-8">
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center space-y-6 lg:space-y-0">
-            <div className="w-full lg:w-auto">
-              <h4 className="text-base sm:text-lg font-semibold mb-3 text-primary-500">Follow Us</h4>
-              <div className="flex space-x-3 sm:space-x-4">
-                {socialLinks.map((social) => (
-                  <a
-                    key={social.name}
-                    href={social.href as string}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="bg-gray-200 hover:bg-primary-500 hover:text-white rounded-lg p-2 sm:p-3 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
-                    aria-label={social.name}
-                  >
-                    <social.icon className="h-4 w-4 sm:h-5 sm:w-5" />
-                  </a>
-                ))}
-              </div>
-            </div>
-            
-            <div className="w-full lg:w-auto text-center lg:text-right">
-              <h4 className="text-base sm:text-lg font-semibold mb-3 text-primary-500">Newsletter</h4>
-              <p className="text-gray-600 text-sm mb-4">Get the latest deals and updates</p>
-              <div className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto lg:mx-0">
-                <input
-                  type="email"
-                  placeholder="Enter your email"
-                  className="px-3 sm:px-4 py-2 sm:py-3 bg-white border border-gray-300 rounded-lg text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm sm:text-base min-h-[44px]"
-                />
-                <button className="bg-primary-500 hover:bg-primary-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-medium transition-colors text-sm sm:text-base min-h-[44px]">
-                  Subscribe
-                </button>
-              </div>
+          <div className="flex flex-col items-center justify-center text-center">
+            <h4 className="text-base sm:text-lg font-semibold mb-3 text-primary-500">Follow Us</h4>
+            <div className="flex flex-wrap justify-center gap-3 sm:gap-4">
+              {socialLinks.map((social) => (
+                <a
+                  key={social.name}
+                  href={social.href as string}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-gray-200 hover:bg-primary-500 hover:text-white rounded-lg p-2 sm:p-3 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+                  aria-label={social.name}
+                >
+                  <social.icon className="h-4 w-4 sm:h-5 sm:w-5" />
+                </a>
+              ))}
             </div>
           </div>
         </div>

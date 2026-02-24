@@ -229,19 +229,25 @@ export default function HomepageSections() {
                     const href = (() => {
                       switch (s.section_type) {
                         case 'category':
-                          return s.category_id ? `/products?category=${s.category_id}` : '/products';
+                          return s.category_id ? `/products?categoryId=${s.category_id}` : '/products';
                         case 'brand':
                           return s.brand_id ? `/products?brand=${s.brand_id}` : '/products';
                         case 'new_arrivals':
-                          return '/products?sort=name&order=desc';
-                        case 'popular':
+                          return '/products?sort=newest&order=desc';
                         case 'trending':
+                          return '/products?sort=rating&order=desc';
+                        case 'popular':
+                          return '/products?sort=rating&order=desc';
                         case 'best_selling':
+                          return '/products?sort=best_selling&order=desc';
                         case 'recommended':
+                          return '/products?sort=newest&order=desc';
                         case 'flash_deals':
+                          return '/products?flashSale=true';
                         case 'tag':
+                          return '/products?sort=newest&order=desc';
                         default:
-                          return '/products?sort=name';
+                          return '/products?sort=newest&order=desc';
                       }
                     })();
                     return (
