@@ -61,17 +61,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { key, token } = data;
-    if (!key || !token) {
+    const rawKey = String(data.key ?? data.data?.key ?? '').trim();
+    const rawToken = String(data.token ?? data.data?.token ?? '').trim();
+    if (!rawKey || !rawToken) {
       return NextResponse.json(
         { error: 'Invalid response from Sifalo Pay', details: data },
         { status: 502 }
       );
     }
 
-    const checkoutUrl = `${SIFALOPAY_CHECKOUT_BASE}?key=${encodeURIComponent(key)}&token=${encodeURIComponent(token)}`;
+    // Sifalo may return key/token already URL-encoded. Encoding again causes %253D and "Payment Link No Longer Exists".
+    // If they look pre-encoded (contain %), use as-is; otherwise encode once for safe query string.
+    const keyParam =
+      /%[0-9A-Fa-f]{2}/.test(rawKey) ? rawKey : encodeURIComponent(rawKey);
+    const tokenParam =
+      /%[0-9A-Fa-f]{2}/.test(rawToken) ? rawToken : encodeURIComponent(rawToken);
+    const checkoutUrl = `${SIFALOPAY_CHECKOUT_BASE}?key=${keyParam}&token=${tokenParam}`;
 
-    return NextResponse.json({ key, token, checkoutUrl });
+    return NextResponse.json({ key: rawKey, token: rawToken, checkoutUrl });
   } catch (err) {
     console.error('Sifalo Pay initiate error:', err);
     return NextResponse.json(
