@@ -893,6 +893,81 @@ export default function CheckoutPage() {
       // Show progress notification
       showInfo('Processing Order', 'Creating your order...');
 
+      // Sifalo Pay: PAY FIRST (do not create an order until payment succeeds)
+      if (paymentMethod === 'sifalopay') {
+        try {
+          const { data: sessionData } = await supabase.auth.getSession();
+          const accessToken = sessionData?.session?.access_token;
+          if (!accessToken) {
+            showError('Authentication Required', 'Please log in again to continue with payment.');
+            return;
+          }
+
+          const sessionItems = cartItems.map(item => {
+            let originalPrice = item.product.price;
+
+            if (item.variant_id && item.product.variants) {
+              const variant = item.product.variants.find((v: any) => v.id === item.variant_id);
+              if (variant && variant.price) {
+                originalPrice = variant.price;
+              }
+            }
+
+            const itemDiscounts = productDiscounts[item.product.id] || [];
+            const { final_price, discount_amount } = calculateBestDiscount({ price: originalPrice }, itemDiscounts);
+
+            return {
+              product_id: item.product_id,
+              variant_id: item.variant_id,
+              product_name: item.product.name,
+              product_sku: item.product.sku,
+              quantity: item.quantity,
+              unit_price: originalPrice,
+              total_price: final_price * item.quantity,
+              discounted_unit_price: final_price,
+              discount_amount: discount_amount * item.quantity,
+            };
+          });
+
+          const initRes = await fetch('/api/checkout/sifalopay', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify({
+              amount: calculateTotal().toFixed(2),
+              shipping_address_id: finalShippingAddressId,
+              billing_address_id: finalShippingAddressId,
+              notes: orderNotes,
+              items: sessionItems,
+              pricing: {
+                subtotal: calculateSubtotalWithProductDiscounts(),
+                shipping_amount: calculateShipping(),
+                tax_amount: 0,
+                discount_amount: discountAmount,
+              },
+            }),
+          });
+
+          const initData = await initRes.json();
+          if (!initRes.ok || !initData.checkoutUrl) {
+            showError(
+              'Payment Unavailable',
+              initData?.error || 'Could not start payment. Please try again or use Cash on Delivery.'
+            );
+            return;
+          }
+
+          window.location.href = initData.checkoutUrl;
+          return;
+        } catch (err) {
+          console.error('Sifalo Pay initiate error:', err);
+          showError('Payment Unavailable', 'Could not redirect to payment. Please try again or use Cash on Delivery.');
+          return;
+        }
+      }
+
       // Create order
       const { data: order, error: orderError } = await supabase
         .from('orders')
@@ -998,31 +1073,6 @@ export default function CheckoutPage() {
         console.warn('Payment record creation failed, but order was created successfully');
       } else {
         console.log('Payment record created successfully');
-      }
-
-      // Sifalo Pay: redirect to hosted checkout
-      if (isSifaloPay) {
-        try {
-          const initRes = await fetch('/api/checkout/sifalopay', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              amount: calculateTotal().toFixed(2),
-              order_id: order.id,
-            }),
-          });
-          const initData = await initRes.json();
-          if (!initRes.ok || !initData.checkoutUrl) {
-            showError('Payment Unavailable', initData?.error || 'Could not start payment. Please try again or use Cash on Delivery.');
-            return;
-          }
-          window.location.href = initData.checkoutUrl;
-          return;
-        } catch (err) {
-          console.error('Sifalo Pay initiate error:', err);
-          showError('Payment Unavailable', 'Could not redirect to payment. Please try again or use Cash on Delivery.');
-          return;
-        }
       }
 
       // Create delivery record

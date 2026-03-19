@@ -15,9 +15,9 @@ export default function CheckoutReturnPage() {
 
   useEffect(() => {
     const sid = searchParams.get('sid');
-    const orderId = searchParams.get('order_id');
+    const sessionId = searchParams.get('session_id');
 
-    if (!orderId) {
+    if (!sessionId) {
       setState('error');
       setMessage('Missing order reference. Please contact support if you completed payment.');
       return;
@@ -28,7 +28,7 @@ export default function CheckoutReturnPage() {
         const res = await fetch('/api/checkout/sifalopay/complete', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sid: sid || undefined, order_id: orderId }),
+          body: JSON.stringify({ sid: sid || undefined, session_id: sessionId }),
         });
         const data = await res.json();
 

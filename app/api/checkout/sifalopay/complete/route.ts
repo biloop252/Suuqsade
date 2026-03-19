@@ -6,11 +6,11 @@ const SIFALOPAY_VERIFY = 'https://api.sifalopay.com/gateway/verify.php';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { sid, order_id } = body;
+    const { sid, session_id } = body;
 
-    if (!sid && !order_id) {
+    if (!sid && !session_id) {
       return NextResponse.json(
-        { error: 'sid or order_id is required' },
+        { error: 'sid or session_id is required' },
         { status: 400 }
       );
     }
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     }
 
     const auth = Buffer.from(`${username}:${password}`).toString('base64');
-    const verifyBody = sid ? { sid } : { order_id };
+    const verifyBody = sid ? { sid } : { order_id: session_id };
 
     const verifyRes = await fetch(SIFALOPAY_VERIFY, {
       method: 'POST',
@@ -44,49 +44,91 @@ export async function POST(request: NextRequest) {
     const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const orderId = order_id;
-    if (!orderId) {
-      return NextResponse.json(
-        { success: false, error: 'order_id required to update payment' },
-        { status: 400 }
-      );
+    const sessionId = session_id;
+    if (!sessionId) {
+      return NextResponse.json({ success: false, error: 'session_id required' }, { status: 400 });
     }
 
-    const { data: order } = await supabase
-      .from('orders')
-      .select('id, order_number')
-      .eq('id', orderId)
+    const { data: session } = await supabase
+      .from('checkout_sessions')
+      .select('*')
+      .eq('id', sessionId)
       .single();
 
-    if (!order) {
+    if (!session) {
       return NextResponse.json(
-        { success: false, error: 'Order not found' },
+        { success: false, error: 'Checkout session not found' },
         { status: 404 }
       );
     }
 
-    const { error: paymentUpdateError } = await supabase
-      .from('payments')
+    // Update session status + attach gateway response for auditing/troubleshooting.
+    await supabase
+      .from('checkout_sessions')
       .update({
-        transaction_id: verifyData?.sid || sid,
         status: isSuccess ? 'paid' : status === 'failure' ? 'failed' : 'pending',
-        gateway_response: verifyData,
+        pricing: {
+          ...(session.pricing || {}),
+          gateway_response: verifyData,
+          sid: verifyData?.sid || sid || null,
+          verified_status: status || 'unknown',
+        },
       })
-      .eq('order_id', orderId);
+      .eq('id', sessionId);
 
-    if (paymentUpdateError) {
-      console.error('Error updating payment:', paymentUpdateError);
-      return NextResponse.json(
-        { success: false, error: 'Failed to update payment record' },
-        { status: 500 }
-      );
+    // Pay-first: webhook is authoritative for order creation.
+    // Fallback: if webhook was not delivered, trigger the same webhook flow internally once.
+    let createdOrder: { id: string; order_number: string } | null = null;
+    if (isSuccess) {
+      let existingOrderId = (session as any).order_id as string | undefined;
+
+      if (!existingOrderId) {
+        const baseUrl =
+          process.env.NEXT_PUBLIC_APP_URL ||
+          process.env.NEXT_PUBLIC_SITE_URL ||
+          (request.headers.get('x-forwarded-proto') && request.headers.get('host')
+            ? `${request.headers.get('x-forwarded-proto')}://${request.headers.get('host')}`
+            : 'http://localhost:3000');
+
+        try {
+          await fetch(`${baseUrl}/api/checkout/sifalopay/webhook`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              sid: sid || verifyData?.sid || undefined,
+              session_id: sessionId,
+            }),
+          });
+        } catch (e) {
+          console.error('Sifalo Pay webhook fallback call failed:', e);
+        }
+
+        const { data: refreshedSession } = await supabase
+          .from('checkout_sessions')
+          .select('order_id')
+          .eq('id', sessionId)
+          .single();
+        existingOrderId = (refreshedSession as any)?.order_id || undefined;
+      }
+
+      if (existingOrderId) {
+        const { data: existingOrder } = await supabase
+          .from('orders')
+          .select('id, order_number')
+          .eq('id', existingOrderId)
+          .single();
+        if (existingOrder) {
+          createdOrder = existingOrder as any;
+        }
+      }
     }
 
     return NextResponse.json({
       success: isSuccess,
       status: status || 'unknown',
-      order_number: order.order_number,
-      order_id: order.id,
+      order_number: createdOrder?.order_number || null,
+      order_id: createdOrder?.id || null,
+      session_id: sessionId,
     });
   } catch (err) {
     console.error('Sifalo Pay complete error:', err);
