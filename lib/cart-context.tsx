@@ -200,32 +200,30 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const clearCart = async () => {
     try {
       setLoading(true);
-      // After external redirects (e.g. Sifalo Pay), React auth state can lag behind
-      // session storage — user?.id may be undefined and would produce user_id=eq.undefined.
-      let uid = user?.id;
-      if (!uid) {
-        const { data: { session } } = await supabase.auth.getSession();
-        uid = session?.user?.id;
-      }
-      if (!uid) {
-        setCartItems([]);
-        return;
+      const { data: { session } } = await supabase.auth.getSession();
+      const uid = session?.user?.id ?? user?.id;
+      const token = session?.access_token;
+
+      // Prefer API delete (JWT in server route; works when direct client delete is flaky after redirects).
+      if (token) {
+        const res = await fetch('/api/customers/cart?all=true', {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) {
+          console.warn('API cart clear failed', res.status);
+        }
       }
 
-      const { error } = await supabase
-        .from('cart_items')
-        .delete()
-        .eq('user_id', uid);
-
-      if (error) {
-        console.error('Error clearing cart:', error);
-        throw error;
+      if (uid) {
+        const { error } = await supabase.from('cart_items').delete().eq('user_id', uid);
+        if (error) console.warn('Client cart delete:', error);
       }
 
       setCartItems([]);
     } catch (error) {
-      console.error('Error:', error);
-      throw error;
+      console.error('Error clearing cart:', error);
+      setCartItems([]);
     } finally {
       setLoading(false);
     }

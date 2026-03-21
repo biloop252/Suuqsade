@@ -133,6 +133,15 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Clear cart server-side (does not rely on browser / WebView Supabase session).
+    if (isSuccess) {
+      const uid = (session as { user_id?: string }).user_id;
+      if (uid) {
+        const { error: cartErr } = await supabase.from('cart_items').delete().eq('user_id', uid);
+        if (cartErr) console.error('Clear cart after Sifalo complete:', cartErr);
+      }
+    }
+
     return NextResponse.json({
       success: isSuccess,
       status: status || 'unknown',

@@ -215,6 +215,12 @@ export async function POST(request: NextRequest) {
       .update({ order_id: (order as any).id, status: 'paid' })
       .eq('id', sessionId);
 
+    const orderUserId = (claimedSession as any).user_id as string | undefined;
+    if (orderUserId) {
+      const { error: cartErr } = await supabase.from('cart_items').delete().eq('user_id', orderUserId);
+      if (cartErr) console.error('Clear cart after Sifalo webhook:', cartErr);
+    }
+
     return NextResponse.json({
       success: true,
       status: 'success',
