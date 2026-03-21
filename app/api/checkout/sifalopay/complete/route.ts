@@ -1,10 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createServiceRoleClient } from '@/lib/supabase-server';
 
 const SIFALOPAY_VERIFY = 'https://api.sifalopay.com/gateway/verify.php';
 
 export async function POST(request: NextRequest) {
   try {
+    // checkout_sessions is RLS-scoped to auth.uid(); anon key returns no rows. Service role is required in production.
+    if (process.env.NODE_ENV === 'production' && !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            'SUPABASE_SERVICE_ROLE_KEY is missing. Add it in Netlify (Site → Environment variables) from Supabase → Project Settings → API (service_role secret).',
+        },
+        { status: 500 }
+      );
+    }
+
     const body = await request.json();
     const { sid, session_id } = body;
 
@@ -40,9 +52,7 @@ export async function POST(request: NextRequest) {
     const status = verifyData?.status?.toLowerCase();
     const isSuccess = status === 'success';
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabase = createServiceRoleClient();
 
     const sessionId = session_id;
     if (!sessionId) {
