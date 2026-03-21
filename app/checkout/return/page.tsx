@@ -5,10 +5,12 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { CheckIcon, XCircleIcon, LoaderIcon } from 'lucide-react';
 import { useCart } from '@/lib/cart-context';
+import { useAuth } from '@/lib/auth-context';
 
 export default function CheckoutReturnPage() {
   const searchParams = useSearchParams();
   const { clearCart } = useCart();
+  const { loading: authLoading } = useAuth();
   const [state, setState] = useState<'loading' | 'success' | 'failure' | 'error'>('loading');
   const [orderNumber, setOrderNumber] = useState<string | null>(null);
   const [message, setMessage] = useState<string>('');
@@ -20,6 +22,11 @@ export default function CheckoutReturnPage() {
     if (!sessionId) {
       setState('error');
       setMessage('Missing order reference. Please contact support if you completed payment.');
+      return;
+    }
+
+    // Avoid racing clearCart before auth is hydrated after gateway redirect (mobile / WebView).
+    if (authLoading) {
       return;
     }
 
@@ -56,7 +63,7 @@ export default function CheckoutReturnPage() {
         setMessage('Unable to verify payment. Please check your orders or contact support.');
       }
     })();
-  }, [searchParams, clearCart]);
+  }, [searchParams, clearCart, authLoading]);
 
   if (state === 'loading') {
     return (

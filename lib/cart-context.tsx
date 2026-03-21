@@ -200,10 +200,22 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const clearCart = async () => {
     try {
       setLoading(true);
+      // After external redirects (e.g. Sifalo Pay), React auth state can lag behind
+      // session storage — user?.id may be undefined and would produce user_id=eq.undefined.
+      let uid = user?.id;
+      if (!uid) {
+        const { data: { session } } = await supabase.auth.getSession();
+        uid = session?.user?.id;
+      }
+      if (!uid) {
+        setCartItems([]);
+        return;
+      }
+
       const { error } = await supabase
         .from('cart_items')
         .delete()
-        .eq('user_id', user?.id);
+        .eq('user_id', uid);
 
       if (error) {
         console.error('Error clearing cart:', error);
