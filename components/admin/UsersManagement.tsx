@@ -11,6 +11,7 @@ import {
   Shield,
   UserCheck,
   UserX,
+  Truck,
   Plus
 } from 'lucide-react';
 import Pagination from './Pagination';
@@ -36,13 +37,22 @@ export default function UsersManagement() {
         page: '1',
         limit: '500',
         search: searchTerm,
-        role: selectedRole,
       });
+
+      // Only list system workers by default (exclude customers/vendors)
+      const workerRoles = ['staff', 'delivery_boy', 'admin', 'super_admin'];
+      if (selectedRole) params.set('role', selectedRole);
+      else params.set('roles', workerRoles.join(','));
 
       // Check for test admin local session
       const isTestAdmin = typeof window !== 'undefined' && localStorage.getItem('admin_session') === 'true';
       const headers: Record<string, string> = {};
       if (isTestAdmin) headers['x-test-admin'] = 'true';
+      if (!isTestAdmin) {
+        const { data } = await supabase.auth.getSession();
+        const accessToken = data.session?.access_token;
+        if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
+      }
 
       const res = await fetch(`/api/admin/users?${params.toString()}`, { headers });
       if (!res.ok) throw new Error('Failed to fetch users');
@@ -60,15 +70,26 @@ export default function UsersManagement() {
       const isTestAdmin = typeof window !== 'undefined' && localStorage.getItem('admin_session') === 'true';
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (isTestAdmin) headers['x-test-admin'] = 'true';
+      if (!isTestAdmin) {
+        const { data } = await supabase.auth.getSession();
+        const accessToken = data.session?.access_token;
+        if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
+      }
       const res = await fetch(`/api/admin/users/${userId}`, {
         method: 'PATCH',
         headers,
         body: JSON.stringify({ role: newRole }),
       });
-      if (!res.ok) throw new Error('Failed to update role');
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || 'Failed to update role');
+      }
       setUsers(users.map(user => user.id === userId ? { ...user, role: newRole as UserRole } : user));
     } catch (error) {
       console.error('Error updating user role:', error);
+      // eslint-disable-next-line no-alert
+      alert(error instanceof Error ? error.message : 'Failed to update user role');
+      throw error;
     }
   };
 
@@ -110,6 +131,8 @@ export default function UsersManagement() {
         return <UserCheck className="h-4 w-4 text-blue-500" />;
       case 'staff':
         return <User className="h-4 w-4 text-green-500" />;
+      case 'delivery_boy':
+        return <Truck className="h-4 w-4 text-amber-500" />;
       default:
         return <UserX className="h-4 w-4 text-gray-500" />;
     }
@@ -123,14 +146,16 @@ export default function UsersManagement() {
         return 'bg-blue-100 text-blue-800';
       case 'staff':
         return 'bg-green-100 text-green-800';
+      case 'delivery_boy':
+        return 'bg-amber-100 text-amber-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
   };
 
   const roleOptions = [
-    { value: 'customer', label: 'Customer' },
     { value: 'staff', label: 'Staff' },
+    { value: 'delivery_boy', label: 'Delivery Boy' },
     { value: 'admin', label: 'Admin' },
     { value: 'super_admin', label: 'Super Admin' }
   ];
@@ -163,7 +188,7 @@ export default function UsersManagement() {
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
         >
           <Plus className="h-4 w-4 mr-2" />
           Add User
@@ -181,7 +206,7 @@ export default function UsersManagement() {
                 placeholder="Search users..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500 w-full"
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500 w-full"
               />
             </div>
           </div>
@@ -189,9 +214,9 @@ export default function UsersManagement() {
             <select
               value={selectedRole}
               onChange={(e) => setSelectedRole(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
             >
-              <option value="">All Roles</option>
+              <option value="">All Workers</option>
               {roleOptions.map(role => (
                 <option key={role.value} value={role.value}>{role.label}</option>
               ))}
@@ -233,8 +258,8 @@ export default function UsersManagement() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-8 w-8">
-                          <div className="h-8 w-8 rounded-full bg-orange-100 flex items-center justify-center">
-                            <span className="text-sm font-medium text-orange-600">
+                          <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center">
+                            <span className="text-sm font-medium text-primary-700">
                               {user.first_name?.charAt(0) || 'U'}
                             </span>
                           </div>
@@ -350,8 +375,8 @@ function EditUserModal({
   const [loading, setLoading] = useState(false);
 
   const roleOptions = [
-    { value: 'customer', label: 'Customer' },
     { value: 'staff', label: 'Staff' },
+    { value: 'delivery_boy', label: 'Delivery Boy' },
     { value: 'admin', label: 'Admin' },
     { value: 'super_admin', label: 'Super Admin' }
   ];
@@ -390,7 +415,7 @@ function EditUserModal({
               <select
                 value={selectedRole}
                 onChange={(e) => setSelectedRole(e.target.value as UserRole)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 required
               >
                 {roleOptions.map(role => (
@@ -409,7 +434,7 @@ function EditUserModal({
               <button
                 type="submit"
                 disabled={loading}
-                className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 disabled:opacity-50"
+                className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50"
               >
                 {loading ? 'Updating...' : 'Update Role'}
               </button>
@@ -432,13 +457,13 @@ function CreateUserModal({
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState<UserRole>('customer');
+  const [role, setRole] = useState<UserRole>('staff');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
   const roleOptions = [
-    { value: 'customer', label: 'Customer' },
     { value: 'staff', label: 'Staff' },
+    { value: 'delivery_boy', label: 'Delivery Boy' },
     { value: 'admin', label: 'Admin' },
     { value: 'super_admin', label: 'Super Admin' }
   ];
@@ -450,6 +475,11 @@ function CreateUserModal({
       const isTestAdmin = typeof window !== 'undefined' && localStorage.getItem('admin_session') === 'true';
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (isTestAdmin) headers['x-test-admin'] = 'true';
+      if (!isTestAdmin) {
+        const { data } = await supabase.auth.getSession();
+        const accessToken = data.session?.access_token;
+        if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
+      }
 
       const res = await fetch('/api/admin/users', {
         method: 'POST',
@@ -488,7 +518,7 @@ function CreateUserModal({
                   type="text"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 />
               </div>
               <div>
@@ -497,7 +527,7 @@ function CreateUserModal({
                   type="text"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 />
               </div>
             </div>
@@ -508,7 +538,7 @@ function CreateUserModal({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
               />
             </div>
             <div>
@@ -516,7 +546,7 @@ function CreateUserModal({
               <select
                 value={role}
                 onChange={(e) => setRole(e.target.value as UserRole)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
               >
                 {roleOptions.map(r => (
                   <option key={r.value} value={r.value}>{r.label}</option>
@@ -530,7 +560,7 @@ function CreateUserModal({
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Leave blank to auto-generate"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
               />
             </div>
             <div className="flex justify-end space-x-3 pt-2">
@@ -544,7 +574,7 @@ function CreateUserModal({
               <button
                 type="submit"
                 disabled={loading}
-                className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 disabled:opacity-50"
+                className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50"
               >
                 {loading ? 'Creating...' : 'Create User'}
               </button>

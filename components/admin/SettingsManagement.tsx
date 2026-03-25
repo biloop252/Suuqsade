@@ -338,7 +338,7 @@ export default function SettingsManagement({ onClose }: SettingsManagementProps)
                 onChange={(e) => handleSettingChange(setting.setting_key, e.target.checked)}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-600"></div>
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
             </label>
             <span className="text-sm text-gray-600">
               {value === 'true' || value === true ? 'Enabled' : 'Disabled'}
@@ -352,7 +352,7 @@ export default function SettingsManagement({ onClose }: SettingsManagementProps)
             type="number"
             value={value}
             onChange={(e) => handleSettingChange(setting.setting_key, e.target.value)}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 ${
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 ${
               error ? 'border-red-500' : 'border-gray-300'
             }`}
           />
@@ -364,7 +364,7 @@ export default function SettingsManagement({ onClose }: SettingsManagementProps)
             type="email"
             value={value}
             onChange={(e) => handleSettingChange(setting.setting_key, e.target.value)}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 ${
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 ${
               error ? 'border-red-500' : 'border-gray-300'
             }`}
           />
@@ -376,7 +376,7 @@ export default function SettingsManagement({ onClose }: SettingsManagementProps)
             type="url"
             value={value}
             onChange={(e) => handleSettingChange(setting.setting_key, e.target.value)}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 ${
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 ${
               error ? 'border-red-500' : 'border-gray-300'
             }`}
             placeholder="https://example.com"
@@ -389,7 +389,7 @@ export default function SettingsManagement({ onClose }: SettingsManagementProps)
             value={value}
             onChange={(e) => handleSettingChange(setting.setting_key, e.target.value)}
             rows={3}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 ${
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 ${
               error ? 'border-red-500' : 'border-gray-300'
             }`}
             placeholder="JSON format"
@@ -402,7 +402,7 @@ export default function SettingsManagement({ onClose }: SettingsManagementProps)
             type="text"
             value={value}
             onChange={(e) => handleSettingChange(setting.setting_key, e.target.value)}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 ${
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 ${
               error ? 'border-red-500' : 'border-gray-300'
             }`}
           />
@@ -413,7 +413,7 @@ export default function SettingsManagement({ onClose }: SettingsManagementProps)
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
         <span className="ml-2 text-gray-600">Loading settings...</span>
       </div>
     );
@@ -444,7 +444,7 @@ export default function SettingsManagement({ onClose }: SettingsManagementProps)
             onClick={() => setActiveTab('settings')}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'settings'
-                ? 'border-orange-500 text-orange-600'
+                ? 'border-primary-500 text-primary-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
@@ -455,7 +455,7 @@ export default function SettingsManagement({ onClose }: SettingsManagementProps)
             onClick={() => setActiveTab('images')}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'images'
-                ? 'border-orange-500 text-orange-600'
+                ? 'border-primary-500 text-primary-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
@@ -476,7 +476,7 @@ export default function SettingsManagement({ onClose }: SettingsManagementProps)
               <div key={category.id} className="bg-white shadow rounded-lg">
                 <div className="px-4 py-3 border-b border-gray-200">
                   <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-                    <category.icon className="h-5 w-5 mr-2 text-orange-600" />
+                    <category.icon className="h-5 w-5 mr-2 text-primary-600" />
                     {category.name}
                   </h3>
                 </div>
@@ -515,7 +515,7 @@ export default function SettingsManagement({ onClose }: SettingsManagementProps)
             <button
               onClick={saveSettings}
               disabled={saving}
-              className="px-6 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+              className="px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
             >
               {saving ? (
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -661,7 +661,7 @@ export default function SettingsManagement({ onClose }: SettingsManagementProps)
             <button
               onClick={saveSelectedImages}
               disabled={savingImages || Object.keys(selectedFiles).length === 0}
-              className="px-6 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+              className="px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
             >
               {savingImages ? (
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />

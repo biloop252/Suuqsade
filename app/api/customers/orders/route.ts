@@ -272,14 +272,6 @@ export async function POST(request: NextRequest) {
     const { error: paymentError } = await supabase.from('payments').insert(paymentData)
     // Do not fail the entire request if payment insert fails; log by returning a warning field
 
-    // Finance integration: if COD, mark payment as paid to trigger commission calculation (mirrors client)
-    if (!paymentError && normalizedPaymentMethod === 'cash_on_delivery') {
-      await supabase
-        .from('payments')
-        .update({ status: 'paid' })
-        .eq('order_id', (order as any).id)
-    }
-
     // Insert delivery record with default values (mirrors client)
     const deliveryData = {
       order_id: (order as any).id,

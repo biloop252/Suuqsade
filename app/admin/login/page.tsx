@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth-context';
 import { Eye, EyeOff } from 'lucide-react';
+import { Logo as SystemLogo } from '@/components/common/SystemImageDisplay';
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState('');
@@ -135,7 +136,9 @@ export default function AdminLoginPage() {
     <div className="min-h-screen flex items-center justify-center">
       <div className="max-w-md w-full bg-white p-8 rounded-lg shadow-md">
         <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold text-gray-900">Admin Login</h2>
+          <div className="flex justify-center">
+            <SystemLogo width={220} height={56} className="h-14 w-auto object-contain" />
+          </div>
           <p className="mt-2 text-sm text-gray-600">Sign in to access the admin panel</p>
         </div>
         
@@ -149,7 +152,7 @@ export default function AdminLoginPage() {
               name="email"
               type="email"
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               placeholder="Enter your email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -166,7 +169,7 @@ export default function AdminLoginPage() {
                 name="password"
                 type={showPassword ? 'text' : 'password'}
                 required
-                className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -194,16 +197,11 @@ export default function AdminLoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-orange-600 text-white py-2 px-4 rounded-md hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-primary-600 text-white py-2 px-4 rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
-        
-        <div className="mt-6 text-center text-sm text-gray-600">
-          <p>Test credentials:</p>
-          <p className="font-mono text-xs mt-1">admin@suuqsade.com / Admin123!</p>
-        </div>
       </div>
     </div>
   );

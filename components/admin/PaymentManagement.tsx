@@ -23,16 +23,44 @@ export default function PaymentManagement() {
   const [editingPayment, setEditingPayment] = useState<Payment | null>(null);
   const [filter, setFilter] = useState<'all' | 'pending' | 'paid' | 'failed' | 'refunded'>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const [minAmount, setMinAmount] = useState('');
+  const [maxAmount, setMaxAmount] = useState('');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalCount, setTotalCount] = useState(0);
+
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearchTerm(searchTerm), 400);
+    return () => clearTimeout(t);
+  }, [searchTerm]);
 
   useEffect(() => {
     fetchPayments();
-  }, [filter, searchTerm]);
+  }, [filter, debouncedSearchTerm, dateFrom, dateTo, minAmount, maxAmount, page, pageSize]);
+
+  const toISOStart = (dateStr: string) => {
+    if (!dateStr) return null;
+    const d = new Date(`${dateStr}T00:00:00.000Z`);
+    return isNaN(d.getTime()) ? null : d.toISOString();
+  };
+
+  const toISOEnd = (dateStr: string) => {
+    if (!dateStr) return null;
+    const d = new Date(`${dateStr}T23:59:59.999Z`);
+    return isNaN(d.getTime()) ? null : d.toISOString();
+  };
 
   const fetchPayments = async () => {
     try {
       setLoading(true);
       console.log('Fetching payments...');
       
+      const from = (page - 1) * pageSize;
+      const to = from + pageSize - 1;
+
       let query = supabase
         .from('payments')
         .select(`
@@ -49,7 +77,7 @@ export default function PaymentManagement() {
               email
             )
           )
-        `)
+        `, { count: 'exact' })
         .order('created_at', { ascending: false });
 
       // Apply status filter
@@ -57,12 +85,36 @@ export default function PaymentManagement() {
         query = query.eq('status', filter);
       }
 
-      // Apply search filter
-      if (searchTerm) {
-        query = query.or(`transaction_id.ilike.%${searchTerm}%,order.order_number.ilike.%${searchTerm}%`);
+      // Apply date range filter (by created_at)
+      const createdAtFrom = toISOStart(dateFrom);
+      if (createdAtFrom) {
+        query = query.gte('created_at', createdAtFrom);
       }
 
-      const { data, error } = await query;
+      const createdAtTo = toISOEnd(dateTo);
+      if (createdAtTo) {
+        query = query.lte('created_at', createdAtTo);
+      }
+
+      // Apply amount range filter (by amount)
+      const min = minAmount.trim() ? Number(minAmount) : null;
+      if (min !== null && Number.isFinite(min)) {
+        query = query.gte('amount', min);
+      }
+
+      const max = maxAmount.trim() ? Number(maxAmount) : null;
+      if (max !== null && Number.isFinite(max)) {
+        query = query.lte('amount', max);
+      }
+
+      // Apply search filter
+      if (debouncedSearchTerm) {
+        query = query.or(`transaction_id.ilike.%${debouncedSearchTerm}%,order.order_number.ilike.%${debouncedSearchTerm}%`);
+      }
+
+      query = query.range(from, to);
+
+      const { data, error, count } = await query;
 
       if (error) {
         console.error('Error fetching payments:', error);
@@ -72,6 +124,7 @@ export default function PaymentManagement() {
 
       console.log('Payments fetched successfully:', data);
       setPayments(data || []);
+      setTotalCount(typeof count === 'number' ? count : 0);
     } catch (error) {
       console.error('Error:', error);
       alert('An error occurred while fetching payments. Please try again.');
@@ -177,13 +230,6 @@ export default function PaymentManagement() {
     });
   };
 
-  const filteredPayments = payments.filter(payment => {
-    if (filter !== 'all' && payment.status !== filter) return false;
-    if (searchTerm && !payment.transaction_id?.toLowerCase().includes(searchTerm.toLowerCase()) && 
-        !payment.order?.order_number?.toLowerCase().includes(searchTerm.toLowerCase())) return false;
-    return true;
-  });
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -192,8 +238,12 @@ export default function PaymentManagement() {
     );
   }
 
+  const totalPages = totalCount ? Math.ceil(totalCount / pageSize) : 1;
+  const canGoPrev = page > 1;
+  const canGoNext = totalCount ? page < totalPages : payments.length === pageSize;
+
   return (
-    <div className="space-y-6">
+    <div className="w-full min-w-0 space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -210,14 +260,20 @@ export default function PaymentManagement() {
               type="text"
               placeholder="Search by transaction ID or order number..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setPage(1);
+              }}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
             />
           </div>
           <div>
             <select
               value={filter}
-              onChange={(e) => setFilter(e.target.value as any)}
+              onChange={(e) => {
+                setFilter(e.target.value as any);
+                setPage(1);
+              }}
               className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
             >
               <option value="all">All Status</option>
@@ -228,12 +284,72 @@ export default function PaymentManagement() {
             </select>
           </div>
         </div>
+
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-3">
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-gray-600">Date from</label>
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => {
+                setDateFrom(e.target.value);
+                setPage(1);
+              }}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-gray-600">Date to</label>
+            <input
+              type="date"
+              value={dateTo}
+              onChange={(e) => {
+                setDateTo(e.target.value);
+                setPage(1);
+              }}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-gray-600">Min amount</label>
+            <input
+              type="number"
+              inputMode="decimal"
+              step="0.01"
+              value={minAmount}
+              onChange={(e) => {
+                setMinAmount(e.target.value);
+                setPage(1);
+              }}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+              placeholder="0.00"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-gray-600">Max amount</label>
+            <input
+              type="number"
+              inputMode="decimal"
+              step="0.01"
+              value={maxAmount}
+              onChange={(e) => {
+                setMaxAmount(e.target.value);
+                setPage(1);
+              }}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+              placeholder="0.00"
+            />
+          </div>
+        </div>
       </div>
 
       {/* Payments Table */}
-      <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+      <div className="w-full min-w-0 overflow-hidden rounded-lg border bg-white shadow-sm">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
+          <table className="w-full min-w-max divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -260,7 +376,7 @@ export default function PaymentManagement() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredPayments.map((payment) => (
+              {payments.map((payment) => (
                 <tr key={payment.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
@@ -318,18 +434,76 @@ export default function PaymentManagement() {
           </table>
         </div>
 
-        {filteredPayments.length === 0 && (
+        {payments.length === 0 && (
           <div className="text-center py-12">
             <CreditCardIcon className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-2 text-sm font-medium text-gray-900">No payments found</h3>
             <p className="mt-1 text-sm text-gray-500">
-              {searchTerm || filter !== 'all' 
+              {searchTerm || filter !== 'all' || dateFrom || dateTo || minAmount || maxAmount
                 ? 'Try adjusting your search or filter criteria.'
                 : 'Payments will appear here when customers place orders.'
               }
             </p>
           </div>
         )}
+
+        {/* Pagination */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 py-3 border-t bg-gray-50">
+          <div className="text-sm text-gray-600">
+            {totalCount ? (
+              <>
+                Showing{' '}
+                <span className="font-medium text-gray-900">
+                  {Math.min((page - 1) * pageSize + 1, totalCount)}
+                </span>
+                -
+                <span className="font-medium text-gray-900">
+                  {Math.min(page * pageSize, totalCount)}
+                </span>{' '}
+                of <span className="font-medium text-gray-900">{totalCount}</span>
+              </>
+            ) : (
+              <>No results to paginate</>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2 justify-between sm:justify-end">
+            <div className="flex items-center gap-2">
+              <button
+                disabled={!canGoPrev}
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                className="px-3 py-1 text-sm border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed bg-white hover:bg-gray-100"
+              >
+                Previous
+              </button>
+              <div className="text-sm text-gray-700 px-2">
+                Page <span className="font-medium text-gray-900">{page}</span> of{' '}
+                <span className="font-medium text-gray-900">{totalPages}</span>
+              </div>
+              <button
+                disabled={!canGoNext}
+                onClick={() => setPage(p => p + 1)}
+                className="px-3 py-1 text-sm border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed bg-white hover:bg-gray-100"
+              >
+                Next
+              </button>
+            </div>
+
+            <select
+              value={pageSize}
+              onChange={(e) => {
+                setPageSize(Number(e.target.value));
+                setPage(1);
+              }}
+              className="px-3 py-1 border border-gray-300 rounded-md text-sm bg-white"
+              aria-label="Page size"
+            >
+              <option value={10}>10 / page</option>
+              <option value={20}>20 / page</option>
+              <option value={50}>50 / page</option>
+            </select>
+          </div>
+        </div>
       </div>
 
       {/* Payment Form Modal */}

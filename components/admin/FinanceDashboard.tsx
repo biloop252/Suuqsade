@@ -3,16 +3,11 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
-import { 
-  DollarSign, 
-  TrendingUp, 
-  CreditCard, 
-  Users, 
-  Package, 
-  Calendar,
-  ArrowUpIcon,
-  ArrowDownIcon,
-  EyeIcon
+import {
+  DollarSign,
+  TrendingUp,
+  CreditCard,
+  LayoutDashboard,
 } from 'lucide-react';
 import RealTimeFinanceMonitor from './RealTimeFinanceMonitor';
 
@@ -45,6 +40,18 @@ interface RecentTransaction {
   created_at: string;
 }
 
+function emptyFinanceSummary(): FinanceSummary {
+  return {
+    total_revenue: 0,
+    commission_revenue: 0,
+    subscription_revenue: 0,
+    advertising_revenue: 0,
+    other_revenue: 0,
+    total_transactions: 0,
+    pending_payouts: 0,
+  };
+}
+
 export default function FinanceDashboard() {
   const [loading, setLoading] = useState(false);
   const [dateRange, setDateRange] = useState({
@@ -52,7 +59,7 @@ export default function FinanceDashboard() {
     end: new Date().toISOString().split('T')[0]
   });
 
-  const [financeSummary, setFinanceSummary] = useState<FinanceSummary | null>(null);
+  const [financeSummary, setFinanceSummary] = useState<FinanceSummary>(emptyFinanceSummary);
   const [vendorSummaries, setVendorSummaries] = useState<VendorFinancialSummary[]>([]);
   const [recentTransactions, setRecentTransactions] = useState<RecentTransaction[]>([]);
   const [topVendors, setTopVendors] = useState<VendorFinancialSummary[]>([]);
@@ -68,7 +75,7 @@ export default function FinanceDashboard() {
         loadFinanceSummary(),
         loadVendorSummaries(),
         loadRecentTransactions(),
-        loadTopVendors()
+        loadTopVendors(),
       ]);
     } catch (error) {
       console.error('Error loading dashboard data:', error);
@@ -79,72 +86,25 @@ export default function FinanceDashboard() {
 
   const loadFinanceSummary = async () => {
     try {
-      // Get real-time summary
-      const { data: realtimeData, error: realtimeError } = await supabase.rpc('get_realtime_finance_summary');
-      
-      if (realtimeError) {
-        console.error('Error loading real-time summary:', realtimeError);
-      }
-      
-      // Get historical summary for the date range
       const { data, error } = await supabase.rpc('get_admin_financial_summary', {
         start_date: dateRange.start,
-        end_date: dateRange.end
+        end_date: dateRange.end,
       });
-      
+
       if (error) {
         console.error('Error loading admin financial summary:', error);
-        // Set default values on error
-        setFinanceSummary({
-          total_revenue: 0,
-          commission_revenue: 0,
-          subscription_revenue: 0,
-          advertising_revenue: 0,
-          other_revenue: 0,
-          total_transactions: 0,
-          pending_payouts: 0
-        });
+        setFinanceSummary(emptyFinanceSummary());
         return;
       }
-      
+
       if (data && data.length > 0) {
-        // Merge real-time data with historical data
-        const summary = data[0];
-         if (realtimeData && realtimeData.length > 0) {
-           const realtime = realtimeData[0];
-           setFinanceSummary({
-             ...summary,
-             total_revenue: realtime.total_revenue_today || summary.total_revenue,
-             commission_revenue: realtime.admin_revenue_today || summary.commission_revenue,
-             pending_payouts: realtime.pending_payouts || summary.pending_payouts,
-             total_transactions: realtime.total_orders_today || summary.total_transactions
-           });
-         } else {
-           setFinanceSummary(summary);
-         }
+        setFinanceSummary(data[0] as FinanceSummary);
       } else {
-        // Set default values if no data
-        setFinanceSummary({
-          total_revenue: 0,
-          commission_revenue: 0,
-          subscription_revenue: 0,
-          advertising_revenue: 0,
-          other_revenue: 0,
-          total_transactions: 0,
-          pending_payouts: 0
-        });
+        setFinanceSummary(emptyFinanceSummary());
       }
-    } catch (error) {
-      console.error('Error in loadFinanceSummary:', error);
-      setFinanceSummary({
-        total_revenue: 0,
-        commission_revenue: 0,
-        subscription_revenue: 0,
-        advertising_revenue: 0,
-        other_revenue: 0,
-        total_transactions: 0,
-        pending_payouts: 0
-      });
+    } catch (e) {
+      console.error('loadFinanceSummary:', e);
+      setFinanceSummary(emptyFinanceSummary());
     }
   };
 
@@ -243,16 +203,12 @@ export default function FinanceDashboard() {
     }).format(amount);
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString();
-  };
-
   const getStatusBadge = (status: string) => {
     const statusColors = {
       pending: 'bg-yellow-100 text-yellow-800',
       completed: 'bg-green-100 text-green-800',
       paid: 'bg-green-100 text-green-800',
-      processing: 'bg-blue-100 text-blue-800',
+      processing: 'bg-primary-100 text-primary-800',
       failed: 'bg-red-100 text-red-800',
       cancelled: 'bg-gray-100 text-gray-800'
     };
@@ -269,7 +225,7 @@ export default function FinanceDashboard() {
       case 'sale_commission':
         return <TrendingUp className="h-4 w-4 text-green-600" />;
       case 'vendor_payout':
-        return <CreditCard className="h-4 w-4 text-blue-600" />;
+        return <CreditCard className="h-4 w-4 text-primary-600" />;
       case 'admin_revenue':
         return <DollarSign className="h-4 w-4 text-purple-600" />;
       default:
@@ -278,146 +234,100 @@ export default function FinanceDashboard() {
   };
 
   return (
-    <div className="p-6">
-      <div className="mb-6 flex justify-end items-center">
-        <div className="flex gap-4">
+    <div className="p-4 sm:p-6 lg:p-8">
+      <div className="mb-6 flex flex-col gap-4 rounded-xl border border-slate-200/80 bg-slate-50/50 p-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h2 className="text-lg font-semibold text-slate-900">Finance</h2>
+          <p className="text-sm text-slate-500">
+            Vendors and recent activity for the selected date range. Ledger totals below use admin revenue entries in
+            that range.
+          </p>
+        </div>
+        <div className="flex flex-wrap items-end gap-3">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+            <label className="mb-1 block text-xs font-medium text-slate-600">Start</label>
             <input
               type="date"
               value={dateRange.start}
-              onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
-              className="border border-gray-300 rounded-md px-3 py-2"
+              onChange={(e) => setDateRange((prev) => ({ ...prev, start: e.target.value }))}
+              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+            <label className="mb-1 block text-xs font-medium text-slate-600">End</label>
             <input
               type="date"
               value={dateRange.end}
-              onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
-              className="border border-gray-300 rounded-md px-3 py-2"
+              onChange={(e) => setDateRange((prev) => ({ ...prev, end: e.target.value }))}
+              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
             />
           </div>
           <button
+            type="button"
             onClick={loadDashboardData}
             disabled={loading}
-            className="mt-6 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
+            className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-slate-800 disabled:opacity-50"
           >
-            {loading ? 'Loading...' : 'Refresh'}
+            {loading ? 'Refreshing…' : 'Refresh'}
           </button>
         </div>
       </div>
 
-      {/* Real-Time Monitor */}
-      <div className="mb-6">
+      <div className="mb-6 mt-2">
         <RealTimeFinanceMonitor />
       </div>
 
-      {/* Quick Actions */}
-      <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="mb-6">
         <Link
-          href="/admin/finance"
-          className="bg-white p-4 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200"
+          href="/admin/finance/overview"
+          className="group flex max-w-xl rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-slate-300 hover:shadow-md"
         >
-          <div className="flex items-center">
-            <DollarSign className="h-8 w-8 text-blue-600 mr-3" />
-            <div>
-              <h3 className="font-medium text-gray-900">Finance Overview</h3>
-              <p className="text-sm text-gray-600">View detailed financial reports</p>
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-100 transition group-hover:bg-slate-200/80">
+              <LayoutDashboard className="h-5 w-5 text-slate-700" />
             </div>
-          </div>
-        </Link>
-        
-        <Link
-          href="/admin/finance/payouts"
-          className="bg-white p-4 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200"
-        >
-          <div className="flex items-center">
-            <CreditCard className="h-8 w-8 text-green-600 mr-3" />
             <div>
-              <h3 className="font-medium text-gray-900">Vendor Payouts</h3>
-              <p className="text-sm text-gray-600">Manage vendor commission payouts</p>
-            </div>
-          </div>
-        </Link>
-        
-        <Link
-          href="/admin/finance/revenues"
-          className="bg-white p-4 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200"
-        >
-          <div className="flex items-center">
-            <TrendingUp className="h-8 w-8 text-purple-600 mr-3" />
-            <div>
-              <h3 className="font-medium text-gray-900">Revenue Management</h3>
-              <p className="text-sm text-gray-600">Track admin revenue streams</p>
+              <h3 className="font-medium text-slate-900">Detailed finance workspace</h3>
+              <p className="text-sm text-slate-500">Tabs for transactions, commissions, payouts, revenues, and reports</p>
             </div>
           </div>
         </Link>
       </div>
 
-      {/* Finance Summary Cards */}
-      {financeSummary && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-          <div className="bg-white p-6 rounded-lg shadow">
-            <div className="flex items-center">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <DollarSign className="h-6 w-6 text-green-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {formatCurrency(financeSummary.total_revenue)}
-                </p>
-              </div>
-            </div>
+      <div className="mb-6 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+        <h3 className="text-sm font-semibold text-slate-800">Recorded revenue (ledger)</h3>
+        <p className="mb-3 text-xs text-slate-500">
+          Manual and system entries in admin_revenues (subscriptions, ads, fees) for the selected range.
+        </p>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="rounded-lg bg-slate-50 px-3 py-2">
+            <p className="text-xs text-slate-500">Ledger total</p>
+            <p className="text-sm font-semibold tabular-nums text-slate-900">
+              {loading ? '—' : formatCurrency(financeSummary.total_revenue)}
+            </p>
           </div>
-
-           <div className="bg-white p-6 rounded-lg shadow">
-             <div className="flex items-center">
-               <div className="p-2 bg-blue-100 rounded-lg">
-                 <TrendingUp className="h-6 w-6 text-blue-600" />
-               </div>
-               <div className="ml-4">
-                 <p className="text-sm font-medium text-gray-600">Admin Commission Revenue</p>
-                 <p className="text-2xl font-bold text-gray-900">
-                   {formatCurrency(financeSummary.commission_revenue)}
-                 </p>
-               </div>
-             </div>
-           </div>
-
-          <div className="bg-white p-6 rounded-lg shadow">
-            <div className="flex items-center">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <Users className="h-6 w-6 text-purple-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Subscription Revenue</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {formatCurrency(financeSummary.subscription_revenue)}
-                </p>
-              </div>
-            </div>
+          <div className="rounded-lg bg-slate-50 px-3 py-2">
+            <p className="text-xs text-slate-500">Commission (ledger)</p>
+            <p className="text-sm font-semibold tabular-nums text-slate-900">
+              {loading ? '—' : formatCurrency(financeSummary.commission_revenue)}
+            </p>
           </div>
-
-          <div className="bg-white p-6 rounded-lg shadow">
-            <div className="flex items-center">
-              <div className="p-2 bg-yellow-100 rounded-lg">
-                <CreditCard className="h-6 w-6 text-yellow-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Pending Payouts</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {formatCurrency(financeSummary.pending_payouts)}
-                </p>
-              </div>
-            </div>
+          <div className="rounded-lg bg-slate-50 px-3 py-2">
+            <p className="text-xs text-slate-500">Subscriptions</p>
+            <p className="text-sm font-semibold tabular-nums text-slate-900">
+              {loading ? '—' : formatCurrency(financeSummary.subscription_revenue)}
+            </p>
+          </div>
+          <div className="rounded-lg bg-slate-50 px-3 py-2">
+            <p className="text-xs text-slate-500">Entries</p>
+            <p className="text-sm font-semibold tabular-nums text-slate-900">
+              {loading ? '—' : financeSummary.total_transactions}
+            </p>
           </div>
         </div>
-      )}
+      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Top Vendors */}
         <div className="bg-white rounded-lg shadow">
           <div className="px-6 py-4 border-b border-gray-200">
@@ -579,10 +489,10 @@ export default function FinanceDashboard() {
         {vendorSummaries.length > 10 && (
           <div className="px-6 py-4 border-t border-gray-200 text-center">
             <Link
-              href="/admin/finance"
-              className="text-blue-600 hover:text-blue-900 text-sm font-medium"
+              href="/admin/finance/overview"
+              className="text-sm font-medium text-primary-600 hover:text-primary-900"
             >
-              View all vendors →
+              View all vendors in detailed workspace →
             </Link>
           </div>
         )}

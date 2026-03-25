@@ -141,9 +141,9 @@ export default function RealTimeFinanceMonitor() {
   const getStatusBadge = (status: string) => {
     const statusColors = {
       pending: 'bg-yellow-100 text-yellow-800',
-      confirmed: 'bg-blue-100 text-blue-800',
+      confirmed: 'bg-primary-100 text-primary-800',
       processing: 'bg-purple-100 text-purple-800',
-      shipped: 'bg-indigo-100 text-indigo-800',
+      shipped: 'bg-primary-100 text-primary-800',
       delivered: 'bg-green-100 text-green-800',
       cancelled: 'bg-red-100 text-red-800'
     };
@@ -156,92 +156,93 @@ export default function RealTimeFinanceMonitor() {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center">
-          <div className="flex items-center mr-3">
-            <Activity className="h-5 w-5 text-green-600 mr-2" />
-            <h3 className="text-lg font-semibold text-gray-900">Real-Time Finance Monitor</h3>
+    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Activity className="h-5 w-5 text-slate-700" />
+            <h3 className="text-base font-semibold text-slate-900">Today</h3>
           </div>
           {isLive && (
-            <div className="flex items-center text-green-600">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse mr-2"></div>
-              <span className="text-sm font-medium">LIVE</span>
+            <div className="flex items-center gap-1.5 text-emerald-600">
+              <div className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
+              <span className="text-xs font-semibold uppercase tracking-wide">Live</span>
             </div>
           )}
         </div>
         <button
+          type="button"
           onClick={() => setIsLive(!isLive)}
-          className={`flex items-center px-3 py-1 rounded-md text-sm font-medium ${
-            isLive 
-              ? 'bg-green-100 text-green-800 hover:bg-green-200' 
-              : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium ${
+            isLive
+              ? 'bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200/80 hover:bg-emerald-100'
+              : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
           }`}
         >
-          <Zap className="h-4 w-4 mr-1" />
+          <Zap className="h-4 w-4" />
           {isLive ? 'Live' : 'Paused'}
         </button>
       </div>
 
       {/* Real-Time Metrics */}
       {metrics && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 mb-6">
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <div className="flex items-center">
-              <Package className="h-6 w-6 text-blue-600 mr-2" />
+        <div className="mb-6 grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+          <div className="rounded-lg border border-slate-100 bg-slate-50/80 p-4">
+            <div className="flex items-center gap-2">
+              <Package className="h-5 w-5 shrink-0 text-slate-600" />
               <div>
-                <p className="text-sm font-medium text-blue-600">Orders Today</p>
-                <p className="text-2xl font-bold text-blue-900">{metrics.total_orders_today}</p>
+                <p className="text-xs font-medium text-slate-500">Orders</p>
+                <p className="text-xl font-semibold tabular-nums text-slate-900">{metrics.total_orders_today}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-green-50 p-4 rounded-lg">
-            <div className="flex items-center">
-              <DollarSign className="h-6 w-6 text-green-600 mr-2" />
+          <div className="rounded-lg border border-slate-100 bg-slate-50/80 p-4">
+            <div className="flex items-center gap-2">
+              <DollarSign className="h-5 w-5 shrink-0 text-slate-600" />
               <div>
-                <p className="text-sm font-medium text-green-600">Total Revenue</p>
-                <p className="text-2xl font-bold text-green-900">{formatCurrency(metrics.total_revenue_today)}</p>
+                <p className="text-xs font-medium text-slate-500">Revenue</p>
+                <p className="text-xl font-semibold tabular-nums text-slate-900">{formatCurrency(metrics.total_revenue_today)}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-purple-50 p-4 rounded-lg">
-            <div className="flex items-center">
-              <TrendingUp className="h-6 w-6 text-purple-600 mr-2" />
+          <div className="rounded-lg border border-slate-100 bg-slate-50/80 p-4">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 shrink-0 text-slate-600" />
               <div>
-                <p className="text-sm font-medium text-purple-600">Vendor Commissions</p>
-                <p className="text-2xl font-bold text-purple-900">{formatCurrency(metrics.total_commissions_today)}</p>
+                <p className="text-xs font-medium text-slate-500">Vendor share</p>
+                <p className="text-xl font-semibold tabular-nums text-slate-900">{formatCurrency(metrics.total_commissions_today)}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-orange-50 p-4 rounded-lg">
-            <div className="flex items-center">
-              <DollarSign className="h-6 w-6 text-orange-600 mr-2" />
+          <div className="rounded-lg border border-slate-100 bg-slate-50/80 p-4">
+            <div className="flex items-center gap-2">
+              <DollarSign className="h-5 w-5 shrink-0 text-slate-600" />
               <div>
-                <p className="text-sm font-medium text-orange-600">Admin Revenue</p>
-                <p className="text-2xl font-bold text-orange-900">{formatCurrency(metrics.admin_revenue_today)}</p>
+                <p className="text-xs font-medium text-slate-500">Admin commission</p>
+                <p className="text-xl font-semibold tabular-nums text-slate-900">{formatCurrency(metrics.admin_revenue_today)}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-yellow-50 p-4 rounded-lg">
-            <div className="flex items-center">
-              <Users className="h-6 w-6 text-yellow-600 mr-2" />
+          <div className="rounded-lg border border-slate-100 bg-slate-50/80 p-4">
+            <div className="flex items-center gap-2">
+              <Users className="h-5 w-5 shrink-0 text-slate-600" />
               <div>
-                <p className="text-sm font-medium text-yellow-600">Pending Payouts</p>
-                <p className="text-2xl font-bold text-yellow-900">{formatCurrency(metrics.pending_payouts)}</p>
+                <p className="text-xs font-medium text-slate-500">Pending payouts</p>
+                <p className="text-xl font-semibold tabular-nums text-slate-900">{formatCurrency(metrics.pending_payouts)}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-indigo-50 p-4 rounded-lg">
-            <div className="flex items-center">
-              <Users className="h-6 w-6 text-indigo-600 mr-2" />
+          <div className="rounded-lg border border-slate-100 bg-slate-50/80 p-4">
+            <div className="flex items-center gap-2">
+              <Users className="h-5 w-5 shrink-0 text-slate-600" />
               <div>
-                <p className="text-sm font-medium text-indigo-600">Active Vendors</p>
-                <p className="text-2xl font-bold text-indigo-900">{metrics.total_vendors_active}</p>
+                <p className="text-xs font-medium text-slate-500">Active vendors</p>
+                <p className="text-xl font-semibold tabular-nums text-slate-900">{metrics.total_vendors_active}</p>
               </div>
             </div>
           </div>
@@ -250,20 +251,20 @@ export default function RealTimeFinanceMonitor() {
 
       {/* Recent Orders */}
       <div>
-        <h4 className="text-md font-semibold text-gray-900 mb-4">Recent Orders</h4>
-        <div className="space-y-3">
+        <h4 className="mb-3 text-sm font-semibold text-slate-800">Recent orders</h4>
+        <div className="space-y-2">
           {recentOrders.map((order) => (
-            <div key={order.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-              <div className="flex items-center">
-                <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
+            <div key={order.id} className="flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50/50 px-3 py-2.5">
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
                 <div>
-                  <p className="font-medium text-gray-900">{order.order_number}</p>
-                  <p className="text-sm text-gray-500">{formatTime(order.created_at)}</p>
+                  <p className="text-sm font-medium text-slate-900">{order.order_number}</p>
+                  <p className="text-xs text-slate-500">{formatTime(order.created_at)}</p>
                 </div>
               </div>
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center gap-4">
                 <div className="text-right">
-                  <p className="font-semibold text-gray-900">{formatCurrency(order.total_amount)}</p>
+                  <p className="text-sm font-semibold tabular-nums text-slate-900">{formatCurrency(order.total_amount)}</p>
                 </div>
                 <div>
                   {getStatusBadge(order.status)}
@@ -275,9 +276,9 @@ export default function RealTimeFinanceMonitor() {
       </div>
 
       {loading && (
-        <div className="flex items-center justify-center py-4">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-          <span className="ml-2 text-sm text-gray-600">Updating...</span>
+        <div className="flex items-center justify-center gap-2 py-4">
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-300 border-t-slate-700" />
+          <span className="text-sm text-slate-500">Updating…</span>
         </div>
       )}
     </div>

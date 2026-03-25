@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import AddRevenueRecordModal from './AddRevenueRecordModal';
 
 interface AdminRevenue {
   id: string;
@@ -19,33 +20,14 @@ interface AdminRevenue {
   updated_at: string;
 }
 
-interface RevenueSummary {
-  total_revenue: number;
-  commission_revenue: number;
-  subscription_revenue: number;
-  advertising_revenue: number;
-  other_revenue: number;
-  total_transactions: number;
-  pending_payouts: number;
-}
-
 export default function RevenueManagement() {
   const [revenues, setRevenues] = useState<AdminRevenue[]>([]);
-  const [summary, setSummary] = useState<RevenueSummary | null>(null);
   const [loading, setLoading] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [dateRange, setDateRange] = useState({
     start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     end: new Date().toISOString().split('T')[0]
   });
-
-  // Form state
-  const [revenueType, setRevenueType] = useState('subscription');
-  const [sourceType, setSourceType] = useState('vendor');
-  const [amount, setAmount] = useState('');
-  const [description, setDescription] = useState('');
-  const [periodStart, setPeriodStart] = useState('');
-  const [periodEnd, setPeriodEnd] = useState('');
 
   useEffect(() => {
     loadData();
@@ -54,10 +36,7 @@ export default function RevenueManagement() {
   const loadData = async () => {
     setLoading(true);
     try {
-      await Promise.all([
-        loadRevenues(),
-        loadSummary()
-      ]);
+      await loadRevenues();
     } catch (error) {
       console.error('Error loading revenue data:', error);
     } finally {
@@ -75,76 +54,6 @@ export default function RevenueManagement() {
     
     if (error) throw error;
     setRevenues(data || []);
-  };
-
-  const loadSummary = async () => {
-    const { data, error } = await supabase.rpc('get_admin_financial_summary', {
-      start_date: dateRange.start,
-      end_date: dateRange.end
-    });
-    
-    if (error) throw error;
-    if (data && data.length > 0) {
-      setSummary(data[0]);
-    }
-  };
-
-  const createRevenue = async () => {
-    if (!amount || !description) {
-      alert('Please fill in all required fields');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('admin_revenues')
-        .insert({
-          revenue_type: revenueType,
-          source_type: sourceType,
-          amount: parseFloat(amount),
-          description: description,
-          period_start: periodStart || null,
-          period_end: periodEnd || null,
-          status: 'confirmed'
-        })
-        .select()
-        .single();
-      
-      if (error) throw error;
-
-      // Create finance transaction
-      const { error: transactionError } = await supabase
-        .from('finance_transactions')
-        .insert({
-          transaction_type: 'admin_revenue',
-          amount: parseFloat(amount),
-          description: description,
-          status: 'completed',
-          reference_id: data.id
-        });
-      
-      if (transactionError) throw transactionError;
-
-      alert('Revenue record created successfully');
-      setShowCreateModal(false);
-      resetForm();
-      loadData();
-    } catch (error) {
-      console.error('Error creating revenue:', error);
-      alert('Error creating revenue record');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const resetForm = () => {
-    setRevenueType('subscription');
-    setSourceType('vendor');
-    setAmount('');
-    setDescription('');
-    setPeriodStart('');
-    setPeriodEnd('');
   };
 
   const formatCurrency = (amount: number) => {
@@ -174,11 +83,11 @@ export default function RevenueManagement() {
 
   const getRevenueTypeColor = (type: string) => {
     const colors = {
-      commission: 'bg-blue-100 text-blue-800',
+      commission: 'bg-primary-100 text-primary-800',
       subscription: 'bg-green-100 text-green-800',
       advertising: 'bg-purple-100 text-purple-800',
       listing_fee: 'bg-yellow-100 text-yellow-800',
-      premium_features: 'bg-indigo-100 text-indigo-800',
+      premium_features: 'bg-primary-100 text-primary-800',
       other: 'bg-gray-100 text-gray-800'
     };
     
@@ -190,7 +99,7 @@ export default function RevenueManagement() {
       <div className="mb-6 flex justify-end items-center">
         <button
           onClick={() => setShowCreateModal(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+          className="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700"
         >
           Add Revenue
         </button>
@@ -219,72 +128,11 @@ export default function RevenueManagement() {
         <button
           onClick={loadData}
           disabled={loading}
-          className="mt-6 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
+          className="mt-6 bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 disabled:opacity-50"
         >
           {loading ? 'Loading...' : 'Refresh'}
         </button>
       </div>
-
-      {/* Revenue Summary */}
-      {summary && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-          <div className="bg-white p-6 rounded-lg shadow">
-            <div className="flex items-center">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <span className="text-2xl">💰</span>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {formatCurrency(summary.total_revenue)}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-lg shadow">
-            <div className="flex items-center">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <span className="text-2xl">📊</span>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Commission Revenue</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {formatCurrency(summary.commission_revenue)}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-lg shadow">
-            <div className="flex items-center">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <span className="text-2xl">📈</span>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Subscription Revenue</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {formatCurrency(summary.subscription_revenue)}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-lg shadow">
-            <div className="flex items-center">
-              <div className="p-2 bg-yellow-100 rounded-lg">
-                <span className="text-2xl">📢</span>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Advertising Revenue</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {formatCurrency(summary.advertising_revenue)}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Revenue Records */}
       <div className="bg-white rounded-lg shadow">
@@ -354,119 +202,11 @@ export default function RevenueManagement() {
         </div>
       </div>
 
-      {/* Create Revenue Modal */}
-      {showCreateModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Add Revenue Record</h3>
-              
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Revenue Type
-                </label>
-                <select
-                  value={revenueType}
-                  onChange={(e) => setRevenueType(e.target.value)}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2"
-                >
-                  <option value="subscription">Subscription</option>
-                  <option value="advertising">Advertising</option>
-                  <option value="listing_fee">Listing Fee</option>
-                  <option value="premium_features">Premium Features</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Source Type
-                </label>
-                <select
-                  value={sourceType}
-                  onChange={(e) => setSourceType(e.target.value)}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2"
-                >
-                  <option value="vendor">Vendor</option>
-                  <option value="user">User</option>
-                  <option value="advertiser">Advertiser</option>
-                  <option value="system">System</option>
-                </select>
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Amount *
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2"
-                  placeholder="0.00"
-                />
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Description *
-                </label>
-                <textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2"
-                  rows={3}
-                  placeholder="Describe the revenue source..."
-                />
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Period Start (Optional)
-                </label>
-                <input
-                  type="date"
-                  value={periodStart}
-                  onChange={(e) => setPeriodStart(e.target.value)}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2"
-                />
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Period End (Optional)
-                </label>
-                <input
-                  type="date"
-                  value={periodEnd}
-                  onChange={(e) => setPeriodEnd(e.target.value)}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2"
-                />
-              </div>
-
-              <div className="flex justify-end space-x-3">
-                <button
-                  onClick={() => {
-                    setShowCreateModal(false);
-                    resetForm();
-                  }}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={createRevenue}
-                  disabled={loading}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
-                >
-                  {loading ? 'Creating...' : 'Create Revenue'}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <AddRevenueRecordModal
+        open={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSuccess={() => loadData()}
+      />
     </div>
   );
 }

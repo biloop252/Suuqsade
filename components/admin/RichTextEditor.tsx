@@ -187,7 +187,7 @@ const RichTextEditor = forwardRef<RichTextEditorHandle, RichTextEditorProps>(fun
         <textarea
           value={sourceHtml}
           onChange={(e) => setSourceHtml(e.target.value)}
-          className="border border-gray-200 border-t-0 rounded-b-md px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 w-full font-mono text-sm"
+          className="border border-gray-200 border-t-0 rounded-b-md px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 w-full font-mono text-sm"
           style={{ minHeight: `${minHeightPx}px` }}
           placeholder="Edit HTML source"
         />
@@ -198,7 +198,7 @@ const RichTextEditor = forwardRef<RichTextEditorHandle, RichTextEditorProps>(fun
           onInput={handleInput}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
-          className="border border-gray-200 border-t-0 rounded-b-md px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 min-h-[1px]"
+          className="border border-gray-200 border-t-0 rounded-b-md px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[1px]"
           style={{ minHeight: `${minHeightPx}px` }}
           data-placeholder={placeholder}
           suppressContentEditableWarning

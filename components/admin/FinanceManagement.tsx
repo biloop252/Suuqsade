@@ -3,16 +3,9 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import Pagination from './Pagination';
-
-interface FinanceSummary {
-  total_revenue: number;
-  commission_revenue: number;
-  subscription_revenue: number;
-  advertising_revenue: number;
-  other_revenue: number;
-  total_transactions: number;
-  pending_payouts: number;
-}
+import FinanceKpiStrip, { type FinanceKpiMetrics } from './FinanceKpiStrip';
+import AddRevenueRecordModal from './AddRevenueRecordModal';
+import CreateVendorPayoutModal from './CreateVendorPayoutModal';
 
 interface VendorFinancialSummary {
   vendor_id: string;
@@ -111,7 +104,7 @@ export default function FinanceManagement() {
   });
 
   // State for different data
-  const [financeSummary, setFinanceSummary] = useState<FinanceSummary | null>(null);
+  const [kpiMetrics, setKpiMetrics] = useState<FinanceKpiMetrics | null>(null);
   const [vendorSummaries, setVendorSummaries] = useState<VendorFinancialSummary[]>([]);
   const [vendorCommissionRevenues, setVendorCommissionRevenues] = useState<VendorCommissionRevenue[]>([]);
   const [transactions, setTransactions] = useState<FinanceTransaction[]>([]);
@@ -120,6 +113,13 @@ export default function FinanceManagement() {
   const [adminRevenues, setAdminRevenues] = useState<AdminRevenue[]>([]);
   const [financialReports, setFinancialReports] = useState<any[]>([]);
   const [selectedVendor, setSelectedVendor] = useState<string>('');
+
+  const [statusEdits, setStatusEdits] = useState<Record<string, string>>({});
+  const [savingStatusFor, setSavingStatusFor] = useState<string | null>(null);
+
+  const [addRevenueModalOpen, setAddRevenueModalOpen] = useState(false);
+  const [createPayoutModalOpen, setCreatePayoutModalOpen] = useState(false);
+  const [payoutModalVendorId, setPayoutModalVendorId] = useState('');
 
   // Pagination state
   const [transactionsPage, setTransactionsPage] = useState(1);
@@ -137,14 +137,14 @@ export default function FinanceManagement() {
     setLoading(true);
     try {
       await Promise.all([
-        loadFinanceSummary(),
+        loadFinanceKpis(),
         loadVendorSummaries(),
         loadVendorCommissionRevenues(),
         loadTransactions(),
         loadCommissions(),
         loadPayouts(),
         loadAdminRevenues(),
-        loadFinancialReports()
+        loadFinancialReports(),
       ]);
     } catch (error) {
       console.error('Error loading finance data:', error);
@@ -153,40 +153,44 @@ export default function FinanceManagement() {
     }
   };
 
-  const loadFinanceSummary = async () => {
-    const { data, error } = await supabase.rpc('get_admin_financial_summary', {
-      start_date: dateRange.start,
-      end_date: dateRange.end
-    });
-    
-    if (error) {
-      // Fallback to basic query if function doesn't exist
-      console.log('Function get_admin_financial_summary not found, using fallback');
-      const { data: fallbackData, error: fallbackError } = await supabase
-        .from('admin_revenues')
-        .select('amount, revenue_type')
-        .gte('created_at', dateRange.start)
-        .lte('created_at', dateRange.end);
-      
-      if (fallbackError) throw fallbackError;
-      
-      const totalRevenue = fallbackData.reduce((sum, r) => sum + r.amount, 0);
-      const commissionRevenue = fallbackData.filter(r => r.revenue_type === 'commission').reduce((sum, r) => sum + r.amount, 0);
-      const subscriptionRevenue = fallbackData.filter(r => r.revenue_type === 'subscription').reduce((sum, r) => sum + r.amount, 0);
-      const advertisingRevenue = fallbackData.filter(r => r.revenue_type === 'advertising').reduce((sum, r) => sum + r.amount, 0);
-      const otherRevenue = fallbackData.filter(r => !['commission', 'subscription', 'advertising'].includes(r.revenue_type)).reduce((sum, r) => sum + r.amount, 0);
-      
-      setFinanceSummary({
-        total_revenue: totalRevenue,
-        commission_revenue: commissionRevenue,
-        subscription_revenue: subscriptionRevenue,
-        advertising_revenue: advertisingRevenue,
-        other_revenue: otherRevenue,
-        total_transactions: fallbackData.length,
-        pending_payouts: 0 // Would need separate query
+  const loadFinanceKpis = async () => {
+    try {
+      const { data, error } = await supabase.rpc('get_finance_dashboard_metrics', {
+        start_date: dateRange.start,
+        end_date: dateRange.end,
       });
-    } else if (data && data.length > 0) {
-      setFinanceSummary(data[0]);
+
+      if (error) {
+        console.error('Error loading finance KPIs:', error);
+        setKpiMetrics({
+          total_sales: 0,
+          admin_commission: 0,
+          pending_payout: 0,
+        });
+        return;
+      }
+
+      if (data && data.length > 0) {
+        const row = data[0] as FinanceKpiMetrics;
+        setKpiMetrics({
+          total_sales: Number(row.total_sales) || 0,
+          admin_commission: Number(row.admin_commission) || 0,
+          pending_payout: Number(row.pending_payout) || 0,
+        });
+      } else {
+        setKpiMetrics({
+          total_sales: 0,
+          admin_commission: 0,
+          pending_payout: 0,
+        });
+      }
+    } catch (e) {
+      console.error('loadFinanceKpis:', e);
+      setKpiMetrics({
+        total_sales: 0,
+        admin_commission: 0,
+        pending_payout: 0,
+      });
     }
   };
 
@@ -384,11 +388,62 @@ export default function FinanceManagement() {
         .range(from, to);
       
       if (fallbackError) throw fallbackError;
-      setPayouts(fallbackData || []);
+      const nextPayouts = fallbackData || [];
+      setPayouts(nextPayouts);
+      setStatusEdits(() => {
+        const next: Record<string, string> = {};
+        for (const p of nextPayouts) next[p.id] = p.status;
+        return next;
+      });
     } else {
       // Apply pagination to the function result
       const paginatedData = data?.slice(from, to + 1) || [];
       setPayouts(paginatedData);
+      setStatusEdits(() => {
+        const next: Record<string, string> = {};
+        for (const p of paginatedData) next[p.id] = p.status;
+        return next;
+      });
+    }
+  };
+
+  const savePayoutStatus = async (payoutId: string) => {
+    const status = statusEdits[payoutId];
+    if (!status) return;
+
+    setSavingStatusFor(payoutId);
+    try {
+      const isTestAdmin =
+        typeof window !== 'undefined' &&
+        (window.localStorage.getItem('admin_session') === 'true' ||
+          !!window.localStorage.getItem('admin_profile'));
+
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData?.session?.access_token;
+
+      const res = await fetch(`/api/admin/finance/payouts/${payoutId}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(isTestAdmin ? { 'x-test-admin': 'true' } : {}),
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        },
+        body: JSON.stringify({ status }),
+      });
+
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        alert(json?.error || 'Failed to update payout status');
+        return;
+      }
+
+      // Refresh KPI + current payouts table after status change.
+      await Promise.all([loadFinanceKpis(), loadPayouts()]);
+      alert('Payout status updated successfully');
+    } catch (e) {
+      alert(`Failed to update payout status: ${e instanceof Error ? e.message : 'Unknown error'}`);
+    } finally {
+      setSavingStatusFor(null);
     }
   };
 
@@ -464,7 +519,7 @@ export default function FinanceManagement() {
       pending: 'bg-yellow-100 text-yellow-800',
       completed: 'bg-green-100 text-green-800',
       paid: 'bg-green-100 text-green-800',
-      processing: 'bg-blue-100 text-blue-800',
+      processing: 'bg-primary-100 text-primary-800',
       failed: 'bg-red-100 text-red-800',
       cancelled: 'bg-gray-100 text-gray-800'
     };
@@ -517,67 +572,73 @@ export default function FinanceManagement() {
     { id: 'reports', name: 'Financial Reports', icon: '📋' }
   ];
 
+  const overviewPeriodLabel = `Reporting period · ${formatDate(dateRange.start)} – ${formatDate(dateRange.end)}`;
+
   return (
-    <div className="p-6">
+    <div className="p-4 sm:p-6 lg:p-8">
 
       {/* Date Range Filter */}
-      <div className="mb-6 flex gap-4 items-end">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
-          <input
-            type="date"
-            value={dateRange.start}
-            onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
-            className="border border-gray-300 rounded-md px-3 py-2"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
-          <input
-            type="date"
-            value={dateRange.end}
-            onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
-            className="border border-gray-300 rounded-md px-3 py-2"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Vendor Filter</label>
-          <select
-            value={selectedVendor}
-            onChange={(e) => setSelectedVendor(e.target.value)}
-            className="border border-gray-300 rounded-md px-3 py-2"
-          >
-            <option value="">All Vendors</option>
-            {vendorCommissionRevenues.map((vendor) => (
-              <option key={vendor.vendor_id} value={vendor.vendor_id}>
-                {vendor.business_name || `Vendor ${vendor.vendor_id.slice(0, 8)}...`}
-              </option>
-            ))}
-          </select>
+      <div className="mb-6 flex flex-col gap-4 rounded-xl border border-slate-200/80 bg-slate-50/50 p-4 lg:flex-row lg:flex-wrap lg:items-end">
+        <div className="flex flex-wrap gap-3">
+          <div>
+            <label className="mb-1 block text-xs font-medium text-slate-600">Start</label>
+            <input
+              type="date"
+              value={dateRange.start}
+              onChange={(e) => setDateRange((prev) => ({ ...prev, start: e.target.value }))}
+              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-slate-600">End</label>
+            <input
+              type="date"
+              value={dateRange.end}
+              onChange={(e) => setDateRange((prev) => ({ ...prev, end: e.target.value }))}
+              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-slate-600">Vendor</label>
+            <select
+              value={selectedVendor}
+              onChange={(e) => setSelectedVendor(e.target.value)}
+              className="min-w-[180px] rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+            >
+              <option value="">All vendors</option>
+              {vendorCommissionRevenues.map((vendor) => (
+                <option key={vendor.vendor_id} value={vendor.vendor_id}>
+                  {vendor.business_name || `Vendor ${vendor.vendor_id.slice(0, 8)}...`}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
         <button
+          type="button"
           onClick={loadFinanceData}
           disabled={loading}
-          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
+          className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-slate-800 disabled:opacity-50 lg:ml-auto"
         >
-          {loading ? 'Loading...' : 'Refresh'}
+          {loading ? 'Refreshing…' : 'Refresh'}
         </button>
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200 mb-6">
-        <nav className="-mb-px flex space-x-8">
+      <div className="mb-6 border-b border-slate-200">
+        <nav className="-mb-px flex flex-wrap gap-1">
           {tabs.map((tab) => (
             <button
               key={tab.id}
+              type="button"
               onClick={() => setActiveTab(tab.id)}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              className={`rounded-t-lg px-3 py-2 text-sm font-medium transition-colors ${
                 activeTab === tab.id
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border border-b-0 border-slate-200 bg-white text-slate-900'
+                  : 'text-slate-500 hover:text-slate-800'
               }`}
             >
-              <span className="mr-2">{tab.icon}</span>
+              <span className="mr-1.5 opacity-70">{tab.icon}</span>
               {tab.name}
             </button>
           ))}
@@ -587,73 +648,42 @@ export default function FinanceManagement() {
       {/* Tab Content */}
       {loading ? (
         <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
         </div>
       ) : (
         <>
           {/* Overview Tab */}
           {activeTab === 'overview' && (
             <div className="space-y-6">
-              {/* Finance Summary Cards */}
-              {financeSummary && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  <div className="bg-white p-6 rounded-lg shadow">
-                    <div className="flex items-center">
-                      <div className="p-2 bg-green-100 rounded-lg">
-                        <span className="text-2xl">💰</span>
-                      </div>
-                      <div className="ml-4">
-                        <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-                        <p className="text-2xl font-bold text-gray-900">
-                          {formatCurrency(financeSummary.total_revenue)}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+              <FinanceKpiStrip
+                metrics={kpiMetrics}
+                loading={loading}
+                periodLabel={overviewPeriodLabel}
+                formatCurrency={formatCurrency}
+              />
 
-                  <div className="bg-white p-6 rounded-lg shadow">
-                    <div className="flex items-center">
-                      <div className="p-2 bg-blue-100 rounded-lg">
-                        <span className="text-2xl">📊</span>
-                      </div>
-                      <div className="ml-4">
-                        <p className="text-sm font-medium text-gray-600">Commission Revenue</p>
-                        <p className="text-2xl font-bold text-gray-900">
-                          {formatCurrency(financeSummary.commission_revenue)}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-white p-6 rounded-lg shadow">
-                    <div className="flex items-center">
-                      <div className="p-2 bg-purple-100 rounded-lg">
-                        <span className="text-2xl">📈</span>
-                      </div>
-                      <div className="ml-4">
-                        <p className="text-sm font-medium text-gray-600">Subscription Revenue</p>
-                        <p className="text-2xl font-bold text-gray-900">
-                          {formatCurrency(financeSummary.subscription_revenue)}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-white p-6 rounded-lg shadow">
-                    <div className="flex items-center">
-                      <div className="p-2 bg-yellow-100 rounded-lg">
-                        <span className="text-2xl">⏳</span>
-                      </div>
-                      <div className="ml-4">
-                        <p className="text-sm font-medium text-gray-600">Pending Payouts</p>
-                        <p className="text-2xl font-bold text-gray-900">
-                          {formatCurrency(financeSummary.pending_payouts)}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
+              <div className="flex flex-wrap gap-2 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                <p className="w-full text-sm text-slate-600">
+                  Record ledger revenue or pay vendors—same forms as on the Admin Revenues and Payouts tabs.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setAddRevenueModalOpen(true)}
+                  className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-slate-800"
+                >
+                  Add revenue record
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPayoutModalVendorId('');
+                    setCreatePayoutModalOpen(true);
+                  }}
+                  className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800 shadow-sm hover:bg-slate-50"
+                >
+                  Create vendor payout
+                </button>
+              </div>
 
               {/* Vendor Performance */}
               <div className="bg-white rounded-lg shadow">
@@ -733,46 +763,47 @@ export default function FinanceManagement() {
           {/* Commission Revenue Tab */}
           {activeTab === 'commission-revenue' && (
             <div className="space-y-6">
-              {/* Commission Revenue Summary */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white p-6 rounded-lg shadow">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                <div className="rounded-lg bg-white p-6 shadow">
                   <div className="flex items-center">
-                    <div className="p-2 bg-green-100 rounded-lg">
+                    <div className="rounded-lg bg-green-100 p-2">
                       <span className="text-2xl">💵</span>
                     </div>
                     <div className="ml-4">
                       <p className="text-sm font-medium text-gray-600">Total Commission Revenue</p>
                       <p className="text-2xl font-bold text-gray-900">
-                        {formatCurrency(vendorCommissionRevenues.reduce((sum, vendor) => sum + vendor.total_commission_revenue, 0))}
+                        {formatCurrency(
+                          vendorCommissionRevenues.reduce((sum, vendor) => sum + vendor.total_commission_revenue, 0)
+                        )}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-lg shadow">
+                <div className="rounded-lg bg-white p-6 shadow">
                   <div className="flex items-center">
-                    <div className="p-2 bg-blue-100 rounded-lg">
+                    <div className="rounded-lg bg-primary-100 p-2">
                       <span className="text-2xl">📊</span>
                     </div>
                     <div className="ml-4">
                       <p className="text-sm font-medium text-gray-600">Total Sales</p>
                       <p className="text-2xl font-bold text-gray-900">
-                        {formatCurrency(vendorCommissionRevenues.reduce((sum, vendor) => sum + vendor.total_sales, 0))}
+                        {formatCurrency(
+                          vendorCommissionRevenues.reduce((sum, vendor) => sum + vendor.total_sales, 0)
+                        )}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-lg shadow">
+                <div className="rounded-lg bg-white p-6 shadow">
                   <div className="flex items-center">
-                    <div className="p-2 bg-purple-100 rounded-lg">
+                    <div className="rounded-lg bg-purple-100 p-2">
                       <span className="text-2xl">🏪</span>
                     </div>
                     <div className="ml-4">
                       <p className="text-sm font-medium text-gray-600">Active Vendors</p>
-                      <p className="text-2xl font-bold text-gray-900">
-                        {vendorCommissionRevenues.length}
-                      </p>
+                      <p className="text-2xl font-bold text-gray-900">{vendorCommissionRevenues.length}</p>
                     </div>
                   </div>
                 </div>
@@ -988,7 +1019,7 @@ export default function FinanceManagement() {
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
                             {formatCurrency(commission.commission_amount)}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary-600">
                             {formatCurrency(commission.admin_amount)}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -1029,8 +1060,18 @@ export default function FinanceManagement() {
           {/* Payouts Tab */}
           {activeTab === 'payouts' && (
             <div className="bg-white rounded-lg shadow">
-              <div className="px-6 py-4 border-b border-gray-200">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 px-6 py-4">
                 <h3 className="text-lg font-medium text-gray-900">Vendor Payouts</h3>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPayoutModalVendorId('');
+                    setCreatePayoutModalOpen(true);
+                  }}
+                  className="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
+                >
+                  Create payout
+                </button>
               </div>
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
@@ -1082,12 +1123,38 @@ export default function FinanceManagement() {
                             {payout.total_orders} orders
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
                               {payout.payout_method.replace('_', ' ').toUpperCase()}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            {getStatusBadge(payout.status)}
+                            <div className="flex items-center gap-3">
+                              {getStatusBadge(payout.status)}
+                              <select
+                                value={statusEdits[payout.id] ?? payout.status}
+                                onChange={(e) => setStatusEdits((prev) => ({ ...prev, [payout.id]: e.target.value }))}
+                                disabled={savingStatusFor === payout.id || payout.status === 'completed'}
+                                className="rounded-md border border-gray-300 bg-white px-2 py-1 text-sm text-gray-900"
+                              >
+                                <option value="pending">Pending</option>
+                                <option value="processing">Processing</option>
+                                <option value="completed">Completed</option>
+                                <option value="failed">Failed</option>
+                                <option value="cancelled">Cancelled</option>
+                              </select>
+                              <button
+                                type="button"
+                                onClick={() => savePayoutStatus(payout.id)}
+                                disabled={
+                                  savingStatusFor === payout.id ||
+                                  payout.status === 'completed' ||
+                                  (statusEdits[payout.id] ?? payout.status) === payout.status
+                                }
+                                className="rounded-md bg-primary-600 px-3 py-1.5 text-sm text-white hover:bg-primary-700 disabled:opacity-50"
+                              >
+                                {savingStatusFor === payout.id ? 'Saving...' : 'Save'}
+                              </button>
+                            </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {formatDate(payout.created_at)}
@@ -1122,11 +1189,10 @@ export default function FinanceManagement() {
           {/* Admin Revenues Tab */}
           {activeTab === 'revenues' && (
             <div className="space-y-6">
-              {/* Revenue Summary Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div className="bg-white p-6 rounded-lg shadow">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+                <div className="rounded-lg bg-white p-6 shadow">
                   <div className="flex items-center">
-                    <div className="p-2 bg-green-100 rounded-lg">
+                    <div className="rounded-lg bg-green-100 p-2">
                       <span className="text-2xl">💰</span>
                     </div>
                     <div className="ml-4">
@@ -1138,43 +1204,55 @@ export default function FinanceManagement() {
                   </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-lg shadow">
+                <div className="rounded-lg bg-white p-6 shadow">
                   <div className="flex items-center">
-                    <div className="p-2 bg-blue-100 rounded-lg">
+                    <div className="rounded-lg bg-primary-100 p-2">
                       <span className="text-2xl">📊</span>
                     </div>
                     <div className="ml-4">
                       <p className="text-sm font-medium text-gray-600">Commission Revenue</p>
                       <p className="text-2xl font-bold text-gray-900">
-                        {formatCurrency(adminRevenues.filter(r => r.revenue_type === 'commission').reduce((sum, revenue) => sum + revenue.amount, 0))}
+                        {formatCurrency(
+                          adminRevenues
+                            .filter((r) => r.revenue_type === 'commission')
+                            .reduce((sum, revenue) => sum + revenue.amount, 0)
+                        )}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-lg shadow">
+                <div className="rounded-lg bg-white p-6 shadow">
                   <div className="flex items-center">
-                    <div className="p-2 bg-purple-100 rounded-lg">
+                    <div className="rounded-lg bg-purple-100 p-2">
                       <span className="text-2xl">📈</span>
                     </div>
                     <div className="ml-4">
                       <p className="text-sm font-medium text-gray-600">Subscription Revenue</p>
                       <p className="text-2xl font-bold text-gray-900">
-                        {formatCurrency(adminRevenues.filter(r => r.revenue_type === 'subscription').reduce((sum, revenue) => sum + revenue.amount, 0))}
+                        {formatCurrency(
+                          adminRevenues
+                            .filter((r) => r.revenue_type === 'subscription')
+                            .reduce((sum, revenue) => sum + revenue.amount, 0)
+                        )}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-lg shadow">
+                <div className="rounded-lg bg-white p-6 shadow">
                   <div className="flex items-center">
-                    <div className="p-2 bg-yellow-100 rounded-lg">
+                    <div className="rounded-lg bg-yellow-100 p-2">
                       <span className="text-2xl">📢</span>
                     </div>
                     <div className="ml-4">
                       <p className="text-sm font-medium text-gray-600">Advertising Revenue</p>
                       <p className="text-2xl font-bold text-gray-900">
-                        {formatCurrency(adminRevenues.filter(r => r.revenue_type === 'advertising').reduce((sum, revenue) => sum + revenue.amount, 0))}
+                        {formatCurrency(
+                          adminRevenues
+                            .filter((r) => r.revenue_type === 'advertising')
+                            .reduce((sum, revenue) => sum + revenue.amount, 0)
+                        )}
                       </p>
                     </div>
                   </div>
@@ -1183,15 +1261,25 @@ export default function FinanceManagement() {
 
               {/* Admin Revenues Table */}
               <div className="bg-white rounded-lg shadow">
-                <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 px-6 py-4">
                   <h3 className="text-lg font-medium text-gray-900">Admin Revenues</h3>
-                  <button
-                    onClick={() => loadAdminRevenues()}
-                    disabled={loading}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50 text-sm"
-                  >
-                    {loading ? 'Loading...' : 'Refresh'}
-                  </button>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setAddRevenueModalOpen(true)}
+                      className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
+                    >
+                      Add revenue
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => loadAdminRevenues()}
+                      disabled={loading}
+                      className="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
+                    >
+                      {loading ? 'Loading...' : 'Refresh'}
+                    </button>
+                  </div>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
@@ -1266,7 +1354,7 @@ export default function FinanceManagement() {
                               <p className="text-sm mt-1">Admin revenues will appear here as commissions are calculated</p>
                               <button
                                 onClick={() => loadAdminRevenues()}
-                                className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm"
+                                className="mt-4 bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 text-sm"
                               >
                                 Refresh Data
                               </button>
@@ -1293,59 +1381,56 @@ export default function FinanceManagement() {
           {/* Financial Reports Tab */}
           {activeTab === 'reports' && (
             <div className="space-y-6">
-              {/* Reports Summary */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div className="bg-white p-6 rounded-lg shadow">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+                <div className="rounded-lg bg-white p-6 shadow">
                   <div className="flex items-center">
-                    <div className="p-2 bg-blue-100 rounded-lg">
+                    <div className="rounded-lg bg-primary-100 p-2">
                       <span className="text-2xl">📋</span>
                     </div>
                     <div className="ml-4">
                       <p className="text-sm font-medium text-gray-600">Total Reports</p>
-                      <p className="text-2xl font-bold text-gray-900">
-                        {financialReports.length}
-                      </p>
+                      <p className="text-2xl font-bold text-gray-900">{financialReports.length}</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-lg shadow">
+                <div className="rounded-lg bg-white p-6 shadow">
                   <div className="flex items-center">
-                    <div className="p-2 bg-green-100 rounded-lg">
+                    <div className="rounded-lg bg-green-100 p-2">
                       <span className="text-2xl">✅</span>
                     </div>
                     <div className="ml-4">
                       <p className="text-sm font-medium text-gray-600">Generated</p>
                       <p className="text-2xl font-bold text-gray-900">
-                        {financialReports.filter(r => r.status === 'generated').length}
+                        {financialReports.filter((r) => r.status === 'generated').length}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-lg shadow">
+                <div className="rounded-lg bg-white p-6 shadow">
                   <div className="flex items-center">
-                    <div className="p-2 bg-yellow-100 rounded-lg">
+                    <div className="rounded-lg bg-yellow-100 p-2">
                       <span className="text-2xl">⏳</span>
                     </div>
                     <div className="ml-4">
                       <p className="text-sm font-medium text-gray-600">Generating</p>
                       <p className="text-2xl font-bold text-gray-900">
-                        {financialReports.filter(r => r.status === 'generating').length}
+                        {financialReports.filter((r) => r.status === 'generating').length}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-lg shadow">
+                <div className="rounded-lg bg-white p-6 shadow">
                   <div className="flex items-center">
-                    <div className="p-2 bg-red-100 rounded-lg">
+                    <div className="rounded-lg bg-red-100 p-2">
                       <span className="text-2xl">❌</span>
                     </div>
                     <div className="ml-4">
                       <p className="text-sm font-medium text-gray-600">Failed</p>
                       <p className="text-2xl font-bold text-gray-900">
-                        {financialReports.filter(r => r.status === 'failed').length}
+                        {financialReports.filter((r) => r.status === 'failed').length}
                       </p>
                     </div>
                   </div>
@@ -1412,7 +1497,7 @@ export default function FinanceManagement() {
                                   href={report.file_url} 
                                   target="_blank" 
                                   rel="noopener noreferrer"
-                                  className="text-blue-600 hover:text-blue-800 underline"
+                                  className="text-primary-600 hover:text-primary-800 underline"
                                 >
                                   Download
                                 </a>
@@ -1452,6 +1537,28 @@ export default function FinanceManagement() {
           )}
         </>
       )}
+
+      <AddRevenueRecordModal
+        open={addRevenueModalOpen}
+        onClose={() => setAddRevenueModalOpen(false)}
+        onSuccess={() => {
+          loadFinanceData();
+          setAddRevenueModalOpen(false);
+        }}
+      />
+      <CreateVendorPayoutModal
+        open={createPayoutModalOpen}
+        initialVendorId={payoutModalVendorId}
+        onClose={() => {
+          setCreatePayoutModalOpen(false);
+          setPayoutModalVendorId('');
+        }}
+        onSuccess={() => {
+          loadFinanceData();
+          setCreatePayoutModalOpen(false);
+          setPayoutModalVendorId('');
+        }}
+      />
     </div>
   );
 }

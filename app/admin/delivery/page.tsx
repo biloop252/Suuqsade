@@ -606,7 +606,7 @@ export default function DeliveryManagement() {
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
       </div>
     );
   }
@@ -666,7 +666,7 @@ export default function DeliveryManagement() {
                       type="text"
                       value={formData.name || ''}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                       required
                     />
                   </div>
@@ -679,7 +679,7 @@ export default function DeliveryManagement() {
                         setFormData({ ...formData, country_id: countryId, city_id: '' });
                         loadCities(countryId);
                       }}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                       required
                     >
                       <option value="">Select a country</option>
@@ -695,7 +695,7 @@ export default function DeliveryManagement() {
                     <select
                       value={formData.city_id || ''}
                       onChange={(e) => setFormData({ ...formData, city_id: e.target.value })}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                       required
                       disabled={!formData.country_id}
                     >
@@ -713,7 +713,7 @@ export default function DeliveryManagement() {
                       type="text"
                       value={formData.address_line || ''}
                       onChange={(e) => setFormData({ ...formData, address_line: e.target.value })}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                     />
                   </div>
                   <div>
@@ -722,7 +722,7 @@ export default function DeliveryManagement() {
                       type="tel"
                       value={formData.contact_phone || ''}
                       onChange={(e) => setFormData({ ...formData, contact_phone: e.target.value })}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                     />
                   </div>
                   <div>
@@ -731,7 +731,7 @@ export default function DeliveryManagement() {
                       type="email"
                       value={formData.contact_email || ''}
                       onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                     />
                   </div>
                   <div className="flex items-center">
@@ -740,7 +740,7 @@ export default function DeliveryManagement() {
                       id="is_active_pickup"
                       checked={formData.is_active ?? true}
                       onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                      className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                     />
                     <label htmlFor="is_active_pickup" className="ml-2 block text-sm text-gray-900">
                       Active
@@ -757,7 +757,7 @@ export default function DeliveryManagement() {
                       type="text"
                       value={formData.name || ''}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                       required
                     />
                   </div>
@@ -767,7 +767,7 @@ export default function DeliveryManagement() {
                       rows={3}
                       value={formData.description || ''}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                     />
                   </div>
                   <div className="flex items-center">
@@ -776,7 +776,7 @@ export default function DeliveryManagement() {
                       id="is_active_method"
                       checked={formData.is_active ?? true}
                       onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                      className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                     />
                     <label htmlFor="is_active_method" className="ml-2 block text-sm text-gray-900">
                       Active
@@ -792,7 +792,7 @@ export default function DeliveryManagement() {
                     <select
                       value={formData.pickup_city_id || ''}
                       onChange={(e) => setFormData({ ...formData, pickup_city_id: e.target.value })}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                       required
                     >
                       <option value="">Select a city</option>
@@ -808,7 +808,7 @@ export default function DeliveryManagement() {
                     <select
                       value={formData.delivery_city_id || ''}
                       onChange={(e) => setFormData({ ...formData, delivery_city_id: e.target.value })}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                       required
                     >
                       <option value="">Select a city</option>
@@ -824,7 +824,7 @@ export default function DeliveryManagement() {
                     <select
                       value={formData.delivery_method_id || ''}
                       onChange={(e) => setFormData({ ...formData, delivery_method_id: e.target.value })}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                       required
                     >
                       <option value="">Select a method</option>
@@ -843,7 +843,7 @@ export default function DeliveryManagement() {
                       min="0"
                       value={formData.price || ''}
                       onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                       required
                     />
                   </div>
@@ -855,7 +855,7 @@ export default function DeliveryManagement() {
                         min="1"
                         value={formData.estimated_min_days || ''}
                         onChange={(e) => setFormData({ ...formData, estimated_min_days: e.target.value })}
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                         required
                       />
                     </div>
@@ -866,7 +866,7 @@ export default function DeliveryManagement() {
                         min="1"
                         value={formData.estimated_max_days || ''}
                         onChange={(e) => setFormData({ ...formData, estimated_max_days: e.target.value })}
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                         required
                       />
                     </div>
@@ -877,7 +877,7 @@ export default function DeliveryManagement() {
                       id="is_active_rate"
                       checked={formData.is_active ?? true}
                       onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                      className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                     />
                     <label htmlFor="is_active_rate" className="ml-2 block text-sm text-gray-900">
                       Active
@@ -893,7 +893,7 @@ export default function DeliveryManagement() {
                     <select
                       value={formData.product_id || ''}
                       onChange={(e) => setFormData({ ...formData, product_id: e.target.value })}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                       required
                     >
                       <option value="">Select a product</option>
@@ -909,7 +909,7 @@ export default function DeliveryManagement() {
                     <select
                       value={formData.delivery_rate_id || ''}
                       onChange={(e) => setFormData({ ...formData, delivery_rate_id: e.target.value })}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                       required
                     >
                       <option value="">Select a delivery rate</option>
@@ -926,7 +926,7 @@ export default function DeliveryManagement() {
                       id="is_free_delivery_option"
                       checked={formData.is_free_delivery ?? false}
                       onChange={(e) => setFormData({ ...formData, is_free_delivery: e.target.checked })}
-                      className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                     />
                     <label htmlFor="is_free_delivery_option" className="ml-2 block text-sm text-gray-900">
                       Free delivery for this option
@@ -952,7 +952,7 @@ export default function DeliveryManagement() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-4 py-2 bg-orange-600 text-white rounded-md text-sm font-medium hover:bg-orange-700 disabled:opacity-50"
+                  className="px-4 py-2 bg-primary-600 text-white rounded-md text-sm font-medium hover:bg-primary-700 disabled:opacity-50"
                 >
                   {saving ? 'Saving...' : (isEditing ? 'Update' : 'Create')}
                 </button>
@@ -980,7 +980,7 @@ export default function DeliveryManagement() {
               onClick={() => setActiveTab('pickup')}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'pickup'
-                  ? 'border-orange-500 text-orange-600'
+                  ? 'border-primary-500 text-primary-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
@@ -991,7 +991,7 @@ export default function DeliveryManagement() {
               onClick={() => setActiveTab('methods')}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'methods'
-                  ? 'border-orange-500 text-orange-600'
+                  ? 'border-primary-500 text-primary-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
@@ -1002,7 +1002,7 @@ export default function DeliveryManagement() {
               onClick={() => setActiveTab('rates')}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'rates'
-                  ? 'border-orange-500 text-orange-600'
+                  ? 'border-primary-500 text-primary-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
@@ -1013,7 +1013,7 @@ export default function DeliveryManagement() {
               onClick={() => setActiveTab('product-options')}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'product-options'
-                  ? 'border-orange-500 text-orange-600'
+                  ? 'border-primary-500 text-primary-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
@@ -1035,7 +1035,7 @@ export default function DeliveryManagement() {
                     setFormData({});
                     setShowForm(true);
                   }}
-                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700"
+                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
                 >
                   <Plus className="h-4 w-4 mr-1" />
                   Add Location
@@ -1110,7 +1110,7 @@ export default function DeliveryManagement() {
                               <button
                                 type="button"
                                 onClick={() => handleEditPickupLocation(location)}
-                                className="text-orange-600 hover:text-orange-900"
+                                className="text-primary-600 hover:text-primary-800"
                                 title="Edit location"
                               >
                                 <Edit className="h-4 w-4" />
@@ -1145,7 +1145,7 @@ export default function DeliveryManagement() {
                     setEditingItem(null);
                     setShowForm(true);
                   }}
-                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700"
+                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
                 >
                   <Plus className="h-4 w-4 mr-1" />
                   Add Method
@@ -1204,7 +1204,7 @@ export default function DeliveryManagement() {
                               <button
                                 type="button"
                                 onClick={() => handleEditDeliveryMethod(method)}
-                                className="text-orange-600 hover:text-orange-900"
+                                className="text-primary-600 hover:text-primary-800"
                                 title="Edit method"
                               >
                                 <Edit className="h-4 w-4" />
@@ -1241,7 +1241,7 @@ export default function DeliveryManagement() {
                     loadAllCities();
                     setShowForm(true);
                   }}
-                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700"
+                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
                 >
                   <Plus className="h-4 w-4 mr-1" />
                   Add Rate
@@ -1305,7 +1305,7 @@ export default function DeliveryManagement() {
                               <button
                                 type="button"
                                 onClick={() => handleEditDeliveryRate(rate)}
-                                className="text-orange-600 hover:text-orange-900"
+                                className="text-primary-600 hover:text-primary-800"
                                 title="Edit rate"
                               >
                                 <Edit className="h-4 w-4" />
@@ -1341,7 +1341,7 @@ export default function DeliveryManagement() {
                     setFormData({});
                     setShowForm(true);
                   }}
-                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700"
+                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
                 >
                   <Plus className="h-4 w-4 mr-1" />
                   Add Option
@@ -1414,7 +1414,7 @@ export default function DeliveryManagement() {
                               <button
                                 type="button"
                                 onClick={() => handleEditProductDeliveryOption(option)}
-                                className="text-orange-600 hover:text-orange-900"
+                                className="text-primary-600 hover:text-primary-800"
                                 title="Edit option"
                               >
                                 <Edit className="h-4 w-4" />

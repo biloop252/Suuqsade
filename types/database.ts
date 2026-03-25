@@ -1,4 +1,4 @@
-export type UserRole = 'customer' | 'staff' | 'admin' | 'super_admin' | 'vendor';
+export type UserRole = 'customer' | 'staff' | 'delivery_boy' | 'admin' | 'super_admin' | 'vendor';
 export type OrderStatus = 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'returned';
 export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded';
 export type DeliveryStatus = 'pending' | 'in_transit' | 'delivered' | 'failed';
@@ -687,6 +687,14 @@ export interface AdminRevenue {
   period_end?: string;
   status: 'pending' | 'confirmed' | 'cancelled';
   transaction_id?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Advertiser {
+  id: string;
+  organization_name: string;
+  notes?: string;
   created_at: string;
   updated_at: string;
 }

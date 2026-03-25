@@ -108,7 +108,7 @@ export default function EditProductPage() {
       <AdminProtectedRoute>
         <div className="flex items-center justify-center min-h-96">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
             <p className="text-gray-600">Loading product...</p>
           </div>
         </div>
@@ -124,7 +124,7 @@ export default function EditProductPage() {
           <p className="text-gray-600 mb-6">The product you're looking for doesn't exist.</p>
           <button
             onClick={() => router.push('/admin/products')}
-            className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700"
+            className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700"
           >
             Back to Products
           </button>

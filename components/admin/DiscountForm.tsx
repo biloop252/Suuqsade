@@ -463,7 +463,7 @@ export default function DiscountForm({ discount, onClose, onSave, isVendor = fal
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                className={`w-full px-3 py-2 border rounded-md focus:ring-orange-500 focus:border-orange-500 ${
+                className={`w-full px-3 py-2 border rounded-md focus:ring-primary-500 focus:border-primary-500 ${
                   errors.name ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="e.g., Summer Sale 2024"
@@ -479,7 +479,7 @@ export default function DiscountForm({ discount, onClose, onSave, isVendor = fal
                 type="text"
                 value={formData.code}
                 onChange={(e) => setFormData(prev => ({ ...prev, code: e.target.value.toUpperCase() }))}
-                className={`w-full px-3 py-2 border rounded-md focus:ring-orange-500 focus:border-orange-500 ${
+                className={`w-full px-3 py-2 border rounded-md focus:ring-primary-500 focus:border-primary-500 ${
                   errors.code ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="e.g., SUMMER2024"
@@ -496,7 +496,7 @@ export default function DiscountForm({ discount, onClose, onSave, isVendor = fal
               value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
               placeholder="Describe the discount..."
             />
           </div>
@@ -544,7 +544,7 @@ export default function DiscountForm({ discount, onClose, onSave, isVendor = fal
                 step={formData.type === 'percentage' ? '0.01' : '0.01'}
                 value={formData.value}
                 onChange={(e) => setFormData(prev => ({ ...prev, value: e.target.value }))}
-                className={`w-full px-3 py-2 border rounded-md focus:ring-orange-500 focus:border-orange-500 ${
+                className={`w-full px-3 py-2 border rounded-md focus:ring-primary-500 focus:border-primary-500 ${
                   errors.value ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder={formData.type === 'percentage' ? '20' : '10.00'}
@@ -566,7 +566,7 @@ export default function DiscountForm({ discount, onClose, onSave, isVendor = fal
                 step="0.01"
                 value={formData.minimum_order_amount}
                 onChange={(e) => setFormData(prev => ({ ...prev, minimum_order_amount: e.target.value }))}
-                className={`w-full px-3 py-2 border rounded-md focus:ring-orange-500 focus:border-orange-500 ${
+                className={`w-full px-3 py-2 border rounded-md focus:ring-primary-500 focus:border-primary-500 ${
                   errors.minimum_order_amount ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="0.00"
@@ -585,7 +585,7 @@ export default function DiscountForm({ discount, onClose, onSave, isVendor = fal
                   step="0.01"
                   value={formData.maximum_discount_amount}
                   onChange={(e) => setFormData(prev => ({ ...prev, maximum_discount_amount: e.target.value }))}
-                  className={`w-full px-3 py-2 border rounded-md focus:ring-orange-500 focus:border-orange-500 ${
+                  className={`w-full px-3 py-2 border rounded-md focus:ring-primary-500 focus:border-primary-500 ${
                     errors.maximum_discount_amount ? 'border-red-500' : 'border-gray-300'
                   }`}
                   placeholder="50.00"
@@ -606,7 +606,7 @@ export default function DiscountForm({ discount, onClose, onSave, isVendor = fal
                 min="0"
                 value={formData.usage_limit}
                 onChange={(e) => setFormData(prev => ({ ...prev, usage_limit: e.target.value }))}
-                className={`w-full px-3 py-2 border rounded-md focus:ring-orange-500 focus:border-orange-500 ${
+                className={`w-full px-3 py-2 border rounded-md focus:ring-primary-500 focus:border-primary-500 ${
                   errors.usage_limit ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="Leave empty for unlimited"
@@ -623,7 +623,7 @@ export default function DiscountForm({ discount, onClose, onSave, isVendor = fal
                 min="1"
                 value={formData.usage_limit_per_user}
                 onChange={(e) => setFormData(prev => ({ ...prev, usage_limit_per_user: e.target.value }))}
-                className={`w-full px-3 py-2 border rounded-md focus:ring-orange-500 focus:border-orange-500 ${
+                className={`w-full px-3 py-2 border rounded-md focus:ring-primary-500 focus:border-primary-500 ${
                   errors.usage_limit_per_user ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
@@ -640,7 +640,7 @@ export default function DiscountForm({ discount, onClose, onSave, isVendor = fal
                <select
                  value={formData.vendor_id}
                  onChange={(e) => setFormData(prev => ({ ...prev, vendor_id: e.target.value }))}
-                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500"
+                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
                >
                  <option value="">Global Discount (No Vendor)</option>
                  {vendors.map((vendor) => (
@@ -798,7 +798,7 @@ export default function DiscountForm({ discount, onClose, onSave, isVendor = fal
                 type="datetime-local"
                 value={formData.start_date}
                 onChange={(e) => setFormData(prev => ({ ...prev, start_date: e.target.value }))}
-                className={`w-full px-3 py-2 border rounded-md focus:ring-orange-500 focus:border-orange-500 ${
+                className={`w-full px-3 py-2 border rounded-md focus:ring-primary-500 focus:border-primary-500 ${
                   errors.start_date ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
@@ -813,7 +813,7 @@ export default function DiscountForm({ discount, onClose, onSave, isVendor = fal
                 type="datetime-local"
                 value={formData.end_date}
                 onChange={(e) => setFormData(prev => ({ ...prev, end_date: e.target.value }))}
-                className={`w-full px-3 py-2 border rounded-md focus:ring-orange-500 focus:border-orange-500 ${
+                className={`w-full px-3 py-2 border rounded-md focus:ring-primary-500 focus:border-primary-500 ${
                   errors.end_date ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
@@ -853,7 +853,7 @@ export default function DiscountForm({ discount, onClose, onSave, isVendor = fal
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 disabled:opacity-50 flex items-center"
+              className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50 flex items-center"
             >
               {loading ? (
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>

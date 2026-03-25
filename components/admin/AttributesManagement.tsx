@@ -124,7 +124,7 @@ export default function AttributesManagement() {
         {activeTab === 'attributes' && (
           <button
             onClick={() => setShowAddModal(true)}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-orange-600 hover:bg-orange-700"
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700"
           >
             <Plus className="h-4 w-4 mr-2" />
             Add Attribute
@@ -139,7 +139,7 @@ export default function AttributesManagement() {
             onClick={() => setActiveTab('attributes')}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'attributes'
-                ? 'border-orange-500 text-orange-600'
+                ? 'border-primary-500 text-primary-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
@@ -155,7 +155,7 @@ export default function AttributesManagement() {
             onClick={() => setActiveTab('values')}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'values'
-                ? 'border-orange-500 text-orange-600'
+                ? 'border-primary-500 text-primary-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
@@ -184,7 +184,7 @@ export default function AttributesManagement() {
                     placeholder="Search attributes..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500 w-full"
+                    className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500 w-full"
                   />
                 </div>
               </div>
@@ -192,7 +192,7 @@ export default function AttributesManagement() {
                 <select
                   value={selectedType}
                   onChange={(e) => setSelectedType(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
                 >
                   <option value="">All Types</option>
                   {attributeTypes.map(type => (
@@ -236,8 +236,8 @@ export default function AttributesManagement() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-8 w-8">
-                          <div className="h-8 w-8 rounded-md bg-orange-100 flex items-center justify-center">
-                            <Tag className="h-4 w-4 text-orange-600" />
+                          <div className="h-8 w-8 rounded-md bg-primary-100 flex items-center justify-center">
+                            <Tag className="h-4 w-4 text-primary-700" />
                           </div>
                         </div>
                         <div className="ml-4">
@@ -453,7 +453,7 @@ function AttributeModal({
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 required
               />
             </div>
@@ -463,7 +463,7 @@ function AttributeModal({
                 type="text"
                 value={formData.slug}
                 onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 required
               />
             </div>
@@ -472,7 +472,7 @@ function AttributeModal({
               <select
                 value={formData.type}
                 onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
-                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 required
               >
                 {attributeTypes.map(type => (
@@ -485,7 +485,7 @@ function AttributeModal({
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 rows={3}
               />
             </div>
@@ -495,7 +495,7 @@ function AttributeModal({
                 type="number"
                 value={formData.sort_order}
                 onChange={(e) => setFormData({ ...formData, sort_order: parseInt(e.target.value) || 0 })}
-                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
               />
             </div>
             <div className="space-y-3">
@@ -504,7 +504,7 @@ function AttributeModal({
                   type="checkbox"
                   checked={formData.is_required}
                   onChange={(e) => setFormData({ ...formData, is_required: e.target.checked })}
-                  className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                 />
                 <span className="ml-2 text-sm text-gray-700">Required</span>
               </label>
@@ -513,7 +513,7 @@ function AttributeModal({
                   type="checkbox"
                   checked={formData.is_filterable}
                   onChange={(e) => setFormData({ ...formData, is_filterable: e.target.checked })}
-                  className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                 />
                 <span className="ml-2 text-sm text-gray-700">Filterable</span>
               </label>
@@ -522,7 +522,7 @@ function AttributeModal({
                   type="checkbox"
                   checked={formData.is_variant_attribute}
                   onChange={(e) => setFormData({ ...formData, is_variant_attribute: e.target.checked })}
-                  className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                 />
                 <span className="ml-2 text-sm text-gray-700">Creates Variants</span>
               </label>
@@ -538,7 +538,7 @@ function AttributeModal({
               <button
                 type="submit"
                 disabled={loading}
-                className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 disabled:opacity-50"
+                className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50"
               >
                 {loading ? 'Saving...' : (attribute ? 'Update' : 'Create')}
               </button>

@@ -129,8 +129,8 @@ export default function Dashboard() {
       name: 'Total Revenue',
       value: `$${stats.totalRevenue.toLocaleString()}`,
       icon: DollarSign,
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-100'
+      color: 'text-primary-600',
+      bgColor: 'bg-primary-100'
     },
     {
       name: 'Total Users',

@@ -90,7 +90,7 @@ export default function ProductTagsSelector({ initialSelectedIds = [], onChange 
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search tags..."
-          className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+          className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
         />
       </div>
 
@@ -124,7 +124,7 @@ export default function ProductTagsSelector({ initialSelectedIds = [], onChange 
           value={newTagName}
           onChange={(e) => setNewTagName(e.target.value)}
           placeholder="Create new tag"
-          className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+          className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
         />
         <button
           type="button"

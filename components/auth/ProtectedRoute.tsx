@@ -40,6 +40,7 @@ export default function ProtectedRoute({
   if (requiredRole && profile) {
     const roleHierarchy: Record<UserRole, number> = {
       customer: 0,
+      delivery_boy: 1,
       staff: 1,
       vendor: 1,
       admin: 2,

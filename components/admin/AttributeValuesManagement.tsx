@@ -196,7 +196,7 @@ export default function AttributeValuesManagement({ showHeader = true }: Attribu
             </div>
             <button
               onClick={() => setShowAddModal(true)}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-orange-600 hover:bg-orange-700"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700"
             >
               <Plus className="h-4 w-4 mr-2" />
               Add Value
@@ -209,7 +209,7 @@ export default function AttributeValuesManagement({ showHeader = true }: Attribu
         <div className="flex justify-end">
           <button
             onClick={() => setShowAddModal(true)}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-orange-600 hover:bg-orange-700"
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700"
           >
             <Plus className="h-4 w-4 mr-2" />
             Add Value
@@ -228,7 +228,7 @@ export default function AttributeValuesManagement({ showHeader = true }: Attribu
                 placeholder="Search attribute values..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500 w-full"
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500 w-full"
               />
             </div>
           </div>
@@ -236,7 +236,7 @@ export default function AttributeValuesManagement({ showHeader = true }: Attribu
             <select
               value={selectedAttribute}
               onChange={(e) => setSelectedAttribute(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
             >
               <option value="">All Attributes</option>
               {attributes.map(attribute => (
@@ -280,8 +280,8 @@ export default function AttributeValuesManagement({ showHeader = true }: Attribu
                           <ChevronRight className="h-4 w-4 text-gray-400" />
                         )}
                         <div className="flex-shrink-0 h-8 w-8">
-                          <div className="h-8 w-8 rounded-md bg-orange-100 flex items-center justify-center">
-                            <Tag className="h-4 w-4 text-orange-600" />
+                          <div className="h-8 w-8 rounded-md bg-primary-100 flex items-center justify-center">
+                            <Tag className="h-4 w-4 text-primary-700" />
                           </div>
                         </div>
                         <div>
@@ -489,7 +489,7 @@ function AttributeValueModal({
               <select
                 value={formData.attribute_id}
                 onChange={(e) => setFormData({ ...formData, attribute_id: e.target.value })}
-                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 required
               >
                 <option value="">Select an attribute</option>
@@ -507,7 +507,7 @@ function AttributeValueModal({
                 type="text"
                 value={formData.value}
                 onChange={(e) => setFormData({ ...formData, value: e.target.value })}
-                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 placeholder="e.g., red, small, cotton"
                 required
               />
@@ -524,7 +524,7 @@ function AttributeValueModal({
                 type="text"
                 value={formData.display_value}
                 onChange={(e) => setFormData({ ...formData, display_value: e.target.value })}
-                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 placeholder="e.g., Red, Small, Cotton"
               />
               <p className="mt-1 text-xs text-gray-500">
@@ -538,7 +538,7 @@ function AttributeValueModal({
                 type="number"
                 value={formData.sort_order}
                 onChange={(e) => setFormData({ ...formData, sort_order: parseInt(e.target.value) || 0 })}
-                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 min="0"
               />
             </div>
@@ -549,7 +549,7 @@ function AttributeValueModal({
                   type="checkbox"
                   checked={formData.is_active}
                   onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                  className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                 />
                 <span className="ml-2 text-sm text-gray-700">Active</span>
               </label>
@@ -566,7 +566,7 @@ function AttributeValueModal({
               <button
                 type="submit"
                 disabled={loading}
-                className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 disabled:opacity-50"
+                className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50"
               >
                 {loading ? 'Saving...' : (value ? 'Update' : 'Create')}
               </button>

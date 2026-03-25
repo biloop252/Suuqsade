@@ -102,7 +102,7 @@ export default function HomepageSectionsManagement() {
         </div>
         <button
           onClick={() => { setEditingSection(null); setShowModal(true); }}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-orange-600 hover:bg-orange-700"
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700"
         >
           <Plus className="h-4 w-4 mr-2" />
           Add Section
@@ -119,7 +119,7 @@ export default function HomepageSectionsManagement() {
                 placeholder="Search sections..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500 w-full"
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500 w-full"
               />
             </div>
           </div>
@@ -356,7 +356,7 @@ function SectionModal({
                 value={form.title}
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
                 required
-                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
               />
             </div>
             <div>
@@ -364,7 +364,7 @@ function SectionModal({
               <select
                 value={form.section_type}
                 onChange={(e) => setForm({ ...form, section_type: e.target.value as HomepageSectionType })}
-                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500 capitalize"
+                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500 capitalize"
               >
                 <option value="category">Category</option>
                 <option value="brand">Brand</option>
@@ -383,7 +383,7 @@ function SectionModal({
                 type="text"
                 value={form.subtitle}
                 onChange={(e) => setForm({ ...form, subtitle: e.target.value })}
-                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
               />
             </div>
             <div className="md:col-span-2">
@@ -392,7 +392,7 @@ function SectionModal({
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
                 rows={3}
-                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
               />
             </div>
             {form.section_type === 'category' && (
@@ -410,7 +410,7 @@ function SectionModal({
                 <select
                   value={form.brand_id}
                   onChange={(e) => setForm({ ...form, brand_id: e.target.value })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 >
                   <option value="">Select brand</option>
                   {brands.map(b => (
@@ -425,7 +425,7 @@ function SectionModal({
                 <select
                   value={form.tag_id}
                   onChange={(e) => setForm({ ...form, tag_id: e.target.value })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 >
                   <option value="">Select tag</option>
                   {tags.map(t => (
@@ -442,7 +442,7 @@ function SectionModal({
                 max={48}
                 value={form.product_limit}
                 onChange={(e) => setForm({ ...form, product_limit: Number(e.target.value || 0) })}
-                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
               />
             </div>
             <div>
@@ -451,7 +451,7 @@ function SectionModal({
                 type="number"
                 value={form.display_order}
                 onChange={(e) => setForm({ ...form, display_order: Number(e.target.value || 0) })}
-                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
               />
             </div>
             <div>
@@ -460,7 +460,7 @@ function SectionModal({
                 type="text"
                 value={form.background_color}
                 onChange={(e) => setForm({ ...form, background_color: e.target.value })}
-                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 placeholder="#ffffff"
               />
             </div>
@@ -470,7 +470,7 @@ function SectionModal({
                 type="text"
                 value={form.text_color}
                 onChange={(e) => setForm({ ...form, text_color: e.target.value })}
-                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 placeholder="#000000"
               />
             </div>
@@ -485,7 +485,7 @@ function SectionModal({
                     <ImageIcon className="h-5 w-5 text-gray-400" />
                   )}
                 </div>
-                <label className="relative cursor-pointer bg-white rounded-md font-medium text-orange-600 hover:text-orange-500">
+                <label className="relative cursor-pointer bg-white rounded-md font-medium text-primary-600 hover:text-primary-500">
                   <span className="px-3 py-2 inline-block border rounded">{uploading ? 'Uploading...' : 'Upload image'}</span>
                   <input type="file" className="sr-only" accept="image/*" onChange={handleFileChange} />
                 </label>
@@ -504,7 +504,7 @@ function SectionModal({
                   type="checkbox"
                   checked={form.is_active}
                   onChange={(e) => setForm({ ...form, is_active: e.target.checked })}
-                  className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                  className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                 />
                 <span className="text-sm text-gray-700">Active</span>
               </label>
@@ -512,7 +512,7 @@ function SectionModal({
           </div>
           <div className="flex justify-end space-x-2 pt-2">
             <button type="button" onClick={onClose} className="px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">Cancel</button>
-            <button type="submit" disabled={saving || uploading} className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 disabled:opacity-50">
+            <button type="submit" disabled={saving || uploading} className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50">
               {saving ? 'Saving...' : 'Save'}
             </button>
           </div>

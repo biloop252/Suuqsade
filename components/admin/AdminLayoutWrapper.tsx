@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
+import { Logo as SystemLogo } from '@/components/common/SystemImageDisplay';
 import { 
   LayoutDashboard, 
   Package, 
@@ -160,7 +161,7 @@ export default function AdminLayoutWrapper({ children }: AdminLayoutWrapperProps
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading admin panel...</p>
         </div>
       </div>
@@ -195,14 +196,13 @@ export default function AdminLayoutWrapper({ children }: AdminLayoutWrapperProps
         </div>
         <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
           <div className="flex items-center">
-            <div className="flex items-center space-x-3">
-              <div className="h-8 w-8 bg-orange-600 rounded-lg flex items-center justify-center shadow-sm">
-                <span className="text-white font-bold text-lg">S</span>
-              </div>
-              <h1 className="text-2xl font-bold text-gray-900 bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent">
-                Suuqsade
-              </h1>
-            </div>
+            <Link href="/admin" className="flex items-center" aria-label="Admin dashboard">
+              <SystemLogo
+                width={160}
+                height={40}
+                className="h-9 w-auto object-contain"
+              />
+            </Link>
           </div>
           <div className="flex flex-1" />
           <div className="flex items-center gap-x-4 lg:gap-x-6 pr-4 sm:pr-6 lg:pr-8">
@@ -211,10 +211,10 @@ export default function AdminLayoutWrapper({ children }: AdminLayoutWrapperProps
               <div className="relative">
                 <Link
                   href="/admin/account"
-                  className="h-8 w-8 rounded-full bg-orange-100 flex items-center justify-center hover:bg-orange-200 transition-colors cursor-pointer"
+                  className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center hover:bg-primary-200 transition-colors cursor-pointer"
                   title="Account Settings"
                 >
-                  <span className="text-sm font-medium text-orange-600">
+                  <span className="text-sm font-medium text-primary-700">
                     {currentProfile?.first_name?.charAt(0) || 'A'}
                   </span>
                 </Link>
@@ -251,7 +251,7 @@ export default function AdminLayoutWrapper({ children }: AdminLayoutWrapperProps
                       }}
                       className={`group flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                         isActive(item.href)
-                          ? 'bg-orange-100 text-orange-700 border-r-2 border-orange-500'
+                          ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-500'
                           : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                       }`}
                     >
@@ -273,7 +273,7 @@ export default function AdminLayoutWrapper({ children }: AdminLayoutWrapperProps
                             href={dropdownItem.href}
                             className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                               isActive(dropdownItem.href)
-                                ? 'bg-orange-100 text-orange-700 border-r-2 border-orange-500'
+                                ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-500'
                                 : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                             }`}
                             onClick={() => setSidebarOpen(false)}
@@ -290,7 +290,7 @@ export default function AdminLayoutWrapper({ children }: AdminLayoutWrapperProps
                     href={item.href}
                     className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                       isActive(item.href)
-                        ? 'bg-orange-100 text-orange-700 border-r-2 border-orange-500'
+                        ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-500'
                         : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                     }`}
                     onClick={() => {
@@ -308,8 +308,8 @@ export default function AdminLayoutWrapper({ children }: AdminLayoutWrapperProps
           <div className="flex-shrink-0 border-t border-gray-200 p-4">
             <div className="flex items-center mb-3">
               <div className="flex-shrink-0">
-                <div className="h-8 w-8 rounded-full bg-orange-100 flex items-center justify-center">
-                  <span className="text-sm font-medium text-orange-600">
+                <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center">
+                  <span className="text-sm font-medium text-primary-700">
                     {currentProfile?.first_name?.charAt(0) || 'A'}
                   </span>
                 </div>
@@ -370,7 +370,7 @@ export default function AdminLayoutWrapper({ children }: AdminLayoutWrapperProps
                         }}
                         className={`group flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                           isActive(item.href)
-                            ? 'bg-orange-100 text-orange-700 border-r-2 border-orange-500'
+                            ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-500'
                             : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                         }`}
                         title={sidebarCollapsed ? item.name : undefined}
@@ -395,7 +395,7 @@ export default function AdminLayoutWrapper({ children }: AdminLayoutWrapperProps
                               href={dropdownItem.href}
                               className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                                 isActive(dropdownItem.href)
-                                  ? 'bg-orange-100 text-orange-700 border-r-2 border-orange-500'
+                                  ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-500'
                                   : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                               }`}
                             >
@@ -411,7 +411,7 @@ export default function AdminLayoutWrapper({ children }: AdminLayoutWrapperProps
                       href={item.href}
                       className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                         isActive(item.href)
-                          ? 'bg-orange-100 text-orange-700 border-r-2 border-orange-500'
+                          ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-500'
                           : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                       }`}
                       onClick={() => handleNavigation(item.href, item.name)}
@@ -427,8 +427,8 @@ export default function AdminLayoutWrapper({ children }: AdminLayoutWrapperProps
             <div className="flex-shrink-0 border-t border-gray-200 p-4">
               <div className="flex items-center mb-3">
                 <div className="flex-shrink-0">
-                  <div className="h-8 w-8 rounded-full bg-orange-100 flex items-center justify-center">
-                    <span className="text-sm font-medium text-orange-600">
+                  <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center">
+                    <span className="text-sm font-medium text-primary-700">
                       {currentProfile?.first_name?.charAt(0) || 'A'}
                     </span>
                   </div>
@@ -472,10 +472,10 @@ export default function AdminLayoutWrapper({ children }: AdminLayoutWrapperProps
           </div>
         </div>
 
-        {/* Main content */}
-        <div className="flex-1 min-h-[calc(100vh-4rem)]">
-          <main className="py-6">
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        {/* Main content — min-w-0 lets wide tables scroll inside the column instead of expanding the viewport */}
+        <div className="flex min-h-[calc(100vh-4rem)] min-w-0 flex-1 flex-col">
+          <main className="w-full min-w-0 flex-1 py-6">
+            <div className="mx-auto w-full min-w-0 max-w-7xl px-4 sm:px-6 lg:px-8">
               {children}
             </div>
           </main>

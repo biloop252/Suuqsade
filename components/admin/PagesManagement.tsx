@@ -296,7 +296,7 @@ export default function PagesManagement({ onPageSelect }: PagesManagementProps) 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
       </div>
     );
   }
@@ -311,7 +311,7 @@ export default function PagesManagement({ onPageSelect }: PagesManagementProps) 
         </div>
         <Link
           href="/admin/pages/create"
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
         >
           <Plus className="h-4 w-4 mr-2" />
           Create New Page
@@ -342,7 +342,7 @@ export default function PagesManagement({ onPageSelect }: PagesManagementProps) 
                 placeholder="Search pages..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                className="pl-10 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               />
             </div>
           </div>
@@ -352,7 +352,7 @@ export default function PagesManagement({ onPageSelect }: PagesManagementProps) 
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             >
               <option value="all">All Status</option>
               <option value="published">Published</option>
@@ -366,7 +366,7 @@ export default function PagesManagement({ onPageSelect }: PagesManagementProps) 
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             >
               <option value="all">All Types</option>
               <option value="static">Static</option>
@@ -379,7 +379,7 @@ export default function PagesManagement({ onPageSelect }: PagesManagementProps) 
           <div className="flex items-end">
             <button
               onClick={fetchPages}
-              className="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+              className="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
             >
               <Filter className="h-4 w-4 mr-2" />
               Apply Filters
@@ -420,8 +420,8 @@ export default function PagesManagement({ onPageSelect }: PagesManagementProps) 
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-10 w-10">
-                        <div className="h-10 w-10 rounded-lg bg-orange-100 flex items-center justify-center">
-                          <FileText className="h-5 w-5 text-orange-600" />
+                        <div className="h-10 w-10 rounded-lg bg-primary-100 flex items-center justify-center">
+                          <FileText className="h-5 w-5 text-primary-700" />
                         </div>
                       </div>
                       <div className="ml-4">
@@ -469,7 +469,7 @@ export default function PagesManagement({ onPageSelect }: PagesManagementProps) 
                       </button>
                       <Link
                         href={`/admin/pages/edit/${page.id}`}
-                        className="text-orange-600 hover:text-orange-900"
+                        className="text-primary-600 hover:text-primary-800"
                         title="Edit Page"
                       >
                         <Edit className="h-4 w-4" />
@@ -562,7 +562,7 @@ export default function PagesManagement({ onPageSelect }: PagesManagementProps) 
           <div className="mt-6">
             <button
               onClick={() => setShowCreateModal(true)}
-              className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+              className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
             >
               <Plus className="h-4 w-4 mr-2" />
               Create New Page

@@ -268,7 +268,7 @@ export default function DeliveryOptionsManagement({
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
       </div>
     );
   }
@@ -290,7 +290,7 @@ export default function DeliveryOptionsManagement({
               onClick={() => setActiveTab('options')}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'options'
-                  ? 'border-orange-500 text-orange-600'
+                  ? 'border-primary-500 text-primary-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
@@ -301,7 +301,7 @@ export default function DeliveryOptionsManagement({
               onClick={() => setActiveTab('zones')}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'zones'
-                  ? 'border-orange-500 text-orange-600'
+                  ? 'border-primary-500 text-primary-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
@@ -312,7 +312,7 @@ export default function DeliveryOptionsManagement({
               onClick={() => setActiveTab('rates')}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'rates'
-                  ? 'border-orange-500 text-orange-600'
+                  ? 'border-primary-500 text-primary-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
@@ -330,7 +330,7 @@ export default function DeliveryOptionsManagement({
                 <button
                   type="button"
                   onClick={() => setShowProductOptionForm(true)}
-                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700"
+                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
                 >
                   <Plus className="h-4 w-4 mr-1" />
                   Add Option
@@ -421,7 +421,7 @@ export default function DeliveryOptionsManagement({
                 <button
                   type="button"
                   onClick={() => setShowZoneForm(true)}
-                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700"
+                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
                 >
                   <Plus className="h-4 w-4 mr-1" />
                   Add Zone
@@ -497,7 +497,7 @@ export default function DeliveryOptionsManagement({
                 <button
                   type="button"
                   onClick={() => setShowDeliveryRateForm(true)}
-                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700"
+                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
                 >
                   <Plus className="h-4 w-4 mr-1" />
                   Add Rate
@@ -622,7 +622,7 @@ function ProductOptionForm({
               <select
                 value={formData.pickup_location_id}
                 onChange={(e) => setFormData({ ...formData, pickup_location_id: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 required
               >
                 <option value="">Select pickup location</option>
@@ -641,7 +641,7 @@ function ProductOptionForm({
               <select
                 value={formData.delivery_method_id}
                 onChange={(e) => setFormData({ ...formData, delivery_method_id: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 required
               >
                 <option value="">Select delivery method</option>
@@ -659,7 +659,7 @@ function ProductOptionForm({
                 id="is_free_delivery"
                 checked={formData.is_free_delivery}
                 onChange={(e) => setFormData({ ...formData, is_free_delivery: e.target.checked })}
-                className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
+                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
               />
               <label htmlFor="is_free_delivery" className="ml-2 block text-sm text-gray-900">
                 Free delivery for this option
@@ -676,7 +676,7 @@ function ProductOptionForm({
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700"
+                className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
               >
                 Add Option
               </button>
@@ -788,7 +788,7 @@ function ZoneForm({
               <select
                 value={formData.country}
                 onChange={(e) => handleCountryChange(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 required
               >
                 <option value="">Select country</option>
@@ -807,7 +807,7 @@ function ZoneForm({
               <select
                 value={formData.city}
                 onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 required
                 disabled={!formData.country || loading}
               >
@@ -829,7 +829,7 @@ function ZoneForm({
                 id="is_allowed"
                 checked={formData.is_allowed}
                 onChange={(e) => setFormData({ ...formData, is_allowed: e.target.checked })}
-                className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
+                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
               />
               <label htmlFor="is_allowed" className="ml-2 block text-sm text-gray-900">
                 Allow delivery to this city
@@ -846,7 +846,7 @@ function ZoneForm({
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700"
+                className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
               >
                 Add Zone
               </button>

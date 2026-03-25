@@ -23,6 +23,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const isInitialized = useRef(false);
   const authSubscription = useRef<any>(null);
+  const inFlightProfileForUserId = useRef<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -125,28 +126,50 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchProfile = async (userId: string) => {
     try {
-      // Reduced timeout for faster failure detection
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Profile fetch timeout')), 5000);
-      });
+      // Avoid overlapping fetches for the same user
+      if (inFlightProfileForUserId.current === userId) return;
+      inFlightProfileForUserId.current = userId;
 
-      const profilePromise = supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
+      const runOnce = async () => {
+        // 5s is often too short in dev; keep a timeout but make it more forgiving.
+        const timeoutMs = 20000;
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Profile fetch timeout')), timeoutMs);
+        });
 
-      const { data, error } = await Promise.race([profilePromise, timeoutPromise]) as any;
+        const profilePromise = supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', userId)
+          .single();
+
+        return (await Promise.race([profilePromise, timeoutPromise])) as any;
+      };
+
+      let result: any;
+      try {
+        result = await runOnce();
+      } catch (e) {
+        // One retry helps with transient network hiccups.
+        await new Promise((r) => setTimeout(r, 750));
+        result = await runOnce();
+      }
+
+      const { data, error } = result || {};
 
       if (error) {
         console.error('Error fetching profile:', error);
         return;
       }
 
-      setProfile(data);
+      setProfile(data as Profile);
     } catch (error) {
       console.error('Error fetching profile:', error);
       // Don't set profile to null on error, keep existing profile
+    } finally {
+      if (inFlightProfileForUserId.current === userId) {
+        inFlightProfileForUserId.current = null;
+      }
     }
   };
 

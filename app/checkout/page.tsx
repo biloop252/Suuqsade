@@ -1102,28 +1102,6 @@ export default function CheckoutPage() {
         console.log('Delivery record created successfully:', deliveryResult);
       }
 
-      // Trigger finance system integration
-      console.log('Triggering finance system integration...');
-      try {
-        // If payment is COD, mark as paid immediately for finance tracking
-        // This will automatically trigger commission calculation via the payment trigger
-        if (paymentMethod === 'cod') {
-          const { error: paymentUpdateError } = await supabase
-            .from('payments')
-            .update({ status: 'paid' })
-            .eq('order_id', order.id);
-          
-          if (paymentUpdateError) {
-            console.error('Error updating payment status for finance tracking:', paymentUpdateError);
-          } else {
-            console.log('Payment status updated to paid - commissions will be calculated automatically');
-          }
-        }
-      } catch (financeError) {
-        console.error('Error in finance system integration:', financeError);
-        // Don't fail the order if finance integration fails
-      }
-
       // Clear cart
       console.log('Clearing cart...');
       await clearCart();

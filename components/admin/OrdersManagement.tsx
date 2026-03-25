@@ -18,11 +18,16 @@ import {
 } from 'lucide-react';
 import Pagination from './Pagination';
 
+const orderStatusFlow: OrderStatus[] = ['pending', 'confirmed', 'processing', 'shipped', 'delivered'];
+const orderStatusRank = (s: OrderStatus) => orderStatusFlow.indexOf(s);
+
 export default function OrdersManagement() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
   const [editingOrder, setEditingOrder] = useState<Order | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -74,6 +79,29 @@ export default function OrdersManagement() {
 
   const updateOrderStatus = async (orderId: string, newStatus: OrderStatus) => {
     try {
+      const current = orders.find(o => o.id === orderId)?.status;
+      if (current) {
+        // terminal
+        if ((current === 'cancelled' || current === 'returned') && newStatus !== current) {
+          alert('This order is in a terminal state and cannot be changed.');
+          return;
+        }
+        // returned only after delivered
+        if (newStatus === 'returned' && current !== 'delivered') {
+          alert('Order can only be returned after it is delivered.');
+          return;
+        }
+        // forward-only (cancelled allowed any time before terminal)
+        if (newStatus !== 'cancelled') {
+          const cr = orderStatusRank(current);
+          const nr = orderStatusRank(newStatus);
+          if (cr !== -1 && nr !== -1 && nr < cr) {
+            alert('Order status can only move forward.');
+            return;
+          }
+        }
+      }
+
       const { error } = await supabase
         .from('orders')
         .update({ status: newStatus })
@@ -94,8 +122,15 @@ export default function OrdersManagement() {
     const matchesSearch = order.order_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          (order as any).user?.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = !selectedStatus || order.status === selectedStatus;
-    
-    return matchesSearch && matchesStatus;
+
+    const createdAt = new Date(order.created_at).getTime();
+    const fromTs = dateFrom ? new Date(`${dateFrom}T00:00:00.000Z`).getTime() : null;
+    const toTs = dateTo ? new Date(`${dateTo}T23:59:59.999Z`).getTime() : null;
+
+    const matchesFrom = fromTs === null ? true : createdAt >= fromTs;
+    const matchesTo = toTs === null ? true : createdAt <= toTs;
+
+    return matchesSearch && matchesStatus && matchesFrom && matchesTo;
   });
 
   // Pagination logic
@@ -108,7 +143,7 @@ export default function OrdersManagement() {
   // Reset to first page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, selectedStatus]);
+  }, [searchTerm, selectedStatus, dateFrom, dateTo]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -276,7 +311,7 @@ export default function OrdersManagement() {
                 placeholder="Search orders..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500 w-full"
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500 w-full"
               />
             </div>
           </div>
@@ -284,13 +319,40 @@ export default function OrdersManagement() {
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
             >
               <option value="">All Statuses</option>
               {statusOptions.map(status => (
                 <option key={status.value} value={status.value}>{status.label}</option>
               ))}
             </select>
+          </div>
+        </div>
+
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-gray-600">Date from</label>
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => {
+                setDateFrom(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-gray-600">Date to</label>
+            <input
+              type="date"
+              value={dateTo}
+              onChange={(e) => {
+                setDateTo(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+            />
           </div>
         </div>
       </div>
@@ -358,7 +420,7 @@ export default function OrdersManagement() {
                               {(order as any).delivery[0].status.replace('_', ' ').charAt(0).toUpperCase() + (order as any).delivery[0].status.replace('_', ' ').slice(1)}
                             </span>
                             {!isStatusSynced(order.status, (order as any).delivery[0].status) && (
-                              <AlertCircle className="ml-1 h-3 w-3 text-orange-500" />
+                              <AlertCircle className="ml-1 h-3 w-3 text-primary-500" />
                             )}
                           </>
                         ) : (
@@ -377,7 +439,7 @@ export default function OrdersManagement() {
                         {(order as any).delivery?.[0] && !isStatusSynced(order.status, (order as any).delivery[0].status) && (
                           <button
                             onClick={() => syncOrderDeliveryStatus(order.id)}
-                            className="text-orange-500 hover:text-orange-600"
+                            className="text-primary-500 hover:text-primary-600"
                             title="Sync status"
                           >
                             <RefreshCw className="h-4 w-4" />
@@ -463,6 +525,23 @@ function OrderDetailsModal({
     { value: 'returned', label: 'Returned' }
   ];
 
+  const allowedStatusOptions = (() => {
+    // terminal orders: only show current
+    if (order.status === 'cancelled' || order.status === 'returned') {
+      return statusOptions.filter(o => o.value === order.status);
+    }
+
+    const currentRank = orderStatusRank(order.status as OrderStatus);
+    const forwardFlow = statusOptions.filter((o) => {
+      if (o.value === 'cancelled') return true; // allow cancel from any non-terminal
+      if (o.value === 'returned') return (order.status as OrderStatus) === 'delivered';
+      const r = orderStatusRank(o.value);
+      return currentRank === -1 || r === -1 ? false : r >= currentRank;
+    });
+
+    return forwardFlow;
+  })();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -528,10 +607,10 @@ function OrderDetailsModal({
                     <select
                       value={selectedStatus}
                       onChange={(e) => setSelectedStatus(e.target.value as OrderStatus)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                       required
                     >
-                      {statusOptions.map(status => (
+                      {allowedStatusOptions.map(status => (
                         <option key={status.value} value={status.value}>{status.label}</option>
                       ))}
                     </select>
@@ -547,7 +626,7 @@ function OrderDetailsModal({
                     <button
                       type="submit"
                       disabled={loading}
-                      className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 disabled:opacity-50"
+                      className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50"
                     >
                       {loading ? 'Updating...' : 'Update Status'}
                     </button>
