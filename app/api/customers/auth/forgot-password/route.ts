@@ -13,8 +13,10 @@ function appBaseUrl(): string {
 }
 
 /**
- * Request a password reset email (Supabase Auth).
- * Same pattern as other customer auth routes for web + mobile clients.
+ * Sends a password recovery email via Supabase `/recover`.
+ * For a 6-digit code in the email, configure the "Reset password" template in the Supabase
+ * dashboard to include {{ .Token }} (OTP). Link-only templates use {{ .ConfirmationURL }}.
+ * redirectTo is for users who still get a link; we send them back to the same reset flow.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -34,13 +36,30 @@ export async function POST(request: NextRequest) {
       auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
     });
 
-    const redirectTo = `${appBaseUrl()}/auth/update-password`;
+    const redirectTo = `${appBaseUrl()}/auth/forgot-password`;
 
     const { error } = await supabase.auth.resetPasswordForEmail(trimmed, {
       redirectTo,
     });
 
     if (error) {
+      const msg = (error.message || '').toLowerCase();
+      const isRateLimited =
+        msg.includes('rate limit') ||
+        msg.includes('too many') ||
+        msg.includes('email rate');
+
+      if (isRateLimited) {
+        return NextResponse.json(
+          {
+            error:
+              'Too many reset emails were sent recently. Please wait a few minutes before trying again.',
+            code: 'AUTH_EMAIL_RATE_LIMIT',
+          },
+          { status: 429 }
+        );
+      }
+
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
