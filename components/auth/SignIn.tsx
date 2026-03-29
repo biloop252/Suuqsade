@@ -16,6 +16,7 @@ export default function SignIn() {
     password: ''
   });
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const router = useRouter();
 
   // Redirect authenticated users to home page
@@ -29,10 +30,15 @@ export default function SignIn() {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const urlError = urlParams.get('error');
-    
+    const resetOk = urlParams.get('reset');
+
     if (urlError) {
       setError(`Authentication error: ${decodeURIComponent(urlError)}`);
-      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    if (resetOk === 'success') {
+      setSuccessMessage('Your password was updated. Sign in with your new password.');
       window.history.replaceState({}, document.title, window.location.pathname);
     }
 
@@ -73,8 +79,8 @@ export default function SignIn() {
       ...prev,
       [name]: value
     }));
-    // Clear error when user starts typing
     if (error) setError('');
+    if (successMessage) setSuccessMessage('');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -145,6 +151,11 @@ export default function SignIn() {
           
           <div className="bg-white py-8 px-6 shadow-lg rounded-xl border border-gray-100">
             <form onSubmit={handleSubmit} className="space-y-6">
+              {successMessage && (
+                <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg text-sm">
+                  {successMessage}
+                </div>
+              )}
               {error && (
                 <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
                   {error}
