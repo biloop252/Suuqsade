@@ -295,7 +295,7 @@ export default function DeliveryOptionsSelector({
   if (loading) {
     return (
       <div className="flex items-center justify-center p-4">
-        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600"></div>
+        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
         <span className="ml-2 text-sm text-gray-600">Loading delivery options...</span>
       </div>
     );
@@ -331,7 +331,7 @@ export default function DeliveryOptionsSelector({
           <select
             value={selectedPickupLocation}
             onChange={(e) => setSelectedPickupLocation(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
             required
           >
             <option value="">Select a pickup location</option>
@@ -368,7 +368,7 @@ export default function DeliveryOptionsSelector({
               onChange={(e) => setIsFreeDelivery(e.target.checked)}
               className="sr-only peer"
             />
-            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/40 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
           </label>
         </div>
       </div>
@@ -387,7 +387,7 @@ export default function DeliveryOptionsSelector({
                   type="checkbox"
                   checked={selectedDeliveryMethods.includes(method.id)}
                   onChange={() => handleDeliveryMethodToggle(method.id)}
-                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
                 />
                 <div className="ml-3 flex-1">
                   <div className="flex items-center">
@@ -421,7 +421,7 @@ export default function DeliveryOptionsSelector({
               <select
                 value={selectedCountry}
                 onChange={(e) => handleCountryChange(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
               >
                 <option value="">Select country</option>
                 {countries.map((country) => (
@@ -439,7 +439,7 @@ export default function DeliveryOptionsSelector({
               <select
                 value={selectedCity}
                 onChange={(e) => handleCitySelect(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                 disabled={!selectedCountry}
               >
                 <option value="">Select city</option>
@@ -460,7 +460,7 @@ export default function DeliveryOptionsSelector({
               onChange={(e) => setNewCountry(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Enter country name"
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
             />
             <input
               type="text"
@@ -468,13 +468,13 @@ export default function DeliveryOptionsSelector({
               onChange={(e) => setNewCity(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Enter city name"
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
             />
             <button
               type="button"
               onClick={handleAddCity}
               disabled={!newCity.trim() || !newCountry.trim()}
-              className="px-3 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+              className="px-3 py-2 bg-primary text-white rounded-md hover:brightness-[0.92] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
             >
               <Plus className="h-4 w-4 mr-1" />
               Add

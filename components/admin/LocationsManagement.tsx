@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { MapPinIcon, PlusIcon, PencilIcon, TrashIcon, ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import AdminModalBackdrop from './AdminModalBackdrop';
 
 interface Location {
   id: string;
@@ -332,7 +333,7 @@ export default function LocationsManagement() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -347,7 +348,7 @@ export default function LocationsManagement() {
         </div>
         <button
           onClick={handleCreateLocation}
-          className="flex items-center space-x-2 bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700"
+          className="flex items-center space-x-2 bg-primary text-white px-4 py-2 rounded-lg hover:brightness-[0.92]"
         >
           <PlusIcon className="h-5 w-5" />
           <span>Add Location</span>
@@ -363,14 +364,14 @@ export default function LocationsManagement() {
               placeholder="Search locations..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
           <div>
             <select
               value={levelFilter}
               onChange={(e) => setLevelFilter(e.target.value as number | 'all')}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="all">All Levels</option>
               <option value={0}>Countries</option>
@@ -406,8 +407,8 @@ export default function LocationsManagement() {
 
       {/* Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+        <AdminModalBackdrop innerClassName="flex min-h-full items-start justify-center p-4 pb-32 pt-10 sm:p-6 sm:pb-40 sm:pt-12">
+          <div className="relative w-full max-w-md rounded-lg border border-gray-200 bg-white p-6 shadow-lg">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
               {editingLocation ? 'Edit Location' : 'Add New Location'}
             </h2>
@@ -421,7 +422,7 @@ export default function LocationsManagement() {
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                   placeholder="Enter location name"
                   required
                 />
@@ -441,7 +442,7 @@ export default function LocationsManagement() {
                       parent_id: null // Reset parent when level changes
                     });
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                 >
                   <option value={0}>Country</option>
                   <option value={1}>State/Province</option>
@@ -458,7 +459,7 @@ export default function LocationsManagement() {
                 <select
                   value={formData.parent_id || ''}
                   onChange={(e) => setFormData({ ...formData, parent_id: e.target.value || null })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                   disabled={formData.level === 0}
                 >
                   <option value="">
@@ -483,7 +484,7 @@ export default function LocationsManagement() {
                   id="is_active"
                   checked={formData.is_active}
                   onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
                 />
                 <label htmlFor="is_active" className="ml-2 block text-sm text-gray-700">
                   Active
@@ -500,14 +501,14 @@ export default function LocationsManagement() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700"
+                  className="px-4 py-2 bg-primary text-white rounded-md hover:brightness-[0.92]"
                 >
                   {editingLocation ? 'Update' : 'Create'}
                 </button>
               </div>
             </form>
           </div>
-        </div>
+        </AdminModalBackdrop>
       )}
     </div>
   );

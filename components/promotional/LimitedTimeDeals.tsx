@@ -196,10 +196,10 @@ export default function LimitedTimeDeals({ className = '', maxDeals = 4 }: Limit
 
   // Color schemes for different deals - all using primary colors
   const colorSchemes = [
-    { bg: 'bg-primary-500', border: 'border-primary-100', hover: 'bg-primary-50', text: 'text-primary-600', button: 'bg-primary-500 hover:bg-primary-600' },
-    { bg: 'bg-primary-600', border: 'border-primary-200', hover: 'bg-primary-100', text: 'text-primary-700', button: 'bg-primary-600 hover:bg-primary-700' },
-    { bg: 'bg-primary-500', border: 'border-primary-100', hover: 'bg-primary-50', text: 'text-primary-600', button: 'bg-primary-500 hover:bg-primary-600' },
-    { bg: 'bg-primary-600', border: 'border-primary-200', hover: 'bg-primary-100', text: 'text-primary-700', button: 'bg-primary-600 hover:bg-primary-700' }
+    { bg: 'bg-primary', border: 'border-primary/10', hover: 'bg-primary/5', text: 'text-primary', button: 'bg-primary hover:brightness-[0.92]' },
+    { bg: 'bg-primary', border: 'border-primary/25', hover: 'bg-primary/10', text: 'text-primary', button: 'bg-primary hover:brightness-[0.92]' },
+    { bg: 'bg-primary', border: 'border-primary/10', hover: 'bg-primary/5', text: 'text-primary', button: 'bg-primary hover:brightness-[0.92]' },
+    { bg: 'bg-primary', border: 'border-primary/25', hover: 'bg-primary/10', text: 'text-primary', button: 'bg-primary hover:brightness-[0.92]' }
   ];
 
   return (
@@ -211,18 +211,18 @@ export default function LimitedTimeDeals({ className = '', maxDeals = 4 }: Limit
         {/* Section Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-6 sm:mb-8">
           <div className="flex items-center space-x-4">
-            <div className="bg-primary-500 rounded-xl p-3 shadow-lg">
+            <div className="bg-primary rounded-xl p-3 shadow-lg">
               <ZapIcon className="h-6 w-6 sm:h-7 sm:w-7 text-white animate-pulse" />
             </div>
             <div>
-              <h2 className="text-xl sm:text-3xl font-bold text-primary-600">
+              <h2 className="text-xl sm:text-3xl font-bold text-primary">
                 Limited Time Deals
               </h2>
               <p className="text-xs sm:text-sm text-gray-600 font-medium">Don't miss out on these exclusive offers</p>
             </div>
           </div>
 
-          <Link href="/products?deals=limited" className="bg-white/80 backdrop-blur-sm text-gray-700 px-3 sm:px-6 py-1.5 sm:py-3 text-sm sm:text-base whitespace-nowrap self-start sm:self-auto rounded-lg sm:rounded-xl hover:bg-white transition-all duration-300 flex items-center space-x-2 border border-primary-200 shadow-lg hover:shadow-xl">
+          <Link href="/products?deals=limited" className="bg-white/80 backdrop-blur-sm text-gray-700 px-3 sm:px-6 py-1.5 sm:py-3 text-sm sm:text-base whitespace-nowrap self-start sm:self-auto rounded-lg sm:rounded-xl hover:bg-white transition-all duration-300 flex items-center space-x-2 border border-primary/25 shadow-lg hover:shadow-xl">
             <span className="font-medium">View All Deals</span>
             <ChevronRightIcon className="h-4 w-4" />
           </Link>

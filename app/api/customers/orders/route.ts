@@ -288,6 +288,13 @@ export async function POST(request: NextRequest) {
 
     // Do not fail the entire request if delivery insert fails
 
+    try {
+      const { dispatchOrderPlacedNotifications } = await import('@/lib/notifications/server')
+      await dispatchOrderPlacedNotifications(userId, orderNumber)
+    } catch (notifyErr) {
+      console.error('app_notifications (order placed):', notifyErr)
+    }
+
     return NextResponse.json({ order }, { status: 201 })
   } catch (err) {
     if (err instanceof Error && err.message === 'UNAUTHORIZED') {

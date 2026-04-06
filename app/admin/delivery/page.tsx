@@ -12,6 +12,7 @@ import {
   DollarSign,
   X
 } from 'lucide-react';
+import AdminModalBackdrop, { AdminTallFormPanel } from '@/components/admin/AdminModalBackdrop';
 
 interface PickupLocation {
   id: string;
@@ -606,7 +607,7 @@ export default function DeliveryManagement() {
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -626,10 +627,9 @@ export default function DeliveryManagement() {
              'Product Delivery Option'}`;
 
     return (
-      <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-        <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-          <div className="mt-3">
-            <div className="flex items-center justify-between mb-4">
+      <AdminModalBackdrop>
+        <AdminTallFormPanel className="w-full max-w-xl">
+            <div className="flex shrink-0 items-center justify-between border-b border-gray-200 px-5 py-4">
               <h3 className="text-lg font-medium text-gray-900">{formTitle}</h3>
               <button
                 type="button"
@@ -646,18 +646,19 @@ export default function DeliveryManagement() {
               </button>
             </div>
 
-            {formErrors.general && (
-              <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-                {formErrors.general}
-              </div>
-            )}
-
             <form onSubmit={
               activeTab === 'pickup' ? handleSavePickupLocation : 
               activeTab === 'methods' ? handleSaveDeliveryMethod : 
               activeTab === 'rates' ? handleSaveDeliveryRate :
               handleSaveProductDeliveryOption
-            }>
+            } className="flex min-h-0 flex-1 flex-col">
+            <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4 space-y-4">
+            {formErrors.general && (
+              <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                {formErrors.general}
+              </div>
+            )}
+
               {activeTab === 'pickup' && (
                 <div className="space-y-4">
                   <div>
@@ -666,7 +667,7 @@ export default function DeliveryManagement() {
                       type="text"
                       value={formData.name || ''}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                       required
                     />
                   </div>
@@ -679,7 +680,7 @@ export default function DeliveryManagement() {
                         setFormData({ ...formData, country_id: countryId, city_id: '' });
                         loadCities(countryId);
                       }}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                       required
                     >
                       <option value="">Select a country</option>
@@ -695,7 +696,7 @@ export default function DeliveryManagement() {
                     <select
                       value={formData.city_id || ''}
                       onChange={(e) => setFormData({ ...formData, city_id: e.target.value })}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                       required
                       disabled={!formData.country_id}
                     >
@@ -713,7 +714,7 @@ export default function DeliveryManagement() {
                       type="text"
                       value={formData.address_line || ''}
                       onChange={(e) => setFormData({ ...formData, address_line: e.target.value })}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                     />
                   </div>
                   <div>
@@ -722,7 +723,7 @@ export default function DeliveryManagement() {
                       type="tel"
                       value={formData.contact_phone || ''}
                       onChange={(e) => setFormData({ ...formData, contact_phone: e.target.value })}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                     />
                   </div>
                   <div>
@@ -731,7 +732,7 @@ export default function DeliveryManagement() {
                       type="email"
                       value={formData.contact_email || ''}
                       onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                     />
                   </div>
                   <div className="flex items-center">
@@ -740,7 +741,7 @@ export default function DeliveryManagement() {
                       id="is_active_pickup"
                       checked={formData.is_active ?? true}
                       onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
                     />
                     <label htmlFor="is_active_pickup" className="ml-2 block text-sm text-gray-900">
                       Active
@@ -757,7 +758,7 @@ export default function DeliveryManagement() {
                       type="text"
                       value={formData.name || ''}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                       required
                     />
                   </div>
@@ -767,7 +768,7 @@ export default function DeliveryManagement() {
                       rows={3}
                       value={formData.description || ''}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                     />
                   </div>
                   <div className="flex items-center">
@@ -776,7 +777,7 @@ export default function DeliveryManagement() {
                       id="is_active_method"
                       checked={formData.is_active ?? true}
                       onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
                     />
                     <label htmlFor="is_active_method" className="ml-2 block text-sm text-gray-900">
                       Active
@@ -792,7 +793,7 @@ export default function DeliveryManagement() {
                     <select
                       value={formData.pickup_city_id || ''}
                       onChange={(e) => setFormData({ ...formData, pickup_city_id: e.target.value })}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                       required
                     >
                       <option value="">Select a city</option>
@@ -808,7 +809,7 @@ export default function DeliveryManagement() {
                     <select
                       value={formData.delivery_city_id || ''}
                       onChange={(e) => setFormData({ ...formData, delivery_city_id: e.target.value })}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                       required
                     >
                       <option value="">Select a city</option>
@@ -824,7 +825,7 @@ export default function DeliveryManagement() {
                     <select
                       value={formData.delivery_method_id || ''}
                       onChange={(e) => setFormData({ ...formData, delivery_method_id: e.target.value })}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                       required
                     >
                       <option value="">Select a method</option>
@@ -843,7 +844,7 @@ export default function DeliveryManagement() {
                       min="0"
                       value={formData.price || ''}
                       onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                       required
                     />
                   </div>
@@ -855,7 +856,7 @@ export default function DeliveryManagement() {
                         min="1"
                         value={formData.estimated_min_days || ''}
                         onChange={(e) => setFormData({ ...formData, estimated_min_days: e.target.value })}
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                         required
                       />
                     </div>
@@ -866,7 +867,7 @@ export default function DeliveryManagement() {
                         min="1"
                         value={formData.estimated_max_days || ''}
                         onChange={(e) => setFormData({ ...formData, estimated_max_days: e.target.value })}
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                         required
                       />
                     </div>
@@ -877,7 +878,7 @@ export default function DeliveryManagement() {
                       id="is_active_rate"
                       checked={formData.is_active ?? true}
                       onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
                     />
                     <label htmlFor="is_active_rate" className="ml-2 block text-sm text-gray-900">
                       Active
@@ -893,7 +894,7 @@ export default function DeliveryManagement() {
                     <select
                       value={formData.product_id || ''}
                       onChange={(e) => setFormData({ ...formData, product_id: e.target.value })}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                       required
                     >
                       <option value="">Select a product</option>
@@ -909,7 +910,7 @@ export default function DeliveryManagement() {
                     <select
                       value={formData.delivery_rate_id || ''}
                       onChange={(e) => setFormData({ ...formData, delivery_rate_id: e.target.value })}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                       required
                     >
                       <option value="">Select a delivery rate</option>
@@ -926,7 +927,7 @@ export default function DeliveryManagement() {
                       id="is_free_delivery_option"
                       checked={formData.is_free_delivery ?? false}
                       onChange={(e) => setFormData({ ...formData, is_free_delivery: e.target.checked })}
-                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
                     />
                     <label htmlFor="is_free_delivery_option" className="ml-2 block text-sm text-gray-900">
                       Free delivery for this option
@@ -935,7 +936,9 @@ export default function DeliveryManagement() {
                 </div>
               )}
 
-              <div className="flex justify-end space-x-3 mt-6">
+            </div>
+
+              <div className="flex shrink-0 justify-end gap-3 border-t border-gray-200 bg-gray-50 px-5 py-4">
                 <button
                   type="button"
                   onClick={() => {
@@ -952,15 +955,14 @@ export default function DeliveryManagement() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-4 py-2 bg-primary-600 text-white rounded-md text-sm font-medium hover:bg-primary-700 disabled:opacity-50"
+                  className="px-4 py-2 bg-primary text-white rounded-md text-sm font-medium hover:brightness-[0.92] disabled:opacity-50"
                 >
                   {saving ? 'Saving...' : (isEditing ? 'Update' : 'Create')}
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      </div>
+        </AdminTallFormPanel>
+      </AdminModalBackdrop>
     );
   };
 
@@ -980,7 +982,7 @@ export default function DeliveryManagement() {
               onClick={() => setActiveTab('pickup')}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'pickup'
-                  ? 'border-primary-500 text-primary-600'
+                  ? 'border-primary text-primary'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
@@ -991,7 +993,7 @@ export default function DeliveryManagement() {
               onClick={() => setActiveTab('methods')}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'methods'
-                  ? 'border-primary-500 text-primary-600'
+                  ? 'border-primary text-primary'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
@@ -1002,7 +1004,7 @@ export default function DeliveryManagement() {
               onClick={() => setActiveTab('rates')}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'rates'
-                  ? 'border-primary-500 text-primary-600'
+                  ? 'border-primary text-primary'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
@@ -1013,7 +1015,7 @@ export default function DeliveryManagement() {
               onClick={() => setActiveTab('product-options')}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'product-options'
-                  ? 'border-primary-500 text-primary-600'
+                  ? 'border-primary text-primary'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
@@ -1035,7 +1037,7 @@ export default function DeliveryManagement() {
                     setFormData({});
                     setShowForm(true);
                   }}
-                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
+                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:brightness-[0.92]"
                 >
                   <Plus className="h-4 w-4 mr-1" />
                   Add Location
@@ -1110,7 +1112,7 @@ export default function DeliveryManagement() {
                               <button
                                 type="button"
                                 onClick={() => handleEditPickupLocation(location)}
-                                className="text-primary-600 hover:text-primary-800"
+                                className="text-primary hover:opacity-80"
                                 title="Edit location"
                               >
                                 <Edit className="h-4 w-4" />
@@ -1145,7 +1147,7 @@ export default function DeliveryManagement() {
                     setEditingItem(null);
                     setShowForm(true);
                   }}
-                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
+                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:brightness-[0.92]"
                 >
                   <Plus className="h-4 w-4 mr-1" />
                   Add Method
@@ -1204,7 +1206,7 @@ export default function DeliveryManagement() {
                               <button
                                 type="button"
                                 onClick={() => handleEditDeliveryMethod(method)}
-                                className="text-primary-600 hover:text-primary-800"
+                                className="text-primary hover:opacity-80"
                                 title="Edit method"
                               >
                                 <Edit className="h-4 w-4" />
@@ -1241,7 +1243,7 @@ export default function DeliveryManagement() {
                     loadAllCities();
                     setShowForm(true);
                   }}
-                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
+                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:brightness-[0.92]"
                 >
                   <Plus className="h-4 w-4 mr-1" />
                   Add Rate
@@ -1305,7 +1307,7 @@ export default function DeliveryManagement() {
                               <button
                                 type="button"
                                 onClick={() => handleEditDeliveryRate(rate)}
-                                className="text-primary-600 hover:text-primary-800"
+                                className="text-primary hover:opacity-80"
                                 title="Edit rate"
                               >
                                 <Edit className="h-4 w-4" />
@@ -1341,7 +1343,7 @@ export default function DeliveryManagement() {
                     setFormData({});
                     setShowForm(true);
                   }}
-                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
+                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:brightness-[0.92]"
                 >
                   <Plus className="h-4 w-4 mr-1" />
                   Add Option
@@ -1414,7 +1416,7 @@ export default function DeliveryManagement() {
                               <button
                                 type="button"
                                 onClick={() => handleEditProductDeliveryOption(option)}
-                                className="text-primary-600 hover:text-primary-800"
+                                className="text-primary hover:opacity-80"
                                 title="Edit option"
                               >
                                 <Edit className="h-4 w-4" />

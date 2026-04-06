@@ -23,17 +23,17 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <AuthProvider>
-          <CartProvider>
-            <FavoritesProvider>
-              <NotificationProvider>
+        <NotificationProvider>
+          <AuthProvider>
+            <CartProvider>
+              <FavoritesProvider>
                 <ConditionalLayout>
                   {children}
                 </ConditionalLayout>
-              </NotificationProvider>
-            </FavoritesProvider>
-          </CartProvider>
-        </AuthProvider>
+              </FavoritesProvider>
+            </CartProvider>
+          </AuthProvider>
+        </NotificationProvider>
       </body>
     </html>
   );

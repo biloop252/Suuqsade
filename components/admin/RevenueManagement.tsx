@@ -83,11 +83,11 @@ export default function RevenueManagement() {
 
   const getRevenueTypeColor = (type: string) => {
     const colors = {
-      commission: 'bg-primary-100 text-primary-800',
+      commission: 'bg-primary/10 text-primary',
       subscription: 'bg-green-100 text-green-800',
       advertising: 'bg-purple-100 text-purple-800',
       listing_fee: 'bg-yellow-100 text-yellow-800',
-      premium_features: 'bg-primary-100 text-primary-800',
+      premium_features: 'bg-primary/10 text-primary',
       other: 'bg-gray-100 text-gray-800'
     };
     
@@ -99,7 +99,7 @@ export default function RevenueManagement() {
       <div className="mb-6 flex justify-end items-center">
         <button
           onClick={() => setShowCreateModal(true)}
-          className="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700"
+          className="bg-primary text-white px-4 py-2 rounded-md hover:brightness-[0.92]"
         >
           Add Revenue
         </button>
@@ -128,7 +128,7 @@ export default function RevenueManagement() {
         <button
           onClick={loadData}
           disabled={loading}
-          className="mt-6 bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 disabled:opacity-50"
+          className="mt-6 bg-primary text-white px-4 py-2 rounded-md hover:brightness-[0.92] disabled:opacity-50"
         >
           {loading ? 'Loading...' : 'Refresh'}
         </button>

@@ -37,7 +37,7 @@ export default function ForgotPassword() {
     if (!loading && user && step === 'email') {
       router.push('/');
     }
-  }, [user, loading, router, step]);
+  }, [user?.id, loading, router, step]);
 
   useEffect(() => {
     if (step !== 'verify') return;
@@ -55,7 +55,7 @@ export default function ForgotPassword() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
       </div>
     );
   }
@@ -63,7 +63,7 @@ export default function ForgotPassword() {
   if (user && step === 'email') {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
       </div>
     );
   }
@@ -220,14 +220,14 @@ export default function ForgotPassword() {
       <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
           <div className="text-center">
-            <div className="mx-auto h-12 w-12 bg-primary-100 rounded-full flex items-center justify-center mb-4">
-              <KeyRound className="h-6 w-6 text-primary-600" />
+            <div className="mx-auto h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+              <KeyRound className="h-6 w-6 text-primary" />
             </div>
             <h2 className="text-3xl font-bold text-gray-900">{title}</h2>
             <p className="mt-2 text-sm text-gray-600">{subtitle}</p>
             {step === 'verify' && (
-              <div className="mt-4 inline-flex items-center rounded-lg bg-primary-50 border border-primary-100 px-4 py-2">
-                <span className="text-sm font-medium text-primary-800">
+              <div className="mt-4 inline-flex items-center rounded-lg bg-primary/5 border border-primary/10 px-4 py-2">
+                <span className="text-sm font-medium text-primary">
                   {secondsLeft > 0 ? (
                     <>Code expires in {formatMmSs(secondsLeft)}</>
                   ) : (
@@ -278,7 +278,7 @@ export default function ForgotPassword() {
                 <div className="text-center">
                   <Link
                     href="/auth/signin"
-                    className="text-sm font-medium text-primary-600 hover:text-primary-700 inline-flex items-center"
+                    className="text-sm font-medium text-primary hover:text-primary inline-flex items-center"
                   >
                     <ArrowLeft className="h-4 w-4 mr-1" />
                     Back to sign in
@@ -329,7 +329,7 @@ export default function ForgotPassword() {
                     type="button"
                     onClick={resendCode}
                     disabled={resendLoading}
-                    className="font-medium text-primary-600 hover:text-primary-700 disabled:opacity-50"
+                    className="font-medium text-primary hover:text-primary disabled:opacity-50"
                   >
                     {resendLoading ? 'Sending…' : 'Resend code'}
                   </button>
@@ -342,7 +342,7 @@ export default function ForgotPassword() {
                   </button>
                   <Link
                     href="/auth/signin"
-                    className="font-medium text-primary-600 hover:text-primary-700 inline-flex items-center justify-center"
+                    className="font-medium text-primary hover:text-primary inline-flex items-center justify-center"
                   >
                     <ArrowLeft className="h-4 w-4 mr-1" />
                     Back to sign in
@@ -429,7 +429,7 @@ export default function ForgotPassword() {
                   </button>
                   <Link
                     href="/auth/signin"
-                    className="font-medium text-primary-600 hover:text-primary-700 inline-flex items-center justify-center"
+                    className="font-medium text-primary hover:text-primary inline-flex items-center justify-center"
                   >
                     <ArrowLeft className="h-4 w-4 mr-1" />
                     Back to sign in

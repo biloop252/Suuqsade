@@ -29,7 +29,7 @@ export default function ReviewsContent() {
     if (user) {
       fetchUserReviews();
     }
-  }, [user]);
+  }, [user?.id]);
 
   const fetchUserReviews = async () => {
     try {
@@ -152,7 +152,7 @@ export default function ReviewsContent() {
         <p className="text-gray-600 mb-4">You haven't written any product reviews.</p>
         <Link 
           href="/products" 
-          className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700"
+          className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:brightness-[0.92]"
         >
           Browse Products
         </Link>
@@ -197,7 +197,7 @@ export default function ReviewsContent() {
                       <div className="flex items-center space-x-2 mb-2">
                         <Link
                           href={`/products/${review.product.slug}`}
-                          className="text-sm font-medium text-primary-600 hover:text-primary-700"
+                          className="text-sm font-medium text-primary hover:text-primary"
                         >
                           {review.product.name}
                         </Link>

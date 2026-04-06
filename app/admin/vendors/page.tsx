@@ -23,6 +23,7 @@ import {
   Image,
   Percent
 } from 'lucide-react';
+import AdminModalBackdrop, { AdminTallFormPanel } from '@/components/admin/AdminModalBackdrop';
 
 interface Vendor {
   id: string;
@@ -549,7 +550,7 @@ export default function VendorsManagement() {
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -564,7 +565,7 @@ export default function VendorsManagement() {
         </div>
         <button
           onClick={handleCreateVendor}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:brightness-[0.92]"
         >
           <Plus className="h-4 w-4 mr-2" />
           Add Vendor
@@ -582,7 +583,7 @@ export default function VendorsManagement() {
                 placeholder="Search vendors..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
               />
             </div>
           </div>
@@ -590,7 +591,7 @@ export default function VendorsManagement() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
             >
               <option value="all">All Status</option>
               <option value="active">Active</option>
@@ -616,7 +617,7 @@ export default function VendorsManagement() {
             {!searchTerm && statusFilter === 'all' && (
               <button
                 onClick={handleCreateVendor}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:brightness-[0.92]"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Add Vendor
@@ -664,8 +665,8 @@ export default function VendorsManagement() {
                               className="h-10 w-10 rounded-full object-cover"
                             />
                           ) : (
-                            <div className="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center">
-                              <Building2 className="h-5 w-5 text-primary-700" />
+                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                              <Building2 className="h-5 w-5 text-primary" />
                             </div>
                           )}
                         </div>
@@ -728,7 +729,7 @@ export default function VendorsManagement() {
                       <div className="flex items-center justify-end space-x-2">
                         <button
                           onClick={() => handleEditVendor(vendor)}
-                          className="text-primary-600 hover:text-primary-800"
+                          className="text-primary hover:opacity-80"
                           title="Edit vendor"
                         >
                           <Edit className="h-4 w-4" />
@@ -752,14 +753,14 @@ export default function VendorsManagement() {
 
       {/* Vendor Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white">
-            <div className="mt-3">
-              <div className="flex items-center justify-between mb-4">
+        <AdminModalBackdrop>
+          <AdminTallFormPanel className="w-full max-w-2xl">
+              <div className="flex shrink-0 items-center justify-between border-b border-gray-200 px-5 py-4">
                 <h3 className="text-lg font-medium text-gray-900">
                   {editingVendor ? 'Edit Vendor' : 'Add New Vendor'}
                 </h3>
                 <button
+                  type="button"
                   onClick={() => {
                     setShowForm(false);
                     setEditingVendor(null);
@@ -793,13 +794,14 @@ export default function VendorsManagement() {
                 </button>
               </div>
 
+              <form onSubmit={handleSaveVendor} className="flex min-h-0 flex-1 flex-col">
+                <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4 space-y-4">
               {formErrors.general && (
-                <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded">
                   {formErrors.general}
                 </div>
               )}
 
-              <form onSubmit={handleSaveVendor}>
                 <div className="space-y-4">
                   {/* Business Information */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -809,7 +811,7 @@ export default function VendorsManagement() {
                         type="text"
                         value={formData.business_name}
                         onChange={(e) => setFormData({ ...formData, business_name: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                         required
                       />
                     </div>
@@ -822,7 +824,7 @@ export default function VendorsManagement() {
                       value={formData.business_description}
                       onChange={(e) => setFormData({ ...formData, business_description: e.target.value })}
                       rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                       placeholder="Describe your business, services, and what makes you unique..."
                       required
                     />
@@ -837,7 +839,7 @@ export default function VendorsManagement() {
                         <div className="flex text-sm text-gray-600">
                           <label
                             htmlFor="logo-upload"
-                            className="relative cursor-pointer bg-white rounded-md font-medium text-primary-600 hover:text-primary-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-primary-500"
+                            className="relative cursor-pointer bg-white rounded-md font-medium text-primary hover:opacity-90 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-primary"
                           >
                             <span>Upload logo</span>
                             <input
@@ -876,7 +878,7 @@ export default function VendorsManagement() {
                         <div className="flex text-sm text-gray-600">
                           <label
                             htmlFor="banner-upload"
-                            className="relative cursor-pointer bg-white rounded-md font-medium text-primary-600 hover:text-primary-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-primary-500"
+                            className="relative cursor-pointer bg-white rounded-md font-medium text-primary hover:opacity-90 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-primary"
                           >
                             <span>Upload banner</span>
                             <input
@@ -914,7 +916,7 @@ export default function VendorsManagement() {
                         type="email"
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                         required
                       />
                     </div>
@@ -924,7 +926,7 @@ export default function VendorsManagement() {
                         type="tel"
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                         required
                       />
                     </div>
@@ -938,7 +940,7 @@ export default function VendorsManagement() {
                         type="text"
                         value={formData.first_name}
                         onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                       />
                     </div>
                     <div>
@@ -947,7 +949,7 @@ export default function VendorsManagement() {
                         type="text"
                         value={formData.last_name}
                         onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                       />
                     </div>
                   </div>
@@ -962,7 +964,7 @@ export default function VendorsManagement() {
                             type={showPassword ? "text" : "password"}
                             value={formData.password}
                             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                            className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                            className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                             required
                           />
                           <button
@@ -981,7 +983,7 @@ export default function VendorsManagement() {
                             type={showConfirmPassword ? "text" : "password"}
                             value={formData.confirmPassword}
                             onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                            className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                            className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                             required
                           />
                           <button
@@ -1003,7 +1005,7 @@ export default function VendorsManagement() {
                       value={formData.address}
                       onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                       rows={2}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                       required
                     />
                   </div>
@@ -1015,7 +1017,7 @@ export default function VendorsManagement() {
                         type="text"
                         value={formData.city}
                         onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                         required
                       />
                     </div>
@@ -1025,7 +1027,7 @@ export default function VendorsManagement() {
                         type="text"
                         value={formData.country}
                         onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                         required
                       />
                     </div>
@@ -1038,7 +1040,7 @@ export default function VendorsManagement() {
                         type="text"
                         value={formData.district}
                         onChange={(e) => setFormData({ ...formData, district: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                         required
                       />
                     </div>
@@ -1048,7 +1050,7 @@ export default function VendorsManagement() {
                         type="text"
                         value={formData.neighborhood}
                         onChange={(e) => setFormData({ ...formData, neighborhood: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                         required
                       />
                     </div>
@@ -1062,7 +1064,7 @@ export default function VendorsManagement() {
                         type="text"
                         value={formData.tax_id}
                         onChange={(e) => setFormData({ ...formData, tax_id: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                         required
                       />
                     </div>
@@ -1076,7 +1078,7 @@ export default function VendorsManagement() {
                           step="0.01"
                           value={formData.commission_rate}
                           onChange={(e) => setFormData({ ...formData, commission_rate: parseFloat(e.target.value) || 0 })}
-                          className="w-full px-3 py-2 pr-8 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                          className="w-full px-3 py-2 pr-8 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                           placeholder="10.00"
                           required
                         />
@@ -1103,7 +1105,7 @@ export default function VendorsManagement() {
                           <div className="flex text-sm text-gray-600">
                             <label
                               htmlFor="business-license-upload"
-                              className="relative cursor-pointer bg-white rounded-md font-medium text-primary-600 hover:text-primary-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-primary-500"
+                              className="relative cursor-pointer bg-white rounded-md font-medium text-primary hover:opacity-90 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-primary"
                             >
                               <span>Upload a file</span>
                               <input
@@ -1141,7 +1143,7 @@ export default function VendorsManagement() {
                           <div className="flex text-sm text-gray-600">
                             <label
                               htmlFor="national-id-upload"
-                              className="relative cursor-pointer bg-white rounded-md font-medium text-primary-600 hover:text-primary-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-primary-500"
+                              className="relative cursor-pointer bg-white rounded-md font-medium text-primary hover:opacity-90 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-primary"
                             >
                               <span>Upload a file</span>
                               <input
@@ -1178,7 +1180,7 @@ export default function VendorsManagement() {
                     <select
                       value={formData.status}
                       onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                     >
                       <option value="pending">Pending</option>
                       <option value="active">Active</option>
@@ -1187,8 +1189,9 @@ export default function VendorsManagement() {
                     </select>
                   </div>
                 </div>
+                </div>
 
-                <div className="flex justify-end space-x-3 mt-6">
+                <div className="flex shrink-0 justify-end gap-3 border-t border-gray-200 bg-gray-50 px-5 py-4">
                   <button
                     type="button"
                     onClick={() => {
@@ -1225,15 +1228,14 @@ export default function VendorsManagement() {
                   <button
                     type="submit"
                     disabled={saving || uploading}
-                    className="px-4 py-2 bg-primary-600 text-white rounded-md text-sm font-medium hover:bg-primary-700 disabled:opacity-50"
+                    className="px-4 py-2 bg-primary text-white rounded-md text-sm font-medium hover:brightness-[0.92] disabled:opacity-50"
                   >
                     {uploading ? 'Uploading...' : saving ? 'Saving...' : (editingVendor ? 'Update' : 'Create')}
                   </button>
                 </div>
               </form>
-            </div>
-          </div>
-        </div>
+          </AdminTallFormPanel>
+        </AdminModalBackdrop>
       )}
     </div>
   );

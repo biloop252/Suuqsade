@@ -46,7 +46,7 @@ export default function SupportPage() {
       fetchTickets();
       fetchCategories();
     }
-  }, [user]);
+  }, [user?.id]);
 
   const fetchTickets = async () => {
     try {
@@ -216,7 +216,7 @@ export default function SupportPage() {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'urgent': return 'bg-red-100 text-red-800';
-      case 'high': return 'bg-primary-100 text-primary-800';
+      case 'high': return 'bg-primary/10 text-primary';
       case 'medium': return 'bg-yellow-100 text-yellow-800';
       case 'low': return 'bg-green-100 text-green-800';
       default: return 'bg-gray-100 text-gray-800';
@@ -248,14 +248,14 @@ export default function SupportPage() {
           {/* Contact Info Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
             <div className="bg-white p-6 rounded-lg shadow text-center">
-              <div className="p-3 bg-primary-100 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                <MessageSquare className="h-8 w-8 text-primary-600" />
+              <div className="p-3 bg-primary/10 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                <MessageSquare className="h-8 w-8 text-primary" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Support Tickets</h3>
               <p className="text-gray-600 mb-4">Create a ticket for detailed assistance</p>
               <button
                 onClick={() => setShowNewTicketForm(true)}
-                className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+                className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:brightness-[0.92] transition-colors"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 New Ticket
@@ -263,12 +263,12 @@ export default function SupportPage() {
             </div>
             
             <div className="bg-white p-6 rounded-lg shadow text-center">
-              <div className="p-3 bg-primary-100 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                <Phone className="h-8 w-8 text-primary-600" />
+              <div className="p-3 bg-primary/10 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                <Phone className="h-8 w-8 text-primary" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Phone Support</h3>
               <p className="text-gray-600 mb-4">Call us for immediate assistance</p>
-              <a href="tel:+1234567890" className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">
+              <a href="tel:+1234567890" className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:brightness-[0.92] transition-colors">
                 <Phone className="h-4 w-4 mr-2" />
                 Call Now
               </a>
@@ -297,7 +297,7 @@ export default function SupportPage() {
                 </div>
                 <button
                   onClick={() => setShowNewTicketForm(true)}
-                  className="flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+                  className="flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:brightness-[0.92] transition-colors"
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   New Ticket
@@ -307,7 +307,7 @@ export default function SupportPage() {
 
             {loading ? (
               <div className="flex items-center justify-center h-64">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
               </div>
             ) : tickets.length === 0 ? (
               <div className="p-8 text-center">
@@ -316,7 +316,7 @@ export default function SupportPage() {
                 <p className="text-gray-600 mb-4">You haven't created any support tickets yet.</p>
                 <button
                   onClick={() => setShowNewTicketForm(true)}
-                  className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+                  className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:brightness-[0.92] transition-colors"
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Create Your First Ticket
@@ -355,7 +355,7 @@ export default function SupportPage() {
                       <tr
                     key={ticket.id}
                         className={`hover:bg-gray-50 cursor-pointer transition-colors ${
-                          selectedTicket?.id === ticket.id ? 'bg-primary-50' : ''
+                          selectedTicket?.id === ticket.id ? 'bg-primary/5' : ''
                     }`}
                     onClick={() => handleTicketClick(ticket)}
                   >
@@ -405,7 +405,7 @@ export default function SupportPage() {
                               e.stopPropagation();
                               handleTicketClick(ticket);
                             }}
-                            className="text-primary-600 hover:text-primary-900 flex items-center"
+                            className="text-primary hover:opacity-80 flex items-center"
                           >
                             <MessageSquare className="h-4 w-4 mr-1" />
                             View
@@ -435,7 +435,7 @@ export default function SupportPage() {
                       value={newTicket.subject}
                       onChange={(e) => setNewTicket({ ...newTicket, subject: e.target.value })}
                       placeholder="Brief description of your issue"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                     />
                   </div>
                   
@@ -446,7 +446,7 @@ export default function SupportPage() {
                     <select
                       value={newTicket.category_id}
                       onChange={(e) => setNewTicket({ ...newTicket, category_id: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                     >
                       <option value="">Select a category</option>
                       {categories.map((category) => (
@@ -464,7 +464,7 @@ export default function SupportPage() {
                     <select
                       value={newTicket.priority}
                       onChange={(e) => setNewTicket({ ...newTicket, priority: e.target.value as any })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                     >
                       <option value="low">Low</option>
                       <option value="medium">Medium</option>
@@ -482,7 +482,7 @@ export default function SupportPage() {
                       onChange={(e) => setNewTicket({ ...newTicket, description: e.target.value })}
                       placeholder="Please provide detailed information about your issue..."
                       rows={6}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                     />
                   </div>
                 </div>
@@ -496,7 +496,7 @@ export default function SupportPage() {
                   </button>
                   <button
                     onClick={createTicket}
-                    className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+                    className="px-4 py-2 bg-primary text-white rounded-lg hover:brightness-[0.92] transition-colors"
                   >
                     Create Ticket
                   </button>
@@ -538,7 +538,7 @@ export default function SupportPage() {
                           key={message.id}
                           className={`p-3 rounded-lg ${
                             message.user?.role === 'customer'
-                              ? 'bg-primary-50 border border-primary-200'
+                              ? 'bg-primary/5 border border-primary/25'
                               : 'bg-gray-50'
                           }`}
                         >
@@ -548,7 +548,7 @@ export default function SupportPage() {
                                 {message.user?.first_name} {message.user?.last_name}
                               </span>
                               {message.user?.role === 'customer' && (
-                                <span className="px-2 py-1 text-xs bg-primary-100 text-primary-800 rounded-full">
+                                <span className="px-2 py-1 text-xs bg-primary/10 text-primary rounded-full">
                                   You
                                 </span>
                               )}
@@ -576,12 +576,12 @@ export default function SupportPage() {
                             onChange={(e) => setNewMessage(e.target.value)}
                             placeholder="Type your message..."
                             rows={6}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                           />
                           <button
                             onClick={sendMessage}
                             disabled={!newMessage.trim()}
-                            className="w-full flex items-center justify-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            className="w-full flex items-center justify-center px-4 py-2 bg-primary text-white rounded-lg hover:brightness-[0.92] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                           >
                             <Send className="h-4 w-4 mr-2" />
                             Send Message

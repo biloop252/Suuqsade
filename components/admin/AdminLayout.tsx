@@ -95,7 +95,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         <div className="relative flex w-64 flex-col bg-white shadow-xl">
           <div className="flex h-16 items-center justify-between px-4 border-b border-gray-200">
             <div className="flex items-center">
-              <div className="h-8 w-8 bg-primary-600 rounded-lg flex items-center justify-center mr-3">
+              <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center mr-3">
                 <span className="text-white font-bold text-sm">A</span>
               </div>
               <h1 className="text-xl font-bold text-gray-900">Admin Panel</h1>
@@ -114,7 +114,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 href={item.href}
                 className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                   isActive(item.href)
-                    ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-500'
+                    ? 'bg-primary/5 text-primary border-r-2 border-primary'
                     : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                 }`}
                 onClick={() => setSidebarOpen(false)}
@@ -127,8 +127,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           <div className="flex-shrink-0 border-t border-gray-200 p-4">
             <div className="flex items-center mb-3">
               <div className="flex-shrink-0">
-                <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center">
-                  <span className="text-sm font-medium text-primary-700">
+                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                  <span className="text-sm font-medium text-primary">
                     {currentProfile?.first_name?.charAt(0) || 'A'}
                   </span>
                 </div>
@@ -165,7 +165,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         <div className="flex flex-grow flex-col overflow-y-auto bg-white shadow-lg border-r border-gray-200">
           <div className="flex h-16 items-center px-4 border-b border-gray-200">
             <div className="flex items-center">
-              <div className="h-8 w-8 bg-primary-600 rounded-lg flex items-center justify-center mr-3">
+              <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center mr-3">
                 <span className="text-white font-bold text-sm">A</span>
               </div>
               <h1 className="text-xl font-bold text-gray-900">Admin Panel</h1>
@@ -178,7 +178,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 href={item.href}
                 className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                   isActive(item.href)
-                    ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-500'
+                    ? 'bg-primary/5 text-primary border-r-2 border-primary'
                     : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                 }`}
               >
@@ -190,8 +190,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           <div className="flex-shrink-0 border-t border-gray-200 p-4">
             <div className="flex items-center mb-3">
               <div className="flex-shrink-0">
-                <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center">
-                  <span className="text-sm font-medium text-primary-700">
+                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                  <span className="text-sm font-medium text-primary">
                     {currentProfile?.first_name?.charAt(0) || 'A'}
                   </span>
                 </div>
@@ -240,8 +240,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               <div className="hidden lg:block lg:h-6 lg:w-px lg:bg-gray-200" />
               <div className="flex items-center gap-x-4 lg:gap-x-6">
                 <div className="relative">
-                  <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center">
-                    <span className="text-sm font-medium text-primary-700">
+                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <span className="text-sm font-medium text-primary">
                       {currentProfile?.first_name?.charAt(0) || 'A'}
                     </span>
                   </div>

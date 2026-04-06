@@ -436,7 +436,7 @@ export default function ProductDetailPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-600"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -469,13 +469,13 @@ export default function ProductDetailPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumb */}
         <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-8">
-          <Link href="/" className="hover:text-primary-600">Home</Link>
+          <Link href="/" className="hover:text-primary">Home</Link>
           <span>/</span>
-          <Link href="/products" className="hover:text-primary-600">Products</Link>
+          <Link href="/products" className="hover:text-primary">Products</Link>
           {product.category && (
             <>
               <span>/</span>
-              <Link href={`/categories/${product.category.id}`} className="hover:text-primary-600">
+              <Link href={`/categories/${product.category.id}`} className="hover:text-primary">
                 {product.category.name}
               </Link>
             </>
@@ -516,7 +516,7 @@ export default function ProductDetailPage() {
                     key={image.id}
                     onClick={() => setSelectedImage(index)}
                     className={`aspect-square bg-white rounded-lg shadow-sm overflow-hidden border-2 ${
-                      selectedImage === index ? 'border-primary-600' : 'border-transparent'
+                      selectedImage === index ? 'border-primary' : 'border-transparent'
                     }`}
                   >
                     <Image
@@ -559,7 +559,7 @@ export default function ProductDetailPage() {
               {product.brand && (
                 <Link
                   href={`/brands/${product.brand.slug}`}
-                  className="text-primary-600 hover:text-primary-700 text-sm font-medium"
+                  className="text-primary hover:text-primary text-sm font-medium"
                 >
                   {product.brand.name}
                 </Link>
@@ -669,7 +669,7 @@ export default function ProductDetailPage() {
               <button
                 onClick={handleAddToCart}
                 disabled={addingToCart}
-                className="flex-1 bg-primary-600 text-white px-5 py-3 rounded-md font-medium hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                className="flex-1 bg-primary text-white px-5 py-3 rounded-md font-medium hover:brightness-[0.92] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               >
                 <ShoppingCart className="h-5 w-5 mr-2" />
                 {addingToCart ? 'Adding...' : 'Add to Cart'}

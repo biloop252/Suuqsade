@@ -1150,7 +1150,7 @@ export default function ProductForm({
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                  className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-primary focus:border-primary"
                   required
                 />
               </div>
@@ -1160,7 +1160,7 @@ export default function ProductForm({
                   type="text"
                   value={formData.slug}
                   onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                  className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                  className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-primary focus:border-primary"
                   required
                 />
               </div>
@@ -1172,7 +1172,7 @@ export default function ProductForm({
                 value={formData.short_description}
                 onChange={(e) => setFormData({ ...formData, short_description: e.target.value })}
                 rows={2}
-                className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-primary focus:border-primary"
               />
             </div>
 
@@ -1182,7 +1182,7 @@ export default function ProductForm({
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 rows={4}
-                className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-primary focus:border-primary"
               />
             </div>
           </div>
@@ -1197,7 +1197,7 @@ export default function ProductForm({
                   type="text"
                   value={formData.sku}
                   onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                  className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                  className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-primary focus:border-primary"
                 />
               </div>
               <div>
@@ -1205,7 +1205,7 @@ export default function ProductForm({
                 <select
                   value={formData.category_id}
                   onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
-                  className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                  className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-primary focus:border-primary"
                   required
                 >
                   <option value="">Select Category</option>
@@ -1219,7 +1219,7 @@ export default function ProductForm({
                 <select
                   value={formData.brand_id}
                   onChange={(e) => setFormData({ ...formData, brand_id: e.target.value })}
-                  className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                  className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-primary focus:border-primary"
                 >
                   <option value="">Select Brand</option>
                   {(brands || []).map(brand => (
@@ -1232,7 +1232,7 @@ export default function ProductForm({
                 <select
                   value={formData.vendor_id}
                   onChange={(e) => setFormData({ ...formData, vendor_id: e.target.value })}
-                  className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                  className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-primary focus:border-primary"
                   disabled={loadingVendors}
                 >
                   <option value="">Select Vendor</option>
@@ -1253,7 +1253,7 @@ export default function ProductForm({
                   step="0.01"
                   value={formData.weight}
                   onChange={(e) => setFormData({ ...formData, weight: parseFloat(e.target.value) || 0 })}
-                  className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                  className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-primary focus:border-primary"
                 />
               </div>
             </div>
@@ -1270,7 +1270,7 @@ export default function ProductForm({
                   step="0.01"
                   value={formData.price}
                   onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
-                  className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                  className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-primary focus:border-primary"
                   required
                 />
               </div>
@@ -1287,7 +1287,7 @@ export default function ProductForm({
                   type="number"
                   value={formData.stock_quantity}
                   onChange={(e) => setFormData({ ...formData, stock_quantity: parseInt(e.target.value) || 0 })}
-                  className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                  className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-primary focus:border-primary"
                 />
               </div>
               <div>
@@ -1296,7 +1296,7 @@ export default function ProductForm({
                   type="number"
                   value={formData.min_stock_level}
                   onChange={(e) => setFormData({ ...formData, min_stock_level: parseInt(e.target.value) || 5 })}
-                  className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                  className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-primary focus:border-primary"
                 />
               </div>
             </div>
@@ -1386,7 +1386,7 @@ export default function ProductForm({
                 <select
                   value={newVariantAttributeId}
                   onChange={(e) => setNewVariantAttributeId(e.target.value)}
-                  className="px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                  className="px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                 >
                   <option value="">Select variant attribute to add</option>
                   {(attributes || [])
@@ -1404,7 +1404,7 @@ export default function ProductForm({
                   type="button"
                   onClick={handleAddVariantAttribute}
                   disabled={!newVariantAttributeId}
-                  className="px-3 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                  className="px-3 py-2 bg-primary text-white rounded-md hover:brightness-[0.92] disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
                 >
                   <Plus className="h-3 w-3 mr-1" />
                   Add
@@ -1472,7 +1472,7 @@ export default function ProductForm({
                         <td className="px-4 py-3">
                           {loadingAttributeValues[selectedAttr.id] ? (
                             <div className="flex items-center space-x-2">
-                              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary-600"></div>
+                              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary"></div>
                               <span className="text-xs text-gray-500">Loading...</span>
                             </div>
                           ) : availableAttributeValues[selectedAttr.id]?.length > 0 ? (
@@ -1480,7 +1480,7 @@ export default function ProductForm({
                               <select
                                 value={newValueIds[selectedAttr.id] || ''}
                                 onChange={(e) => setNewValueIds(prev => ({ ...prev, [selectedAttr.id]: e.target.value }))}
-                                className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                                className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                               >
                                 <option value="">Select value</option>
                                 {availableAttributeValues[selectedAttr.id]
@@ -1495,7 +1495,7 @@ export default function ProductForm({
                                 type="button"
                                 onClick={() => handleAddValue(selectedAttr.id)}
                                 disabled={!newValueIds[selectedAttr.id]}
-                                className="px-2 py-1 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="px-2 py-1 bg-primary text-white rounded-md hover:brightness-[0.92] disabled:opacity-50 disabled:cursor-not-allowed"
                               >
                                 <Plus className="h-3 w-3" />
                               </button>
@@ -1514,13 +1514,13 @@ export default function ProductForm({
                                 return value ? (
                                   <span
                                     key={valueId}
-                                    className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800 border border-primary-200"
+                                    className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/25"
                                   >
                                     {value.display_value || value.value}
                                     <button
                                       type="button"
                                       onClick={() => handleRemoveValue(selectedAttr.id, valueId)}
-                                      className="ml-1 text-primary-600 hover:text-primary-800"
+                                      className="ml-1 text-primary hover:opacity-80"
                                     >
                                       <X className="h-2 w-2" />
                                     </button>
@@ -1563,7 +1563,7 @@ export default function ProductForm({
                 <select
                   value={newSpecAttributeId}
                   onChange={(e) => setNewSpecAttributeId(e.target.value)}
-                  className="px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                  className="px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                 >
                   <option value="">Select specification attribute to add</option>
                   {(attributes || [])
@@ -1629,7 +1629,7 @@ export default function ProductForm({
                     <div className="space-y-2">
                       {loadingAttributeValues[selectedAttr.id] ? (
                         <div className="flex items-center space-x-2">
-                          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary-600"></div>
+                          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary"></div>
                           <span className="text-xs text-gray-500">Loading values...</span>
                         </div>
                       ) : (
@@ -1642,7 +1642,7 @@ export default function ProductForm({
                                   <select
                                     value={newValueIds[selectedAttr.id] || ''}
                                     onChange={(e) => setNewValueIds(prev => ({ ...prev, [selectedAttr.id]: e.target.value }))}
-                                    className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                                    className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                                   >
                                     <option value="">Select a value to add</option>
                                     {availableAttributeValues[selectedAttr.id]
@@ -1658,7 +1658,7 @@ export default function ProductForm({
                                   type="button"
                                   onClick={() => handleAddValue(selectedAttr.id)}
                                   disabled={!newValueIds[selectedAttr.id]}
-                                  className="px-2 py-1 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                  className="px-2 py-1 bg-primary text-white rounded-md hover:brightness-[0.92] disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                   <Plus className="h-3 w-3" />
                                 </button>
@@ -1672,13 +1672,13 @@ export default function ProductForm({
                                     return value ? (
                                       <span
                                         key={valueId}
-                                        className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800 border border-primary-200"
+                                        className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/25"
                                       >
                                         {value.display_value || value.value}
                                         <button
                                           type="button"
                                           onClick={() => handleRemoveValue(selectedAttr.id, valueId)}
-                                          className="ml-1 text-primary-600 hover:text-primary-800"
+                                          className="ml-1 text-primary hover:opacity-80"
                                         >
                                           <X className="h-2 w-2" />
                                         </button>
@@ -1775,7 +1775,7 @@ export default function ProductForm({
                               return (
                                 <span
                                   key={attrId}
-                                  className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800"
+                                  className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary"
                                 >
                                   {attr?.name}: {value}
                                 </span>
@@ -1790,7 +1790,7 @@ export default function ProductForm({
                             type="text"
                             value={variant.sku}
                             onChange={(e) => updateVariant(variant.id, 'sku', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-sm"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary text-sm"
                             placeholder="Enter SKU"
                           />
                         </td>
@@ -1803,7 +1803,7 @@ export default function ProductForm({
                             min="0"
                             value={variant.price}
                             onChange={(e) => updateVariant(variant.id, 'price', parseFloat(e.target.value) || 0)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-sm"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary text-sm"
                             placeholder="0.00"
                           />
                         </td>
@@ -1815,7 +1815,7 @@ export default function ProductForm({
                             min="0"
                             value={variant.stock_quantity}
                             onChange={(e) => updateVariant(variant.id, 'stock_quantity', parseInt(e.target.value) || 0)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-sm"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary text-sm"
                             placeholder="0"
                           />
                         </td>
@@ -1849,7 +1849,7 @@ export default function ProductForm({
                       onChange={(e) => setFormData({ ...formData, is_cod_allowed: e.target.checked })}
                       className="sr-only peer"
                     />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/40 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                   </label>
                 </div>
                 <div>
@@ -1879,7 +1879,7 @@ export default function ProductForm({
                       onChange={(e) => setFormData({ ...formData, is_returnable: e.target.checked })}
                       className="sr-only peer"
                     />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/40 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                   </label>
                 </div>
                 
@@ -1893,7 +1893,7 @@ export default function ProductForm({
                         max="30"
                         value={formData.return_days}
                         onChange={(e) => setFormData({ ...formData, return_days: parseInt(e.target.value) || 14 })}
-                        className="w-16 px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        className="w-16 px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                       />
                       <span className="text-xs text-gray-500">
                         {formData.return_days <= 7 ? '(7 Day Policy)' : 
@@ -1931,7 +1931,7 @@ export default function ProductForm({
                       onChange={(e) => setFormData({ ...formData, is_cancelable: e.target.checked })}
                       className="sr-only peer"
                     />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/40 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                   </label>
                 </div>
                 
@@ -1941,7 +1941,7 @@ export default function ProductForm({
                     <select
                       value={formData.cancel_until_status}
                       onChange={(e) => setFormData({ ...formData, cancel_until_status: e.target.value as 'pending' | 'processing' | 'shipped' })}
-                      className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                      className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                     >
                       <option value="pending">Confirmed</option>
                       <option value="processing">Processing</option>
@@ -1988,7 +1988,7 @@ export default function ProductForm({
                   type="checkbox"
                   checked={formData.is_active}
                   onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
                 />
                 <span className="ml-2 text-sm text-gray-700">Active</span>
               </label>
@@ -1997,7 +1997,7 @@ export default function ProductForm({
                   type="checkbox"
                   checked={formData.is_featured}
                   onChange={(e) => setFormData({ ...formData, is_featured: e.target.checked })}
-                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
                 />
                 <span className="ml-2 text-sm text-gray-700">Featured</span>
               </label>
@@ -2014,7 +2014,7 @@ export default function ProductForm({
                   type="text"
                   value={formData.meta_title}
                   onChange={(e) => setFormData({ ...formData, meta_title: e.target.value })}
-                  className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                  className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-primary focus:border-primary"
                   placeholder="Enter meta title for SEO"
                 />
               </div>
@@ -2024,7 +2024,7 @@ export default function ProductForm({
                   value={formData.meta_description}
                   onChange={(e) => setFormData({ ...formData, meta_description: e.target.value })}
                   rows={3}
-                  className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                  className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-primary focus:border-primary"
                   placeholder="Enter meta description for SEO"
                 />
               </div>
@@ -2052,7 +2052,7 @@ export default function ProductForm({
             <button
               type="submit"
               disabled={isSubmitting || uploading || loading}
-              className="px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50"
+              className="px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:brightness-[0.92] disabled:opacity-50"
             >
               {isSubmitting ? 'Saving...' : uploading ? 'Uploading...' : (product ? 'Update Product' : 'Create Product')}
             </button>

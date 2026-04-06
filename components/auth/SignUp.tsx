@@ -30,13 +30,13 @@ export default function SignUp() {
     if (!loading && user) {
       router.push('/');
     }
-  }, [user, loading, router]);
+  }, [user?.id, loading, router]);
 
   // Show loading while checking authentication
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -231,7 +231,7 @@ export default function SignUp() {
                     type="button"
                     onClick={handleResendOtp}
                     disabled={resendLoading}
-                    className="text-primary-600 hover:text-primary-700 font-medium text-sm disabled:opacity-50"
+                    className="text-primary hover:text-primary font-medium text-sm disabled:opacity-50"
                   >
                     {resendLoading ? 'Sending...' : 'Resend code'}
                   </button>
@@ -264,8 +264,8 @@ export default function SignUp() {
       <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
           <div className="text-center">
-            <div className="mx-auto h-12 w-12 bg-primary-100 rounded-full flex items-center justify-center mb-4">
-              <UserPlusIcon className="h-6 w-6 text-primary-600" />
+            <div className="mx-auto h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+              <UserPlusIcon className="h-6 w-6 text-primary" />
             </div>
             <h2 className="text-3xl font-bold text-gray-900">
               Join Suuqsade
@@ -406,7 +406,7 @@ export default function SignUp() {
               Already have an account?{' '}
               <Link 
                 href="/auth/signin" 
-                className="font-medium text-primary-600 hover:text-primary-700 transition-colors inline-flex items-center"
+                className="font-medium text-primary hover:text-primary transition-colors inline-flex items-center"
               >
                 <ArrowLeftIcon className="mr-1 h-4 w-4" />
                 Sign in here

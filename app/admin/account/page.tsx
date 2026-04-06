@@ -177,7 +177,7 @@ export default function AccountPage() {
                 onClick={() => setActiveTab(tab.id as 'profile' | 'security')}
                 className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center ${
                   activeTab === tab.id
-                    ? 'border-primary-500 text-primary-600'
+                    ? 'border-primary text-primary'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
@@ -208,7 +208,7 @@ export default function AccountPage() {
                     type="text"
                     value={profileForm.first_name}
                     onChange={(e) => setProfileForm({ ...profileForm, first_name: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                     required
                   />
                 </div>
@@ -221,7 +221,7 @@ export default function AccountPage() {
                     type="text"
                     value={profileForm.last_name}
                     onChange={(e) => setProfileForm({ ...profileForm, last_name: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                     required
                   />
                 </div>
@@ -253,7 +253,7 @@ export default function AccountPage() {
                     type="tel"
                     value={profileForm.phone}
                     onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                     placeholder="+1 (555) 123-4567"
                   />
                 </div>
@@ -263,7 +263,7 @@ export default function AccountPage() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:brightness-[0.92] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50"
                 >
                   <Save className="mr-2 h-4 w-4" />
                   {saving ? 'Saving...' : 'Save Changes'}
@@ -294,7 +294,7 @@ export default function AccountPage() {
                     type={showCurrentPassword ? 'text' : 'password'}
                     value={securityForm.current_password}
                     onChange={(e) => setSecurityForm({ ...securityForm, current_password: e.target.value })}
-                    className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                    className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                     placeholder="Enter current password"
                   />
                   <button
@@ -317,7 +317,7 @@ export default function AccountPage() {
                     type={showNewPassword ? 'text' : 'password'}
                     value={securityForm.new_password}
                     onChange={(e) => setSecurityForm({ ...securityForm, new_password: e.target.value })}
-                    className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                    className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                     placeholder="Enter new password"
                     minLength={6}
                   />
@@ -342,7 +342,7 @@ export default function AccountPage() {
                     type={showConfirmPassword ? 'text' : 'password'}
                     value={securityForm.confirm_password}
                     onChange={(e) => setSecurityForm({ ...securityForm, confirm_password: e.target.value })}
-                    className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                    className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                     placeholder="Confirm new password"
                     minLength={6}
                   />
@@ -360,7 +360,7 @@ export default function AccountPage() {
                 <button
                   type="submit"
                   disabled={saving || !securityForm.new_password || !securityForm.confirm_password}
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:brightness-[0.92] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50"
                 >
                   <Save className="mr-2 h-4 w-4" />
                   {saving ? 'Updating...' : 'Update Password'}

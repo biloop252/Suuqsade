@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Payment } from '@/types/database';
 import { XIcon, CreditCardIcon } from 'lucide-react';
+import AdminModalBackdrop, { AdminTallFormPanel } from './AdminModalBackdrop';
 
 interface PaymentFormProps {
   payment: Payment | null;
@@ -65,16 +66,17 @@ export default function PaymentForm({ payment, onClose, onSave }: PaymentFormPro
 
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+    <AdminModalBackdrop>
+      <AdminTallFormPanel className="w-full max-w-2xl">
+        <div className="flex shrink-0 items-center justify-between border-b border-gray-200 px-6 py-4">
           <div className="flex items-center space-x-3">
-            <CreditCardIcon className="h-6 w-6 text-primary-600" />
+            <CreditCardIcon className="h-6 w-6 text-primary" />
             <h2 className="text-xl font-semibold text-gray-900">
               Update Payment Status
             </h2>
           </div>
           <button
+            type="button"
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600"
           >
@@ -82,7 +84,8 @@ export default function PaymentForm({ payment, onClose, onSave }: PaymentFormPro
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+        <div className="min-h-0 flex-1 overflow-y-auto p-6 space-y-6">
           {/* Payment Information Display */}
           <div className="bg-gray-50 p-4 rounded-lg">
             <h3 className="text-sm font-medium text-gray-900 mb-3">Payment Information</h3>
@@ -116,7 +119,7 @@ export default function PaymentForm({ payment, onClose, onSave }: PaymentFormPro
               value={formData.status}
               onChange={handleChange}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
             >
               <option value="pending">Pending</option>
               <option value="paid">Paid</option>
@@ -127,26 +130,26 @@ export default function PaymentForm({ payment, onClose, onSave }: PaymentFormPro
               Current status: <span className="font-medium capitalize">{payment?.status || 'N/A'}</span>
             </p>
           </div>
+        </div>
 
-          {/* Form Actions */}
-          <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+          <div className="flex shrink-0 justify-end gap-3 border-t border-gray-200 bg-gray-50 px-6 py-4">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-2 text-sm font-medium text-white bg-primary-600 border border-transparent rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 text-sm font-medium text-white bg-primary border border-transparent rounded-md hover:brightness-[0.92] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Updating...' : 'Update Status'}
             </button>
           </div>
         </form>
-      </div>
-    </div>
+      </AdminTallFormPanel>
+    </AdminModalBackdrop>
   );
 }

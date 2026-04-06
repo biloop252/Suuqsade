@@ -129,7 +129,7 @@ export default function CategoriesDropdown({ className = '' }: CategoriesDropdow
       <div key={category.id}>
         <Link
           href={`/categories/${category.id}`}
-          className="block text-sm text-gray-600 hover:text-primary-500 hover:bg-primary-50 px-2 py-1.5 rounded transition-colors duration-200 font-medium"
+          className="block text-sm text-gray-600 hover:opacity-90 hover:bg-primary/10 px-2 py-1.5 rounded transition-colors duration-200 font-medium"
           onClick={() => setIsOpen(false)}
         >
           {category.name}
@@ -148,13 +148,13 @@ export default function CategoriesDropdown({ className = '' }: CategoriesDropdow
       onMouseLeave={handleMouseLeave}
     >
       <button 
-        className="flex items-center space-x-2 text-gray-700 hover:text-primary-500 transition-colors"
+        className="flex items-center space-x-2 text-gray-700 hover:opacity-90 transition-colors"
         onClick={() => setIsOpen(!isOpen)}
         aria-label="Categories"
       >
         <MenuIcon className="h-5 w-5" />
         <span className="font-medium text-sm hidden md:inline">ALL CATEGORIES</span>
-        <span className="bg-secondary-500 text-gray-900 text-xs px-2 py-0.5 rounded-full hidden md:inline">New</span>
+        <span className="bg-secondary text-gray-900 text-xs px-2 py-0.5 rounded-full hidden md:inline">New</span>
         <ChevronDownIcon className={`h-4 w-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
@@ -162,7 +162,7 @@ export default function CategoriesDropdown({ className = '' }: CategoriesDropdow
         <div className="absolute top-full left-0 mt-0 w-[800px] max-w-[calc(100vw-2rem)] bg-white shadow-2xl border border-gray-200 z-50 rounded-lg overflow-hidden sm:w-[800px] w-[calc(100vw-1rem)]">
           {loading ? (
             <div className="px-8 py-12 text-center text-gray-500">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500 mx-auto mb-4"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
               Loading categories...
             </div>
           ) : isMobileView ? (
@@ -171,7 +171,7 @@ export default function CategoriesDropdown({ className = '' }: CategoriesDropdow
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <button
-                      className="text-sm text-gray-600 hover:text-primary-600"
+                      className="text-sm text-gray-600 hover:text-primary"
                       onClick={() => setHoveredCategory(null)}
                     >
                       ← Back
@@ -183,7 +183,7 @@ export default function CategoriesDropdown({ className = '' }: CategoriesDropdow
                       <Link
                         key={subcategory.id}
                         href={`/categories/${subcategory.id}`}
-                        className="block text-sm text-gray-700 hover:text-primary-600 px-2 py-2 rounded"
+                        className="block text-sm text-gray-700 hover:text-primary px-2 py-2 rounded"
                         onClick={(e) => {
                           if (categoryHierarchy[subcategory.id] && categoryHierarchy[subcategory.id].length > 0) {
                             e.preventDefault();
@@ -203,7 +203,7 @@ export default function CategoriesDropdown({ className = '' }: CategoriesDropdow
                   {categories.map((category) => (
                     <button
                       key={category.id}
-                      className="text-left text-sm text-gray-700 hover:text-primary-600 px-2 py-2 rounded"
+                      className="text-left text-sm text-gray-700 hover:text-primary px-2 py-2 rounded"
                       onClick={() => handleCategoryClick(category.id)}
                     >
                       {category.name}
@@ -223,8 +223,8 @@ export default function CategoriesDropdown({ className = '' }: CategoriesDropdow
                         key={category.id}
                         className={`group cursor-pointer border-l-4 ${
                           hoveredCategory === category.id 
-                            ? 'bg-primary-500 text-white border-primary-600' 
-                            : 'hover:bg-primary-100 hover:text-primary-600 border-transparent hover:border-primary-300'
+                            ? 'bg-primary text-white border-primary' 
+                            : 'hover:bg-primary/15 hover:text-primary border-transparent hover:border-primary/40'
                         } transition-all duration-200`}
                         onMouseEnter={() => handleCategoryHover(category.id)}
                       >
@@ -264,7 +264,7 @@ export default function CategoriesDropdown({ className = '' }: CategoriesDropdow
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     {categoryHierarchy[hoveredCategory].map((subcategory) => (
                       <div key={subcategory.id} className="space-y-3">
-                        <div className="flex items-center space-x-2 border-b-2 border-primary-200 pb-2">
+                        <div className="flex items-center space-x-2 border-b-2 border-primary/25 pb-2">
                           {subcategory.image_url && (
                             <img
                               src={subcategory.image_url}
@@ -282,7 +282,7 @@ export default function CategoriesDropdown({ className = '' }: CategoriesDropdow
                         <div className="space-y-1">
                           <Link
                             href={`/categories/${subcategory.id}`}
-                            className="block text-sm text-gray-600 hover:text-primary-500 hover:bg-primary-50 px-2 py-1.5 rounded transition-colors duration-200 font-medium"
+                            className="block text-sm text-gray-600 hover:opacity-90 hover:bg-primary/10 px-2 py-1.5 rounded transition-colors duration-200 font-medium"
                             onClick={() => setIsOpen(false)}
                           >
                             {subcategory.name}
@@ -296,8 +296,8 @@ export default function CategoriesDropdown({ className = '' }: CategoriesDropdow
                 ) : (
                   <div className="flex items-center justify-center h-full text-gray-500">
                     <div className="text-center">
-                      <div className="w-20 h-20 bg-gradient-to-br from-primary-100 to-primary-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <MenuIcon className="h-10 w-10 text-primary-400" />
+                      <div className="w-20 h-20 bg-gradient-to-br from-primary/10 to-primary/25 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <MenuIcon className="h-10 w-10 text-primary/60" />
                       </div>
                     </div>
                   </div>

@@ -233,7 +233,7 @@ export default function PaymentManagement() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-600"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -264,7 +264,7 @@ export default function PaymentManagement() {
                 setSearchTerm(e.target.value);
                 setPage(1);
               }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
             />
           </div>
           <div>
@@ -274,7 +274,7 @@ export default function PaymentManagement() {
                 setFilter(e.target.value as any);
                 setPage(1);
               }}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
             >
               <option value="all">All Status</option>
               <option value="pending">Pending</option>
@@ -295,7 +295,7 @@ export default function PaymentManagement() {
                 setDateFrom(e.target.value);
                 setPage(1);
               }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
             />
           </div>
 
@@ -308,7 +308,7 @@ export default function PaymentManagement() {
                 setDateTo(e.target.value);
                 setPage(1);
               }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
             />
           </div>
 
@@ -323,7 +323,7 @@ export default function PaymentManagement() {
                 setMinAmount(e.target.value);
                 setPage(1);
               }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
               placeholder="0.00"
             />
           </div>
@@ -339,7 +339,7 @@ export default function PaymentManagement() {
                 setMaxAmount(e.target.value);
                 setPage(1);
               }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
               placeholder="0.00"
             />
           </div>
@@ -423,7 +423,7 @@ export default function PaymentManagement() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <button
                       onClick={() => handleEditPaymentStatus(payment)}
-                      className="text-primary-600 hover:text-primary-900 text-xs px-2 py-1 border border-primary-300 rounded hover:bg-primary-50"
+                      className="text-primary hover:opacity-80 text-xs px-2 py-1 border border-primary/40 rounded hover:bg-primary/10"
                     >
                       Update Status
                     </button>

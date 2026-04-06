@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { X, Save, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import AdminModalBackdrop, { AdminTallFormPanel } from './AdminModalBackdrop';
 const RichText = dynamic(() => import('./RichTextEditor'), { ssr: false });
 
 interface Page {
@@ -147,13 +148,13 @@ export default function PageForm({ page, isOpen, onClose, onSave }: PageFormProp
 
   console.log('PageForm rendering modal');
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={onClose}></div>
-
-        <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
-          <form onSubmit={handleSubmit}>
-            <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+    <AdminModalBackdrop
+      onBackdropClick={onClose}
+      innerClassName="flex min-h-full items-start justify-center p-4 pb-32 pt-4 sm:p-6 sm:pb-40 sm:pt-8"
+    >
+        <AdminTallFormPanel className="w-full text-left sm:max-w-4xl">
+          <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+            <div className="min-h-0 flex-1 overflow-y-auto bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-medium text-gray-900">
                   {page ? 'Edit Page' : 'Create New Page'}
@@ -162,7 +163,7 @@ export default function PageForm({ page, isOpen, onClose, onSave }: PageFormProp
                   <button
                     type="button"
                     onClick={() => setPreviewMode(!previewMode)}
-                    className="inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                    className="inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
                   >
                     {previewMode ? <EyeOff className="h-4 w-4 mr-1" /> : <Eye className="h-4 w-4 mr-1" />}
                     {previewMode ? 'Edit' : 'Preview'}
@@ -199,7 +200,7 @@ export default function PageForm({ page, isOpen, onClose, onSave }: PageFormProp
                         type="text"
                         value={formData.title}
                         onChange={(e) => handleTitleChange(e.target.value)}
-                        className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
+                        className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
                           errors.title ? 'border-red-300' : 'border-gray-300'
                         }`}
                         placeholder="Enter page title"
@@ -220,7 +221,7 @@ export default function PageForm({ page, isOpen, onClose, onSave }: PageFormProp
                         type="text"
                         value={formData.slug}
                         onChange={(e) => setFormData(prev => ({ ...prev, slug: e.target.value }))}
-                        className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
+                        className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
                           errors.slug ? 'border-red-300' : 'border-gray-300'
                         }`}
                         placeholder="page-slug"
@@ -243,7 +244,7 @@ export default function PageForm({ page, isOpen, onClose, onSave }: PageFormProp
                       <select
                         value={formData.page_type}
                         onChange={(e) => setFormData(prev => ({ ...prev, page_type: e.target.value as any }))}
-                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                       >
                         <option value="static">Static</option>
                         <option value="legal">Legal</option>
@@ -259,7 +260,7 @@ export default function PageForm({ page, isOpen, onClose, onSave }: PageFormProp
                       <select
                         value={formData.status}
                         onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as any }))}
-                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                       >
                         <option value="draft">Draft</option>
                         <option value="published">Published</option>
@@ -275,7 +276,7 @@ export default function PageForm({ page, isOpen, onClose, onSave }: PageFormProp
                         type="number"
                         value={formData.sort_order}
                         onChange={(e) => setFormData(prev => ({ ...prev, sort_order: parseInt(e.target.value) || 0 }))}
-                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                         placeholder="0"
                       />
                     </div>
@@ -288,7 +289,7 @@ export default function PageForm({ page, isOpen, onClose, onSave }: PageFormProp
                       id="is_featured"
                       checked={formData.is_featured}
                       onChange={(e) => setFormData(prev => ({ ...prev, is_featured: e.target.checked }))}
-                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
                     />
                     <label htmlFor="is_featured" className="ml-2 block text-sm text-gray-900">
                       Mark as featured page
@@ -324,7 +325,7 @@ export default function PageForm({ page, isOpen, onClose, onSave }: PageFormProp
                         type="text"
                         value={formData.meta_title || ''}
                         onChange={(e) => setFormData(prev => ({ ...prev, meta_title: e.target.value }))}
-                        className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
+                        className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
                           errors.meta_title ? 'border-red-300' : 'border-gray-300'
                         }`}
                         placeholder="SEO title (60 characters max)"
@@ -351,7 +352,7 @@ export default function PageForm({ page, isOpen, onClose, onSave }: PageFormProp
                         value={formData.meta_description || ''}
                         onChange={(e) => setFormData(prev => ({ ...prev, meta_description: e.target.value }))}
                         rows={3}
-                        className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
+                        className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
                           errors.meta_description ? 'border-red-300' : 'border-gray-300'
                         }`}
                         placeholder="SEO description (160 characters max)"
@@ -378,7 +379,7 @@ export default function PageForm({ page, isOpen, onClose, onSave }: PageFormProp
                         type="text"
                         value={formData.meta_keywords || ''}
                         onChange={(e) => setFormData(prev => ({ ...prev, meta_keywords: e.target.value }))}
-                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                         placeholder="keyword1, keyword2, keyword3"
                       />
                       <p className="mt-1 text-sm text-gray-500">
@@ -394,7 +395,7 @@ export default function PageForm({ page, isOpen, onClose, onSave }: PageFormProp
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white hover:brightness-[0.92] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
@@ -406,14 +407,13 @@ export default function PageForm({ page, isOpen, onClose, onSave }: PageFormProp
               <button
                 type="button"
                 onClick={onClose}
-                className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
               >
                 Cancel
               </button>
             </div>
           </form>
-        </div>
-      </div>
-    </div>
+        </AdminTallFormPanel>
+    </AdminModalBackdrop>
   );
 }

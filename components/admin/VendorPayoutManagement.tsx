@@ -180,7 +180,7 @@ export default function VendorPayoutManagement() {
   const getStatusBadge = (status: string) => {
     const statusColors = {
       pending: 'bg-yellow-100 text-yellow-800',
-      processing: 'bg-primary-100 text-primary-800',
+      processing: 'bg-primary/10 text-primary',
       completed: 'bg-green-100 text-green-800',
       failed: 'bg-red-100 text-red-800',
       cancelled: 'bg-gray-100 text-gray-800'
@@ -202,7 +202,7 @@ export default function VendorPayoutManagement() {
             setPayoutModalVendorId('');
             setShowCreateModal(true);
           }}
-          className="rounded-md bg-primary-600 px-4 py-2 text-white hover:bg-primary-700"
+          className="rounded-md bg-primary px-4 py-2 text-white hover:brightness-[0.92]"
         >
           Create Payout
         </button>
@@ -215,7 +215,7 @@ export default function VendorPayoutManagement() {
           <button
             onClick={() => loadPendingCommissions()}
             disabled={loading}
-            className="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 disabled:opacity-50 text-sm"
+            className="bg-primary text-white px-4 py-2 rounded-md hover:brightness-[0.92] disabled:opacity-50 text-sm"
           >
             {loading ? 'Loading...' : 'Refresh'}
           </button>
@@ -257,7 +257,7 @@ export default function VendorPayoutManagement() {
                         setPayoutModalVendorId(commission.vendor_id);
                         setShowCreateModal(true);
                       }}
-                      className="text-primary-600 hover:text-primary-900"
+                      className="text-primary hover:opacity-80"
                     >
                       Create Payout
                     </button>
@@ -343,7 +343,7 @@ export default function VendorPayoutManagement() {
                         type="button"
                         onClick={() => savePayoutStatus(payout.id)}
                         disabled={savingStatusFor === payout.id || (statusEdits[payout.id] ?? payout.status) === payout.status}
-                        className="rounded-md bg-primary-600 px-3 py-1.5 text-sm text-white hover:bg-primary-700 disabled:opacity-50"
+                        className="rounded-md bg-primary px-3 py-1.5 text-sm text-white hover:brightness-[0.92] disabled:opacity-50"
                       >
                         {savingStatusFor === payout.id ? 'Saving...' : 'Save'}
                       </button>

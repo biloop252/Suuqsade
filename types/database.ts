@@ -14,6 +14,9 @@ export type CouponStatus = 'active' | 'inactive' | 'expired' | 'used_up';
 export type SupportTicketStatus = 'open' | 'in_progress' | 'waiting_customer' | 'waiting_staff' | 'resolved' | 'closed';
 export type SupportTicketPriority = 'low' | 'medium' | 'high' | 'urgent';
 export type SupportNotificationType = 'ticket_update' | 'new_message' | 'status_change' | 'assignment';
+export type AppNotificationAudience = 'customer' | 'admin';
+export type AppNotificationSeverity = 'success' | 'info' | 'warning' | 'danger';
+export type AppAdminNotificationPriority = 'low' | 'medium' | 'high' | 'urgent';
 export type SettingType = 'text' | 'number' | 'boolean' | 'json' | 'url' | 'email';
 export type SystemImageType = 'logo' | 'favicon' | 'icon' | 'banner' | 'background';
 
@@ -823,6 +826,23 @@ export interface SupportNotification {
   created_at: string;
   user?: Profile;
   ticket?: SupportTicket;
+}
+
+export interface AppNotification {
+  id: string;
+  recipient_id: string;
+  audience: AppNotificationAudience;
+  category: string;
+  event_key: string;
+  title: string;
+  body: string;
+  severity: AppNotificationSeverity;
+  priority: AppAdminNotificationPriority | null;
+  metadata: Record<string, unknown>;
+  channels: unknown;
+  is_read: boolean;
+  action_url: string | null;
+  created_at: string;
 }
 
 export interface SupportSlaLog {

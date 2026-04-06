@@ -110,7 +110,7 @@ export default function CheckoutPage() {
     } else {
       router.push('/auth/signin');
     }
-  }, [user]);
+  }, [user?.id, router]);
 
   // Fetch product discounts when cart items change
   useEffect(() => {
@@ -1102,6 +1102,28 @@ export default function CheckoutPage() {
         console.log('Delivery record created successfully:', deliveryResult);
       }
 
+      // In-app notifications (DB) — checkout creates the order in the browser, not via /api/customers/orders
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        const accessToken = sessionData?.session?.access_token;
+        if (accessToken && order?.id) {
+          const notifyRes = await fetch('/api/customers/notifications/order-placed', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify({ orderId: order.id }),
+          });
+          if (!notifyRes.ok) {
+            const errBody = await notifyRes.json().catch(() => ({}));
+            console.warn('Order-placed notifications failed:', notifyRes.status, errBody);
+          }
+        }
+      } catch (notifyErr) {
+        console.warn('Order-placed notifications request failed:', notifyErr);
+      }
+
       // Clear cart
       console.log('Clearing cart...');
       await clearCart();
@@ -1133,7 +1155,7 @@ export default function CheckoutPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-600"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -1181,7 +1203,7 @@ export default function CheckoutPage() {
             <div className="flex space-x-4 justify-center">
               <Link 
                 href="/orders" 
-                className="bg-primary-600 text-white px-6 py-3 rounded-md font-medium hover:bg-primary-700"
+                className="bg-primary text-white px-6 py-3 rounded-md font-medium hover:brightness-[0.92]"
               >
                 View Orders
               </Link>
@@ -1203,11 +1225,11 @@ export default function CheckoutPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Breadcrumb */}
         <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-8">
-          <Link href="/" className="hover:text-primary-600">Home</Link>
+          <Link href="/" className="hover:text-primary">Home</Link>
           <span>/</span>
-          <Link href="/products" className="hover:text-primary-600">Products</Link>
+          <Link href="/products" className="hover:text-primary">Products</Link>
           <span>/</span>
-          <Link href="/cart" className="hover:text-primary-600">Cart</Link>
+          <Link href="/cart" className="hover:text-primary">Cart</Link>
           <span>/</span>
           <span className="text-gray-900">Checkout</span>
         </nav>
@@ -1220,7 +1242,7 @@ export default function CheckoutPage() {
                 {/* Shipping Address */}
                 <div className="bg-white rounded-lg shadow-sm p-6">
                   <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
-                    <TruckIcon className="h-6 w-6 mr-2 text-primary-600" />
+                    <TruckIcon className="h-6 w-6 mr-2 text-primary" />
                     Shipping Address
                   </h2>
                   
@@ -1231,7 +1253,7 @@ export default function CheckoutPage() {
                       <select
                         value={selectedShippingAddressId}
                         onChange={(e) => handleShippingAddressSelect(e.target.value)}
-                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary focus:border-primary"
                       >
                         <option value="">Choose an address...</option>
                         {getShippingAddresses().map((address) => (
@@ -1265,7 +1287,7 @@ export default function CheckoutPage() {
                       <button
                         type="button"
                         onClick={handleAddNewAddress}
-                        className="bg-primary-600 text-white px-6 py-3 rounded-md font-medium hover:bg-primary-700 flex items-center justify-center mx-auto"
+                        className="bg-primary text-white px-6 py-3 rounded-md font-medium hover:brightness-[0.92] flex items-center justify-center mx-auto"
                       >
                         <MapPinIcon className="h-5 w-5 mr-2" />
                         Add New Address
@@ -1281,7 +1303,7 @@ export default function CheckoutPage() {
                 <button
                   type="submit"
                   disabled={addressProcessing || !selectedShippingAddressId || hasUnavailableDelivery}
-                  className="w-full bg-primary-600 text-white py-3 px-4 rounded-md font-medium hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  className="w-full bg-primary text-white py-3 px-4 rounded-md font-medium hover:brightness-[0.92] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                 >
                   {addressProcessing ? (
                     <>
@@ -1311,7 +1333,7 @@ export default function CheckoutPage() {
               <form onSubmit={handlePaymentSubmit} className="space-y-8">
                 <div className="bg-white rounded-lg shadow-sm p-6">
                   <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
-                    <CreditCardIcon className="h-6 w-6 mr-2 text-primary-600" />
+                    <CreditCardIcon className="h-6 w-6 mr-2 text-primary" />
                     Payment Information
                   </h2>
 
@@ -1355,7 +1377,7 @@ export default function CheckoutPage() {
                             </div>
                           </div>
                         </label>
-                        <label className={`flex items-center p-3 border rounded-md cursor-pointer hover:bg-gray-50 ${paymentMethod === 'sifalopay' ? 'border-primary-500 bg-primary-50' : 'border-gray-300'}`}>
+                        <label className={`flex items-center p-3 border rounded-md cursor-pointer hover:bg-gray-50 ${paymentMethod === 'sifalopay' ? 'border-primary bg-primary/5' : 'border-gray-300'}`}>
                           <input
                             type="radio"
                             name="paymentMethod"
@@ -1364,7 +1386,7 @@ export default function CheckoutPage() {
                             onChange={(e) => setPaymentMethod(e.target.value)}
                             className="mr-3"
                           />
-                          <CreditCardIcon className="h-5 w-5 mr-2 text-primary-600" />
+                          <CreditCardIcon className="h-5 w-5 mr-2 text-primary" />
                           <div>
                             <div className="font-medium text-gray-900">Sifalo Pay</div>
                             <div className="text-sm text-gray-500">Card, e-Dahab & other options</div>
@@ -1394,7 +1416,7 @@ export default function CheckoutPage() {
                         value={orderNotes}
                         onChange={(e) => setOrderNotes(e.target.value)}
                         rows={3}
-                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary focus:border-primary"
                         placeholder="Any special instructions for your order..."
                       />
                     </div>
@@ -1421,7 +1443,7 @@ export default function CheckoutPage() {
                     <button
                       type="submit"
                       disabled={processing || !selectedShippingAddressId}
-                      className="flex-1 bg-primary-600 text-white py-3 px-4 rounded-md font-medium hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                      className="flex-1 bg-primary text-white py-3 px-4 rounded-md font-medium hover:brightness-[0.92] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                     >
                       {processing ? (
                         <>
@@ -1515,13 +1537,13 @@ export default function CheckoutPage() {
                         value={couponCode}
                         onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                         placeholder="Enter coupon code"
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                         disabled={couponLoading}
                       />
                       <button
                         onClick={handleApplyCoupon}
                         disabled={couponLoading || !couponCode.trim()}
-                        className="px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-md hover:brightness-[0.92] disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {couponLoading ? 'Applying...' : 'Apply'}
                       </button>
@@ -1602,7 +1624,7 @@ export default function CheckoutPage() {
                     <div className="flex items-center">
                       {paymentMethod === 'sifalopay' ? (
                         <>
-                          <CreditCardIcon className="h-5 w-5 text-primary-600 mr-2" />
+                          <CreditCardIcon className="h-5 w-5 text-primary mr-2" />
                           <span className="text-sm text-gray-600">Sifalo Pay</span>
                         </>
                       ) : (

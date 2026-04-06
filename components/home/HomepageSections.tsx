@@ -212,7 +212,7 @@ export default function HomepageSections() {
               {(s.title || s.subtitle) && (
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-6 sm:mb-8">
                   <div className="flex items-center space-x-3">
-                    <div className="bg-primary-500 rounded-lg p-2">
+                    <div className="bg-primary rounded-lg p-2">
                       <Icon className="h-6 w-6 text-white" />
                     </div>
                     <div>

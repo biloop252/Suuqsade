@@ -243,7 +243,7 @@ export default function ReviewsManagement() {
                 placeholder="Search reviews..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
               />
             </div>
           </div>
@@ -253,7 +253,7 @@ export default function ReviewsManagement() {
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value as 'all' | 'approved' | 'pending')}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
             >
               <option value="all">All Reviews</option>
               <option value="approved">Approved</option>
@@ -280,8 +280,8 @@ export default function ReviewsManagement() {
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center space-x-3 mb-2">
-                      <div className="h-10 w-10 bg-primary-100 rounded-full flex items-center justify-center">
-                        <span className="text-sm font-medium text-primary-600">
+                      <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center">
+                        <span className="text-sm font-medium text-primary">
                           {getUserInitials(review.profiles?.first_name, review.profiles?.last_name)}
                         </span>
                       </div>
@@ -297,7 +297,7 @@ export default function ReviewsManagement() {
                     <div className="mb-3">
                       <Link
                         href={`/products/${review.products?.slug}`}
-                        className="text-sm font-medium text-primary-600 hover:text-primary-700"
+                        className="text-sm font-medium text-primary hover:text-primary"
                       >
                         {review.products?.name}
                       </Link>

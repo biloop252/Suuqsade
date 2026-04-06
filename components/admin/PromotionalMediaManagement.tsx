@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import Pagination from './Pagination';
 import PromotionalMediaForm from './PromotionalMediaForm';
+import AdminModalBackdrop from './AdminModalBackdrop';
 
 
 export default function PromotionalMediaManagement() {
@@ -235,7 +236,7 @@ export default function PromotionalMediaManagement() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -253,7 +254,7 @@ export default function PromotionalMediaManagement() {
             setEditingMedia(null);
             setShowForm(true);
           }}
-          className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 flex items-center gap-2"
+          className="bg-primary text-white px-4 py-2 rounded-lg hover:brightness-[0.92] flex items-center gap-2"
         >
           <Plus className="h-4 w-4" />
           Add Promotional Media
@@ -279,7 +280,7 @@ export default function PromotionalMediaManagement() {
                 placeholder="Search by title, subtitle, or description..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
               />
             </div>
           </div>
@@ -288,7 +289,7 @@ export default function PromotionalMediaManagement() {
             <select
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
             >
               <option value="">All Types</option>
               {mediaTypes.map(type => (
@@ -301,7 +302,7 @@ export default function PromotionalMediaManagement() {
             <select
               value={selectedPosition}
               onChange={(e) => setSelectedPosition(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
             >
               <option value="">All Positions</option>
               {positions.map(position => (
@@ -314,7 +315,7 @@ export default function PromotionalMediaManagement() {
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
             >
               <option value="">All Status</option>
               <option value="active">Active</option>
@@ -470,9 +471,9 @@ export default function PromotionalMediaManagement() {
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div className="mt-3 text-center">
+        <AdminModalBackdrop>
+          <div className="relative mx-auto w-full max-w-md rounded-lg border border-gray-200 bg-white p-5 shadow-lg">
+            <div className="text-center">
               <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
                 <Trash2 className="h-6 w-6 text-red-600" />
               </div>
@@ -484,12 +485,14 @@ export default function PromotionalMediaManagement() {
               </div>
               <div className="flex justify-center space-x-3 mt-4">
                 <button
+                  type="button"
                   onClick={() => setShowDeleteModal(null)}
                   className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
                 >
                   Cancel
                 </button>
                 <button
+                  type="button"
                   onClick={() => handleDelete(showDeleteModal)}
                   className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700"
                 >
@@ -498,7 +501,7 @@ export default function PromotionalMediaManagement() {
               </div>
             </div>
           </div>
-        </div>
+        </AdminModalBackdrop>
       )}
     </div>
   );

@@ -100,7 +100,7 @@ export default function OrdersContent() {
     if (user) {
       fetchOrders();
     }
-  }, [user, currentPage, itemsPerPage, searchTerm, statusFilter]);
+  }, [user?.id, currentPage, itemsPerPage, searchTerm, statusFilter]);
 
   const fetchOrders = async () => {
     try {
@@ -227,7 +227,7 @@ export default function OrdersContent() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -242,7 +242,7 @@ export default function OrdersContent() {
         </div>
         <Link 
           href="/products" 
-          className="bg-primary-600 text-white px-4 py-2 rounded-md font-medium hover:bg-primary-700 transition-colors"
+          className="bg-primary text-white px-4 py-2 rounded-md font-medium hover:brightness-[0.92] transition-colors"
         >
           Continue Shopping
         </Link>
@@ -258,7 +258,7 @@ export default function OrdersContent() {
               placeholder="Search orders or products..."
               value={searchTerm}
               onChange={(e) => handleSearchChange(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
             />
           </div>
           <button
@@ -277,7 +277,7 @@ export default function OrdersContent() {
               <button
                 onClick={() => handleStatusFilterChange('')}
                 className={`px-3 py-1 text-sm rounded-full ${
-                  !statusFilter ? 'bg-primary-100 text-primary-800' : 'bg-gray-100 text-gray-700'
+                  !statusFilter ? 'bg-primary/10 text-primary' : 'bg-gray-100 text-gray-700'
                 }`}
               >
                 All Orders
@@ -287,7 +287,7 @@ export default function OrdersContent() {
                   key={status}
                   onClick={() => handleStatusFilterChange(status)}
                   className={`px-3 py-1 text-sm rounded-full capitalize ${
-                    statusFilter === status ? 'bg-primary-100 text-primary-800' : 'bg-gray-100 text-gray-700'
+                    statusFilter === status ? 'bg-primary/10 text-primary' : 'bg-gray-100 text-gray-700'
                   }`}
                 >
                   {status}
@@ -314,7 +314,7 @@ export default function OrdersContent() {
           {totalOrders === 0 && (
             <Link 
               href="/products" 
-              className="bg-primary-600 text-white px-6 py-3 rounded-md font-medium hover:bg-primary-700"
+              className="bg-primary text-white px-6 py-3 rounded-md font-medium hover:brightness-[0.92]"
             >
               Start Shopping
             </Link>
@@ -369,7 +369,7 @@ export default function OrdersContent() {
                   <div className="ml-4 flex-shrink-0">
                     <button 
                       onClick={() => toggleOrderExpansion(order.id)}
-                      className="text-primary-600 hover:text-primary-700 text-xs font-medium"
+                      className="text-primary hover:text-primary text-xs font-medium"
                     >
                       {expandedOrders.has(order.id) ? 'Hide Details' : 'View Details'}
                     </button>

@@ -24,7 +24,7 @@ export default function SignIn() {
     if (!loading && user) {
       router.push('/');
     }
-  }, [user, loading, router]);
+  }, [user?.id, loading, router]);
 
   // Check for URL error parameters from auth callback
   useEffect(() => {
@@ -63,7 +63,7 @@ export default function SignIn() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -138,8 +138,8 @@ export default function SignIn() {
       <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
           <div className="text-center">
-            <div className="mx-auto h-12 w-12 bg-primary-100 rounded-full flex items-center justify-center mb-4">
-              <UserIcon className="h-6 w-6 text-primary-600" />
+            <div className="mx-auto h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+              <UserIcon className="h-6 w-6 text-primary" />
             </div>
             <h2 className="text-3xl font-bold text-gray-900">
               Welcome Back
@@ -213,7 +213,7 @@ export default function SignIn() {
                 <div className="text-sm">
                   <Link 
                     href="/auth/forgot-password" 
-                    className="font-medium text-primary-600 hover:text-primary-700 transition-colors"
+                    className="font-medium text-primary hover:text-primary transition-colors"
                   >
                     Forgot your password?
                   </Link>
@@ -263,7 +263,7 @@ export default function SignIn() {
               Don't have an account?{' '}
               <Link 
                 href="/auth/signup" 
-                className="font-medium text-primary-600 hover:text-primary-700 transition-colors inline-flex items-center"
+                className="font-medium text-primary hover:text-primary transition-colors inline-flex items-center"
               >
                 Create one now
                 <ArrowRightIcon className="ml-1 h-4 w-4" />

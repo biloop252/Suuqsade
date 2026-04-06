@@ -15,6 +15,7 @@ import {
   MoreVertical
 } from 'lucide-react';
 import Pagination from './Pagination';
+import AdminModalBackdrop from './AdminModalBackdrop';
 
 export default function ProductsManagement() {
   const router = useRouter();
@@ -188,7 +189,7 @@ export default function ProductsManagement() {
         </div>
         <button
           onClick={() => router.push('/admin/products/create')}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700"
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:brightness-[0.92]"
         >
           <Plus className="h-4 w-4 mr-2" />
           Add Product
@@ -206,7 +207,7 @@ export default function ProductsManagement() {
                 placeholder="Search products..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500 w-full"
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary w-full"
               />
             </div>
           </div>
@@ -214,7 +215,7 @@ export default function ProductsManagement() {
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
             >
               <option value="">All Categories</option>
               {categories.map(category => (
@@ -226,7 +227,7 @@ export default function ProductsManagement() {
             <select
               value={selectedBrand}
               onChange={(e) => setSelectedBrand(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
             >
               <option value="">All Brands</option>
               {brands.map(brand => (
@@ -287,7 +288,7 @@ export default function ProductsManagement() {
                                 alt={product.name}
                               />
                               {(product as any).images.length > 1 && (
-                                <div className="absolute -top-1 -right-1 bg-primary-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                                <div className="absolute -top-1 -right-1 bg-primary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                                   +{(product as any).images.length - 1}
                                 </div>
                               )}
@@ -446,21 +447,22 @@ function DeleteProductModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-      <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div className="mt-3">
+    <AdminModalBackdrop>
+      <div className="relative mx-auto w-full max-w-md rounded-lg border border-gray-200 bg-white p-5 shadow-lg">
           <h3 className="text-lg font-medium text-gray-900 mb-4">Delete Product</h3>
           <p className="text-sm text-gray-500 mb-6">
             Are you sure you want to delete "{product.name}"? This action cannot be undone.
           </p>
           <div className="flex justify-end space-x-3">
             <button
+              type="button"
               onClick={onClose}
               className="px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
             >
               Cancel
             </button>
             <button
+              type="button"
               onClick={handleDelete}
               disabled={loading}
               className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 disabled:opacity-50"
@@ -468,9 +470,8 @@ function DeleteProductModal({
               {loading ? 'Deleting...' : 'Delete'}
             </button>
           </div>
-        </div>
       </div>
-    </div>
+    </AdminModalBackdrop>
   );
 }
 

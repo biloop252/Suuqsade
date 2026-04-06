@@ -20,7 +20,7 @@ export default function VendorLogin() {
     if (user && profile?.role === 'vendor') {
       router.push('/vendor/dashboard');
     }
-  }, [user, profile, router]);
+  }, [user?.id, profile?.role, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

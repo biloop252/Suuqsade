@@ -43,7 +43,7 @@ export default function SupportTicketsContent() {
       fetchTickets();
       fetchCategories();
     }
-  }, [user]);
+  }, [user?.id]);
 
   const fetchTickets = async () => {
     try {
@@ -238,7 +238,7 @@ export default function SupportTicketsContent() {
         </div>
         <button
           onClick={() => setShowNewTicketForm(true)}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700"
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:brightness-[0.92]"
         >
           <Plus className="h-4 w-4 mr-2" />
           New Ticket
@@ -259,7 +259,7 @@ export default function SupportTicketsContent() {
                   value={newTicket.subject}
                   onChange={(e) => setNewTicket({ ...newTicket, subject: e.target.value })}
                   placeholder="Brief description of your issue"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               </div>
               
@@ -270,7 +270,7 @@ export default function SupportTicketsContent() {
                 <select
                   value={newTicket.category_id}
                   onChange={(e) => setNewTicket({ ...newTicket, category_id: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                 >
                   <option value="">Select a category</option>
                   {categories.map((category) => (
@@ -288,7 +288,7 @@ export default function SupportTicketsContent() {
                 <select
                   value={newTicket.priority}
                   onChange={(e) => setNewTicket({ ...newTicket, priority: e.target.value as any })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                 >
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
@@ -306,7 +306,7 @@ export default function SupportTicketsContent() {
                   onChange={(e) => setNewTicket({ ...newTicket, description: e.target.value })}
                   placeholder="Please provide detailed information about your issue..."
                 rows={4}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
             </div>
             
@@ -319,7 +319,7 @@ export default function SupportTicketsContent() {
               </button>
               <button
                 onClick={createTicket}
-                className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
+                className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:brightness-[0.92]"
               >
                 Create Ticket
               </button>
@@ -339,7 +339,7 @@ export default function SupportTicketsContent() {
                 <p className="text-gray-500 mb-4">You haven't created any support tickets yet.</p>
                 <button
                   onClick={() => setShowNewTicketForm(true)}
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700"
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:brightness-[0.92]"
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Create Your First Ticket
@@ -378,7 +378,7 @@ export default function SupportTicketsContent() {
                       <tr
                     key={ticket.id}
                         className={`hover:bg-gray-50 cursor-pointer transition-colors ${
-                      selectedTicket?.id === ticket.id ? 'bg-primary-50' : ''
+                      selectedTicket?.id === ticket.id ? 'bg-primary/5' : ''
                     }`}
                     onClick={() => handleTicketClick(ticket)}
                   >
@@ -428,7 +428,7 @@ export default function SupportTicketsContent() {
                               e.stopPropagation();
                               handleTicketClick(ticket);
                             }}
-                            className="text-primary-600 hover:text-primary-900 flex items-center"
+                            className="text-primary hover:opacity-80 flex items-center"
                           >
                             <Eye className="h-4 w-4 mr-1" />
                             View
@@ -496,8 +496,8 @@ export default function SupportTicketsContent() {
                   {messages.map((message) => (
                       <div key={message.id} className="flex space-x-3">
                         <div className="flex-shrink-0">
-                          <div className="h-8 w-8 bg-primary-100 rounded-full flex items-center justify-center">
-                            <User className="h-4 w-4 text-primary-600" />
+                          <div className="h-8 w-8 bg-primary/10 rounded-full flex items-center justify-center">
+                            <User className="h-4 w-4 text-primary" />
                           </div>
                         </div>
                         <div className="flex-1 min-w-0">
@@ -527,12 +527,12 @@ export default function SupportTicketsContent() {
                       onChange={(e) => setNewMessage(e.target.value)}
                       placeholder="Type your message..."
                       rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                     />
                     <button
                       onClick={sendMessage}
                       disabled={!newMessage.trim()}
-                      className="w-full flex items-center justify-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      className="w-full flex items-center justify-center px-4 py-2 bg-primary text-white rounded-lg hover:brightness-[0.92] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                       <Send className="h-4 w-4 mr-2" />
                       Send Message

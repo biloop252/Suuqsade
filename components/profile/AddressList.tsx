@@ -51,7 +51,7 @@ export default function AddressList() {
     if (user) {
       fetchAddresses();
     }
-  }, [user]);
+  }, [user?.id]);
 
   const fetchAddresses = async () => {
     if (!user) return;
@@ -183,7 +183,7 @@ export default function AddressList() {
         </div>
         <button
           onClick={() => setShowForm(true)}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:brightness-[0.92]"
         >
           <PlusIcon className="h-4 w-4 mr-2" />
           Add New Address
@@ -197,7 +197,7 @@ export default function AddressList() {
           <p className="text-gray-600 mb-4">Add your first address to get started</p>
           <button
             onClick={() => setShowForm(true)}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:brightness-[0.92]"
           >
             <PlusIcon className="h-4 w-4 mr-2" />
             Add Address
@@ -209,12 +209,12 @@ export default function AddressList() {
             <div
               key={address.id}
               className={`relative bg-white border rounded-lg p-6 ${
-                address.is_default ? 'border-primary-500 bg-primary-50' : 'border-gray-200'
+                address.is_default ? 'border-primary bg-primary/5' : 'border-gray-200'
               }`}
             >
               {address.is_default && (
                 <div className="absolute top-4 right-4">
-                  <StarIcon className="h-5 w-5 text-primary-500 fill-current" />
+                  <StarIcon className="h-5 w-5 text-primary fill-current" />
                 </div>
               )}
 
@@ -230,7 +230,7 @@ export default function AddressList() {
                       {address.type} Address
                     </h4>
                     {address.is_default && (
-                      <span className="text-xs text-primary-600 font-medium">Default</span>
+                      <span className="text-xs text-primary font-medium">Default</span>
                     )}
                   </div>
                 </div>
@@ -260,7 +260,7 @@ export default function AddressList() {
                 <div className="flex space-x-2">
                   <button
                     onClick={() => openEditForm(address)}
-                    className="text-primary-600 hover:text-primary-700 text-sm font-medium"
+                    className="text-primary hover:text-primary text-sm font-medium"
                   >
                     <EditIcon className="h-4 w-4" />
                   </button>

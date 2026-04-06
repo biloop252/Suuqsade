@@ -24,7 +24,7 @@ export default function NotificationCenter() {
         subscriptionRef.current.unsubscribe();
       }
     };
-  }, [user]);
+  }, [user?.id]);
 
   const fetchNotifications = async () => {
     try {

@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from './supabase';
 import { Profile } from '@/types/database';
+import { useNotification } from '@/lib/notification-context';
 
 interface AuthContextType {
   user: User | null;
@@ -17,6 +18,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const { showSuccess } = useNotification();
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -61,20 +63,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     // Listen for auth changes
-    authSubscription.current = supabase.auth.onAuthStateChange(async (event, session) => {
+    authSubscription.current = supabase.auth.onAuthStateChange((event, session) => {
       if (!mounted) return;
-      
+
       console.log('Auth state change:', event, session?.user?.id);
-      
+
       setSession(session);
       setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        await fetchProfile(session.user.id);
-      } else {
+
+      if (!session?.user) {
         setProfile(null);
+      } else if (event !== 'TOKEN_REFRESHED') {
+        // Token refresh updates JWT only; refetching profile/cart/favorites is unnecessary and caused slowdowns.
+        void fetchProfile(session.user.id);
       }
-      
+
       setLoading(false);
     });
 
@@ -122,7 +125,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [profile, session]);
+  }, [profile?.id, session?.user?.id]);
 
   const fetchProfile = async (userId: string) => {
     try {
@@ -162,6 +165,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      if (!currentSession?.user || currentSession.user.id !== userId) {
+        return;
+      }
+
       setProfile(data as Profile);
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -180,8 +188,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    inFlightProfileForUserId.current = null;
+    setSession(null);
+    setUser(null);
     setProfile(null);
+    setLoading(false);
+    showSuccess('Signed out', 'You have been signed out.');
+    void supabase.auth.signOut().catch((err) => {
+      console.error('Sign out error:', err);
+    });
   };
 
   const value = {

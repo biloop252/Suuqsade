@@ -123,7 +123,7 @@ function ToastComponent({ toast, onRemove }: ToastProps) {
           {toast.type !== 'confirm' && (
             <div className="ml-2 flex-shrink-0">
               <button
-                className={`inline-flex rounded-md p-1 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-primary-500 ${getTextColor()}`}
+                className={`inline-flex rounded-md p-1 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-primary ${getTextColor()}`}
                 onClick={handleRemove}
               >
                 <span className="sr-only">Close</span>

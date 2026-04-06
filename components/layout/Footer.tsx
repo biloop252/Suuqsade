@@ -102,7 +102,7 @@ export default function Footer() {
   ].filter(s => !!s.href);
 
   return (
-    <footer className="bg-gray-100 text-gray-800 border-t border-primary-500">
+    <footer className="bg-gray-100 text-gray-800 border-t border-primary">
       {/* Footer Promotional Banner */}
       <div className="bg-white border-b border-gray-200">
         <div className="container-responsive py-4">
@@ -129,15 +129,15 @@ export default function Footer() {
             </p>
             <div className="mt-4 space-y-3">
               <div className="flex items-center text-gray-600 text-sm">
-                <MailIcon className="h-4 w-4 mr-3 text-primary-500 flex-shrink-0" />
+                <MailIcon className="h-4 w-4 mr-3 text-primary flex-shrink-0" />
                 <span className="break-all">{contactEmail}</span>
               </div>
               <div className="flex items-center text-gray-600 text-sm">
-                <PhoneIcon className="h-4 w-4 mr-3 text-primary-500 flex-shrink-0" />
+                <PhoneIcon className="h-4 w-4 mr-3 text-primary flex-shrink-0" />
                 <span>{phoneNumber}</span>
               </div>
               <div className="flex items-start text-gray-600 text-sm">
-                <MapPinIcon className="h-4 w-4 mr-3 mt-0.5 text-primary-500 flex-shrink-0" />
+                <MapPinIcon className="h-4 w-4 mr-3 mt-0.5 text-primary flex-shrink-0" />
                 <span dangerouslySetInnerHTML={{ __html: address.replace(/\n/g, '<br />') }} />
               </div>
             </div>
@@ -153,7 +153,7 @@ export default function Footer() {
               {categories.map((category) => {
                 const Icon = getCategoryIcon(category.name);
                 return (
-                  <Link key={category.id} href={`/categories/${category.id}`} className="text-gray-600 hover:text-primary-500 transition-colors text-sm py-2 px-2 rounded-lg hover:bg-gray-50 flex items-center">
+                  <Link key={category.id} href={`/categories/${category.id}`} className="text-gray-600 hover:opacity-90 transition-colors text-sm py-2 px-2 rounded-lg hover:bg-gray-50 flex items-center">
                     <Icon className="h-4 w-4 mr-2 flex-shrink-0" />
                     {category.name}
                   </Link>
@@ -170,7 +170,7 @@ export default function Footer() {
             <ul className="px-2 pb-3 space-y-1">
               {customerService.map((item) => (
                 <li key={item.name}>
-                  <Link href={item.href} className="block text-gray-600 hover:text-primary-500 transition-colors text-sm py-2 px-2 rounded-lg hover:bg-gray-50">
+                  <Link href={item.href} className="block text-gray-600 hover:opacity-90 transition-colors text-sm py-2 px-2 rounded-lg hover:bg-gray-50">
                     {item.name}
                   </Link>
                 </li>
@@ -186,7 +186,7 @@ export default function Footer() {
             <ul className="px-2 pb-3 space-y-1">
               {company.map((item) => (
                 <li key={item.name}>
-                  <Link href={item.href} className="block text-gray-600 hover:text-primary-500 transition-colors text-sm py-2 px-2 rounded-lg hover:bg-gray-50">
+                  <Link href={item.href} className="block text-gray-600 hover:opacity-90 transition-colors text-sm py-2 px-2 rounded-lg hover:bg-gray-50">
                     {item.name}
                   </Link>
                 </li>
@@ -202,7 +202,7 @@ export default function Footer() {
             <ul className="px-2 pb-3 space-y-1">
               {legal.map((item) => (
                 <li key={item.name}>
-                  <Link href={item.href} className="block text-gray-600 hover:text-primary-500 transition-colors text-sm py-2 px-2 rounded-lg hover:bg-gray-50">
+                  <Link href={item.href} className="block text-gray-600 hover:opacity-90 transition-colors text-sm py-2 px-2 rounded-lg hover:bg-gray-50">
                     {item.name}
                   </Link>
                 </li>
@@ -229,15 +229,15 @@ export default function Footer() {
             {/* Contact Info */}
             <div className="space-y-3">
               <div className="flex items-center text-gray-600 text-sm sm:text-base">
-                <MailIcon className="h-4 w-4 mr-3 text-primary-500 flex-shrink-0" />
+                <MailIcon className="h-4 w-4 mr-3 text-primary flex-shrink-0" />
                 <span>{contactEmail}</span>
               </div>
               <div className="flex items-center text-gray-600 text-sm sm:text-base">
-                <PhoneIcon className="h-4 w-4 mr-3 text-primary-500 flex-shrink-0" />
+                <PhoneIcon className="h-4 w-4 mr-3 text-primary flex-shrink-0" />
                 <span>{phoneNumber}</span>
               </div>
               <div className="flex items-start text-gray-600 text-sm sm:text-base">
-                <MapPinIcon className="h-4 w-4 mr-3 mt-0.5 text-primary-500 flex-shrink-0" />
+                <MapPinIcon className="h-4 w-4 mr-3 mt-0.5 text-primary flex-shrink-0" />
                 <span dangerouslySetInnerHTML={{ __html: address.replace(/\n/g, '<br />') }} />
               </div>
             </div>
@@ -245,7 +245,7 @@ export default function Footer() {
 
           {/* Categories */}
           <div>
-            <h4 className="text-base sm:text-lg font-semibold mb-4 text-primary-500">Shop by Category</h4>
+            <h4 className="text-base sm:text-lg font-semibold mb-4 text-primary">Shop by Category</h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {categories.map((category) => {
                 const Icon = getCategoryIcon(category.name);
@@ -253,7 +253,7 @@ export default function Footer() {
                   <Link 
                     key={category.id} 
                     href={`/categories/${category.id}`}
-                    className="flex items-center text-gray-600 hover:text-primary-500 transition-colors text-sm py-2 px-2 rounded-lg hover:bg-gray-50 min-h-[44px]"
+                    className="flex items-center text-gray-600 hover:opacity-90 transition-colors text-sm py-2 px-2 rounded-lg hover:bg-gray-50 min-h-[44px]"
                   >
                     <Icon className="h-4 w-4 mr-2 flex-shrink-0" />
                     {category.name}
@@ -265,13 +265,13 @@ export default function Footer() {
 
           {/* Customer Service */}
           <div>
-            <h4 className="text-base sm:text-lg font-semibold mb-4 text-primary-500">Customer Service</h4>
+            <h4 className="text-base sm:text-lg font-semibold mb-4 text-primary">Customer Service</h4>
             <ul className="space-y-2">
               {customerService.map((item) => (
                 <li key={item.name}>
                   <Link 
                     href={item.href}
-                    className="text-gray-600 hover:text-primary-500 transition-colors text-sm py-2 px-2 rounded-lg hover:bg-gray-50 block min-h-[44px] flex items-center"
+                    className="text-gray-600 hover:opacity-90 transition-colors text-sm py-2 px-2 rounded-lg hover:bg-gray-50 block min-h-[44px] flex items-center"
                   >
                     {item.name}
                   </Link>
@@ -282,13 +282,13 @@ export default function Footer() {
 
           {/* Company & Legal */}
           <div>
-            <h4 className="text-base sm:text-lg font-semibold mb-4 text-primary-500">Company</h4>
+            <h4 className="text-base sm:text-lg font-semibold mb-4 text-primary">Company</h4>
             <ul className="space-y-2 mb-6">
               {company.map((item) => (
                 <li key={item.name}>
                   <Link 
                     href={item.href}
-                    className="text-gray-600 hover:text-primary-500 transition-colors text-sm py-2 px-2 rounded-lg hover:bg-gray-50 block min-h-[44px] flex items-center"
+                    className="text-gray-600 hover:opacity-90 transition-colors text-sm py-2 px-2 rounded-lg hover:bg-gray-50 block min-h-[44px] flex items-center"
                   >
                     {item.name}
                   </Link>
@@ -296,13 +296,13 @@ export default function Footer() {
               ))}
             </ul>
             
-            <h4 className="text-base sm:text-lg font-semibold mb-4 text-primary-500">Legal</h4>
+            <h4 className="text-base sm:text-lg font-semibold mb-4 text-primary">Legal</h4>
             <ul className="space-y-2">
               {legal.map((item) => (
                 <li key={item.name}>
                   <Link 
                     href={item.href}
-                    className="text-gray-600 hover:text-primary-500 transition-colors text-sm py-2 px-2 rounded-lg hover:bg-gray-50 block min-h-[44px] flex items-center"
+                    className="text-gray-600 hover:opacity-90 transition-colors text-sm py-2 px-2 rounded-lg hover:bg-gray-50 block min-h-[44px] flex items-center"
                   >
                     {item.name}
                   </Link>
@@ -316,8 +316,8 @@ export default function Footer() {
         <div className="border-t border-gray-300 mt-8 sm:mt-12 pt-6 sm:pt-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             <div className="flex items-center text-gray-600 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-              <div className="bg-primary-500/20 rounded-lg p-2 sm:p-3 mr-3 sm:mr-4 flex-shrink-0">
-                <TruckIcon className="h-5 w-5 sm:h-6 sm:w-6 text-primary-500" />
+              <div className="bg-primary/20 rounded-lg p-2 sm:p-3 mr-3 sm:mr-4 flex-shrink-0">
+                <TruckIcon className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
               </div>
               <div>
                 <h5 className="font-semibold text-gray-800 text-sm sm:text-base">Free Shipping</h5>
@@ -326,8 +326,8 @@ export default function Footer() {
             </div>
             
             <div className="flex items-center text-gray-600 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-              <div className="bg-primary-500/20 rounded-lg p-2 sm:p-3 mr-3 sm:mr-4 flex-shrink-0">
-                <RotateCcwIcon className="h-5 w-5 sm:h-6 sm:w-6 text-primary-500" />
+              <div className="bg-primary/20 rounded-lg p-2 sm:p-3 mr-3 sm:mr-4 flex-shrink-0">
+                <RotateCcwIcon className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
               </div>
               <div>
                 <h5 className="font-semibold text-gray-800 text-sm sm:text-base">Easy Returns</h5>
@@ -336,8 +336,8 @@ export default function Footer() {
             </div>
             
             <div className="flex items-center text-gray-600 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-              <div className="bg-primary-500/20 rounded-lg p-2 sm:p-3 mr-3 sm:mr-4 flex-shrink-0">
-                <ShieldCheckIcon className="h-5 w-5 sm:h-6 sm:w-6 text-primary-500" />
+              <div className="bg-primary/20 rounded-lg p-2 sm:p-3 mr-3 sm:mr-4 flex-shrink-0">
+                <ShieldCheckIcon className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
               </div>
               <div>
                 <h5 className="font-semibold text-gray-800 text-sm sm:text-base">Secure Payment</h5>
@@ -346,8 +346,8 @@ export default function Footer() {
             </div>
             
             <div className="flex items-center text-gray-600 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-              <div className="bg-primary-500/20 rounded-lg p-2 sm:p-3 mr-3 sm:mr-4 flex-shrink-0">
-                <MessageSquareIcon className="h-5 w-5 sm:h-6 sm:w-6 text-primary-500" />
+              <div className="bg-primary/20 rounded-lg p-2 sm:p-3 mr-3 sm:mr-4 flex-shrink-0">
+                <MessageSquareIcon className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
               </div>
               <div>
                 <h5 className="font-semibold text-gray-800 text-sm sm:text-base">24/7 Support</h5>
@@ -360,7 +360,7 @@ export default function Footer() {
         {/* Social Media - centered */}
         <div className="border-t border-gray-300 mt-6 sm:mt-8 pt-6 sm:pt-8">
           <div className="flex flex-col items-center justify-center text-center">
-            <h4 className="text-base sm:text-lg font-semibold mb-3 text-primary-500">Follow Us</h4>
+            <h4 className="text-base sm:text-lg font-semibold mb-3 text-primary">Follow Us</h4>
             <div className="flex flex-wrap justify-center gap-3 sm:gap-4">
               {socialLinks.map((social) => (
                 <a
@@ -368,7 +368,7 @@ export default function Footer() {
                   href={social.href as string}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-gray-200 hover:bg-primary-500 hover:text-white rounded-lg p-2 sm:p-3 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+                  className="bg-gray-200 hover:brightness-[0.92] hover:text-white rounded-lg p-2 sm:p-3 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
                   aria-label={social.name}
                 >
                   <social.icon className="h-4 w-4 sm:h-5 sm:w-5" />

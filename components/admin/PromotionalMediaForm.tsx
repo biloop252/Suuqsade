@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { PromotionalMedia, Category, PromotionalMediaType, PromotionalMediaPosition, Brand, BannerActionType, ProductWithDetails } from '@/types/database';
 import { Upload, X, Image as ImageIcon, Monitor, Smartphone } from 'lucide-react';
+import AdminModalBackdrop, { AdminTallFormPanel } from './AdminModalBackdrop';
 
 interface VendorFilter {
   id: string;
@@ -711,14 +712,14 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-      <div className="relative top-20 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
-        <div className="mt-3">
-          <div className="flex justify-between items-center mb-4">
+    <AdminModalBackdrop>
+      <AdminTallFormPanel className="w-[min(100%,56rem)] max-w-4xl sm:w-11/12">
+        <div className="flex shrink-0 items-center justify-between border-b border-gray-200 px-5 py-4">
             <h3 className="text-lg font-medium text-gray-900">
               {media ? 'Edit Promotional Media' : 'Add New Promotional Media'}
             </h3>
             <button
+              type="button"
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600"
             >
@@ -727,7 +728,8 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+            <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Basic Information */}
               <div className="space-y-4">
@@ -741,7 +743,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                     value={formData.title}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                 </div>
 
@@ -752,7 +754,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                     name="subtitle"
                     value={formData.subtitle}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                 </div>
 
@@ -763,7 +765,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                     value={formData.description}
                     onChange={handleInputChange}
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                 </div>
 
@@ -774,7 +776,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                     value={formData.media_type}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   >
                     {mediaTypes.map(type => (
                       <option key={type.value} value={type.value}>{type.label}</option>
@@ -789,7 +791,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                     value={formData.banner_position}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   >
                     {positions.map(position => (
                       <option key={position.value} value={position.value}>{position.label}</option>
@@ -812,7 +814,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                       <select
                         value={sliderCount}
                         onChange={(e) => handleSliderCountChange(parseInt(e.target.value))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                       >
                         {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
                           <option key={num} value={num}>{num} Slider{num > 1 ? 's' : ''}</option>
@@ -832,7 +834,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                                 type="checkbox"
                                 checked={item.is_active}
                                 onChange={(e) => handleSliderItemChange(index, 'is_active', e.target.checked)}
-                                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                                className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
                               />
                               <label className="ml-2 text-sm text-gray-600">Active</label>
                             </div>
@@ -849,9 +851,9 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                                 value={item.image_url}
                                 onChange={(e) => handleSliderItemChange(index, 'image_url', e.target.value)}
                                 placeholder="Image URL or upload file"
-                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                               />
-                              <label className="px-3 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 cursor-pointer flex items-center gap-1">
+                              <label className="px-3 py-2 bg-primary text-white rounded-lg hover:brightness-[0.92] cursor-pointer flex items-center gap-1">
                         <Upload className="h-4 w-4" />
                                 Upload
                         <input
@@ -898,9 +900,9 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                                 value={item.mobile_image_url}
                                 onChange={(e) => handleSliderItemChange(index, 'mobile_image_url', e.target.value)}
                                 placeholder="Mobile Image URL or upload file"
-                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                               />
-                              <label className="px-3 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 cursor-pointer flex items-center gap-1">
+                              <label className="px-3 py-2 bg-primary text-white rounded-lg hover:brightness-[0.92] cursor-pointer flex items-center gap-1">
                                 <Smartphone className="h-4 w-4" />
                                 Upload
                                 <input
@@ -947,7 +949,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                                 value={item.link_url}
                                 onChange={(e) => handleSliderItemChange(index, 'link_url', e.target.value)}
                                 placeholder="https://example.com"
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                               />
                           </div>
                             <div>
@@ -959,7 +961,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                                 value={item.button_text}
                                 onChange={(e) => handleSliderItemChange(index, 'button_text', e.target.value)}
                                 placeholder="Shop Now"
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                               />
                         </div>
                           </div>
@@ -972,7 +974,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                             <select
                               value={item.target}
                               onChange={(e) => handleSliderItemChange(index, 'target', e.target.value)}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                             >
                               <option value="_self">Same Window</option>
                               <option value="_blank">New Window</option>
@@ -990,7 +992,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                               <select
                                 value={item.action_type || ''}
                                 onChange={(e) => handleSliderItemActionTypeChange(index, e.target.value as BannerActionType | '')}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                               >
                                 <option value="">None (Use Link URL)</option>
                                 <option value="open_category">Open Category</option>
@@ -1009,7 +1011,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                                 <select
                                   value={item.action_params?.categoryId || ''}
                                   onChange={(e) => handleSliderItemActionParamsChange(index, 'categoryId', e.target.value)}
-                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                                   required
                                 >
                                   <option value="">Select a category</option>
@@ -1026,7 +1028,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                                 <select
                                   value={item.action_params?.productId || ''}
                                   onChange={(e) => handleSliderItemActionParamsChange(index, 'productId', e.target.value)}
-                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                                   required
                                 >
                                   <option value="">Select a product</option>
@@ -1043,7 +1045,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                                 <select
                                   value={item.action_params?.brand || ''}
                                   onChange={(e) => handleSliderItemActionParamsChange(index, 'brand', e.target.value)}
-                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                                   required
                                 >
                                   <option value="">Select a brand</option>
@@ -1068,7 +1070,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                                     <select
                                       value={item.action_params?.categoryId || ''}
                                       onChange={(e) => handleSliderItemActionParamsChange(index, 'categoryId', e.target.value)}
-                                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                                     >
                                       <option value="">Any category</option>
                                       {categories.map(category => (
@@ -1082,7 +1084,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                                     <select
                                       value={item.action_params?.brand || ''}
                                       onChange={(e) => handleSliderItemActionParamsChange(index, 'brand', e.target.value)}
-                                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                                     >
                                       <option value="">Any brand</option>
                                       {brands.map(brand => (
@@ -1096,7 +1098,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                                     <select
                                       value={item.action_params?.vendorId || ''}
                                       onChange={(e) => handleSliderItemActionParamsChange(index, 'vendorId', e.target.value)}
-                                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                                     >
                                       <option value="">Any vendor</option>
                                       {vendors.map(vendor => (
@@ -1116,7 +1118,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                                       placeholder="0"
                                       min="0"
                                       step="0.01"
-                                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                                     />
                                   </div>
 
@@ -1129,7 +1131,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                                       placeholder="1000"
                                       min="0"
                                       step="0.01"
-                                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                                     />
                                   </div>
                                 </div>
@@ -1143,7 +1145,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                                     placeholder="0"
                                     min="0"
                                     max="100"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                                   />
                                 </div>
 
@@ -1152,7 +1154,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                                     type="checkbox"
                                     checked={item.action_params?.flashSale || false}
                                     onChange={(e) => handleSliderItemActionParamsChange(index, 'flashSale', e.target.checked)}
-                                    className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                                    className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
                                   />
                                   <label className="ml-2 block text-sm text-gray-900">Flash Sale Only</label>
                                 </div>
@@ -1165,7 +1167,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                                       value={item.action_params?.color || ''}
                                       onChange={(e) => handleSliderItemActionParamsChange(index, 'color', e.target.value)}
                                       placeholder="e.g., Red, Blue"
-                                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                                     />
                                   </div>
 
@@ -1176,7 +1178,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                                       value={item.action_params?.size || ''}
                                       onChange={(e) => handleSliderItemActionParamsChange(index, 'size', e.target.value)}
                                       placeholder="e.g., Small, Medium, Large"
-                                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                                     />
                                   </div>
                                 </div>
@@ -1191,7 +1193,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                                   value={item.action_params?.url || ''}
                                   onChange={(e) => handleSliderItemActionParamsChange(index, 'url', e.target.value)}
                                   placeholder="https://example.com"
-                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                                   required
                                 />
                               </div>
@@ -1212,9 +1214,9 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                           name="image_url"
                           value={formData.image_url}
                           onChange={handleInputChange}
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                         />
-                        <label className="px-3 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 cursor-pointer flex items-center gap-1">
+                        <label className="px-3 py-2 bg-primary text-white rounded-lg hover:brightness-[0.92] cursor-pointer flex items-center gap-1">
                           <Upload className="h-4 w-4" />
                           Select File
                           <input
@@ -1256,9 +1258,9 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                           name="mobile_image_url"
                           value={formData.mobile_image_url}
                           onChange={handleInputChange}
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                         />
-                        <label className="px-3 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 cursor-pointer flex items-center gap-1">
+                        <label className="px-3 py-2 bg-primary text-white rounded-lg hover:brightness-[0.92] cursor-pointer flex items-center gap-1">
                           <Smartphone className="h-4 w-4" />
                           Select File
                           <input
@@ -1301,7 +1303,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                     name="video_url"
                     value={formData.video_url}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                 </div>
 
@@ -1312,7 +1314,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                     name="link_url"
                     value={formData.link_url}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                   <p className="mt-1 text-xs text-gray-500">Leave empty if using Action Type below</p>
                 </div>
@@ -1324,7 +1326,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                     name="button_text"
                     value={formData.button_text}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                 </div>
 
@@ -1337,7 +1339,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                     <select
                       value={formData.action_type || ''}
                       onChange={(e) => handleActionTypeChange(e.target.value as BannerActionType | '')}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                     >
                       <option value="">None (Use Link URL)</option>
                       <option value="open_category">Open Category</option>
@@ -1356,7 +1358,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                       <select
                         value={formData.action_params?.categoryId || ''}
                         onChange={(e) => handleActionParamsChange('categoryId', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                         required
                       >
                         <option value="">Select a category</option>
@@ -1373,7 +1375,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                       <select
                         value={formData.action_params?.productId || ''}
                         onChange={(e) => handleActionParamsChange('productId', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                         required
                       >
                         <option value="">Select a product</option>
@@ -1390,7 +1392,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                       <select
                         value={formData.action_params?.brand || ''}
                         onChange={(e) => handleActionParamsChange('brand', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                         required
                       >
                         <option value="">Select a brand</option>
@@ -1415,7 +1417,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                           <select
                             value={formData.action_params?.categoryId || ''}
                             onChange={(e) => handleActionParamsChange('categoryId', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                           >
                             <option value="">Any category</option>
                             {categories.map(category => (
@@ -1429,7 +1431,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                           <select
                             value={formData.action_params?.brand || ''}
                             onChange={(e) => handleActionParamsChange('brand', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                           >
                             <option value="">Any brand</option>
                             {brands.map(brand => (
@@ -1443,7 +1445,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                           <select
                             value={formData.action_params?.vendorId || ''}
                             onChange={(e) => handleActionParamsChange('vendorId', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                           >
                             <option value="">Any vendor</option>
                             {vendors.map(vendor => (
@@ -1463,7 +1465,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                             placeholder="0"
                             min="0"
                             step="0.01"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                           />
                         </div>
 
@@ -1476,7 +1478,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                             placeholder="1000"
                             min="0"
                             step="0.01"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                           />
                         </div>
                       </div>
@@ -1490,7 +1492,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                           placeholder="0"
                           min="0"
                           max="100"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                         />
                       </div>
 
@@ -1499,7 +1501,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                           type="checkbox"
                           checked={formData.action_params?.flashSale || false}
                           onChange={(e) => handleActionParamsChange('flashSale', e.target.checked)}
-                          className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                          className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
                         />
                         <label className="ml-2 block text-sm text-gray-900">Flash Sale Only</label>
                       </div>
@@ -1512,7 +1514,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                             value={formData.action_params?.color || ''}
                             onChange={(e) => handleActionParamsChange('color', e.target.value)}
                             placeholder="e.g., Red, Blue"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                           />
                         </div>
 
@@ -1523,7 +1525,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                             value={formData.action_params?.size || ''}
                             onChange={(e) => handleActionParamsChange('size', e.target.value)}
                             placeholder="e.g., Small, Medium, Large"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                           />
                         </div>
                       </div>
@@ -1538,7 +1540,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                         value={formData.action_params?.url || ''}
                         onChange={(e) => handleActionParamsChange('url', e.target.value)}
                         placeholder="https://example.com"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                         required
                       />
                     </div>
@@ -1560,7 +1562,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                     value={formData.display_order}
                     onChange={handleInputChange}
                     min="0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                 </div>
 
@@ -1571,7 +1573,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                     name="background_color"
                     value={formData.background_color}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                 </div>
 
@@ -1582,7 +1584,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                     name="text_color"
                     value={formData.text_color}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                 </div>
 
@@ -1592,7 +1594,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                     name="target"
                     value={formData.target}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   >
                     <option value="_self">Same Window</option>
                     <option value="_blank">New Window</option>
@@ -1612,7 +1614,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                     name="start_date"
                     value={formData.start_date}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                 </div>
 
@@ -1623,7 +1625,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                     name="end_date"
                     value={formData.end_date}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                 </div>
 
@@ -1635,7 +1637,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                     value={formData.language_code}
                     onChange={handleInputChange}
                     placeholder="en"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                 </div>
 
@@ -1646,7 +1648,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                     name="store_id"
                     value={formData.store_id}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                 </div>
 
@@ -1656,7 +1658,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                     name="is_active"
                     checked={formData.is_active}
                     onChange={handleInputChange}
-                    className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                    className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
                   />
                   <label className="ml-2 block text-sm text-gray-900">Active</label>
                 </div>
@@ -1673,7 +1675,7 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
                       type="checkbox"
                       checked={formData.categories.includes(category.id)}
                       onChange={(e) => handleCategoryChange(category.id, e.target.checked)}
-                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
                     />
                     <span className="ml-2 text-sm text-gray-900">{category.name}</span>
                   </label>
@@ -1681,8 +1683,10 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
               </div>
             </div>
 
+            </div>
+
             {/* Form Actions */}
-            <div className="flex justify-end space-x-3 pt-6 border-t">
+            <div className="flex shrink-0 justify-end gap-3 border-t border-gray-200 bg-gray-50 px-5 py-4">
               <button
                 type="button"
                 onClick={onClose}
@@ -1693,14 +1697,13 @@ export default function PromotionalMediaForm({ media, categories, onClose, onSuc
               <button
                 type="submit"
                 disabled={uploading}
-                className="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 disabled:opacity-50"
+                className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:brightness-[0.92] disabled:opacity-50"
               >
                 {uploading ? 'Uploading...' : (media ? 'Update' : 'Create')} Promotional Media
               </button>
             </div>
           </form>
-        </div>
-      </div>
-    </div>
+      </AdminTallFormPanel>
+    </AdminModalBackdrop>
   );
 }

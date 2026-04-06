@@ -237,7 +237,7 @@ export default function CategoryPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-600"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -272,9 +272,9 @@ export default function CategoryPage() {
 
         {/* Breadcrumb */}
         <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-8">
-          <Link href="/" className="hover:text-primary-600">Home</Link>
+          <Link href="/" className="hover:text-primary">Home</Link>
           <span>/</span>
-          <Link href="/categories" className="hover:text-primary-600">Categories</Link>
+          <Link href="/categories" className="hover:text-primary">Categories</Link>
           <span>/</span>
           <span className="text-gray-900">{category.name}</span>
         </nav>

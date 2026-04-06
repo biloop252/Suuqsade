@@ -121,7 +121,7 @@ export default function SearchClient({
       {/* Results */}
       {loading ? (
         <div className="flex justify-center items-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
         </div>
       ) : products.length > 0 ? (
         <div className="space-y-6">
@@ -139,13 +139,13 @@ export default function SearchClient({
               <div className="flex items-center border border-gray-300 rounded-md">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-2 ${viewMode === 'grid' ? 'bg-primary-600 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
+                  className={`p-2 ${viewMode === 'grid' ? 'bg-primary text-white' : 'text-gray-600 hover:bg-gray-50'}`}
                 >
                   <Grid className="h-4 w-4" />
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-2 ${viewMode === 'list' ? 'bg-primary-600 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
+                  className={`p-2 ${viewMode === 'list' ? 'bg-primary text-white' : 'text-gray-600 hover:bg-gray-50'}`}
                 >
                   <List className="h-4 w-4" />
                 </button>
@@ -156,7 +156,7 @@ export default function SearchClient({
               <select
                 value={filters.sortBy}
                 onChange={(e) => handleFilterChange({ sortBy: e.target.value })}
-                className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
               >
                 <option value="name">Sort by Name</option>
                 <option value="price">Sort by Price</option>
@@ -194,7 +194,7 @@ export default function SearchClient({
           </p>
           <button
             onClick={clearFilters}
-            className="bg-primary-600 text-white px-4 py-2 rounded-md font-medium hover:bg-primary-700"
+            className="bg-primary text-white px-4 py-2 rounded-md font-medium hover:brightness-[0.92]"
           >
             Clear Filters
           </button>

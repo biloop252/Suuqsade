@@ -354,7 +354,7 @@ export default function FinanceReports() {
           <button
             onClick={generateReport}
             disabled={loading}
-            className="bg-primary-600 text-white px-6 py-2 rounded-md hover:bg-primary-700 disabled:opacity-50 flex items-center"
+            className="bg-primary text-white px-6 py-2 rounded-md hover:brightness-[0.92] disabled:opacity-50 flex items-center"
           >
             <FileText className="h-4 w-4 mr-2" />
             {loading ? 'Generating...' : 'Generate Report'}
@@ -405,7 +405,7 @@ export default function FinanceReports() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {report.status === 'generated' && (
-                      <button className="text-primary-600 hover:text-primary-900 flex items-center">
+                      <button className="text-primary hover:opacity-80 flex items-center">
                         <Download className="h-4 w-4 mr-1" />
                         Download
                       </button>

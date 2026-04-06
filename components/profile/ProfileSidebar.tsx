@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, memo, useMemo } from 'react';
+import { memo, useMemo } from 'react';
+import Link from 'next/link';
 import { 
   PackageIcon, 
   StarIcon, 
@@ -59,6 +60,16 @@ const ProfileSidebar = memo(function ProfileSidebar({ activeTab, onTabChange }: 
     <div className="bg-white h-full">
       <div className="p-4">
         <h2 className="text-lg font-semibold text-gray-900 mb-6">My Account</h2>
+
+        <div className="mb-6">
+          <Link
+            href="/notifications"
+            className="flex items-center px-3 py-3 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+          >
+            <BellIcon className="h-5 w-5 mr-3" />
+            Notifications
+          </Link>
+        </div>
         
         {menuSections.map((section, sectionIndex) => (
           <div key={section.title} className="mb-6">
@@ -72,7 +83,7 @@ const ProfileSidebar = memo(function ProfileSidebar({ activeTab, onTabChange }: 
                   onClick={() => onTabChange(item.id)}
                   className={`w-full flex items-center justify-between px-3 py-3 text-sm font-medium rounded-md transition-colors ${
                     activeTab === item.id
-                      ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-600'
+                      ? 'bg-primary/5 text-primary border-r-2 border-primary'
                       : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
                   }`}
                 >

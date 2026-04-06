@@ -70,7 +70,7 @@ export default function AdminDashboard() {
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <ShoppingBagIcon className="h-8 w-8 text-primary-600" />
+              <ShoppingBagIcon className="h-8 w-8 text-primary" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Total Products</p>
@@ -106,7 +106,7 @@ export default function AdminDashboard() {
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <TruckIcon className="h-8 w-8 text-primary-600" />
+              <TruckIcon className="h-8 w-8 text-primary" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Pending Shipments</p>
@@ -125,7 +125,7 @@ export default function AdminDashboard() {
               <div className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow duration-300 cursor-pointer">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
-                    <feature.icon className="h-8 w-8 text-primary-600" />
+                    <feature.icon className="h-8 w-8 text-primary" />
                   </div>
                   <div className="ml-4">
                     <h3 className="text-lg font-medium text-gray-900">{feature.name}</h3>

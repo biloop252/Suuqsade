@@ -250,7 +250,7 @@ export default function ProductOptions({ productId, onAttributeChange }: Product
                   disabled={isOutOfStock}
                   className={`relative px-4 py-2 text-sm font-medium border rounded-md transition-all duration-200 ${
                     isSelected
-                      ? 'border-primary-600 bg-primary-50 text-primary-700 ring-2 ring-primary-200'
+                      ? 'border-primary bg-primary/5 text-primary ring-2 ring-primary/25'
                       : isOutOfStock
                       ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
                       : 'border-gray-300 hover:border-gray-400 text-gray-700 hover:bg-gray-50'
@@ -280,7 +280,7 @@ export default function ProductOptions({ productId, onAttributeChange }: Product
                   onClick={() => handleAttributeValueChange(selection.attributeId, value.value)}
                   className={`px-4 py-2 text-sm border rounded-md transition-all duration-200 ${
                     isSelected
-                      ? 'border-primary-600 bg-primary-50 text-primary-700 ring-2 ring-primary-200'
+                      ? 'border-primary bg-primary/5 text-primary ring-2 ring-primary/25'
                       : 'border-gray-300 hover:border-gray-400 text-gray-700 hover:bg-gray-50'
                   }`}
                 >
@@ -307,7 +307,7 @@ export default function ProductOptions({ productId, onAttributeChange }: Product
                   onClick={() => handleAttributeValueChange(selection.attributeId, value.value)}
                   className={`px-4 py-2 text-sm border rounded-md transition-all duration-200 ${
                     isSelected
-                      ? 'border-primary-600 bg-primary-50 text-primary-700 ring-2 ring-primary-200'
+                      ? 'border-primary bg-primary/5 text-primary ring-2 ring-primary/25'
                       : 'border-gray-300 hover:border-gray-400 text-gray-700 hover:bg-gray-50'
                   }`}
                 >
@@ -324,7 +324,7 @@ export default function ProductOptions({ productId, onAttributeChange }: Product
           <select
             value={selectedValue}
             onChange={(e) => handleAttributeValueChange(selection.attributeId, e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
           >
             <option value="">Select {selection.attributeName}</option>
             {availableValues.map((value) => (
@@ -346,7 +346,7 @@ export default function ProductOptions({ productId, onAttributeChange }: Product
                   value={value.value}
                   checked={selectedValue === value.value}
                   onChange={(e) => handleAttributeValueChange(selection.attributeId, e.target.value)}
-                  className="mr-2 text-primary-600 focus:ring-primary-500"
+                  className="mr-2 text-primary focus:ring-primary"
                 />
                 <span className="text-sm text-gray-700">
                   {value.display_value || value.value}
@@ -368,7 +368,7 @@ export default function ProductOptions({ productId, onAttributeChange }: Product
                   onClick={() => handleAttributeValueChange(selection.attributeId, value.value)}
                   className={`px-4 py-2 text-sm border rounded-md transition-all duration-200 ${
                     isSelected
-                      ? 'border-primary-600 bg-primary-50 text-primary-700 ring-2 ring-primary-200'
+                      ? 'border-primary bg-primary/5 text-primary ring-2 ring-primary/25'
                       : 'border-gray-300 hover:border-gray-400 text-gray-700 hover:bg-gray-50'
                   }`}
                 >

@@ -32,7 +32,16 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       .order('created_at', { ascending: false })
       .limit(24)
 
-    return NextResponse.json({ vendor, products: products ?? [] })
+    // Provide both *_url fields (db) and banner/logo aliases for client convenience.
+    const vendorWithMedia = vendor
+      ? {
+          ...vendor,
+          logo: (vendor as any).logo_url ?? null,
+          banner: (vendor as any).banner_url ?? null,
+        }
+      : vendor
+
+    return NextResponse.json({ vendor: vendorWithMedia, products: products ?? [] })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error'
     return NextResponse.json({ error: message }, { status: 500 })

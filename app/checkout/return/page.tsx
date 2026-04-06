@@ -69,7 +69,7 @@ export default function CheckoutReturnPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <LoaderIcon className="animate-spin h-12 w-12 text-primary-600 mx-auto mb-4" />
+          <LoaderIcon className="animate-spin h-12 w-12 text-primary mx-auto mb-4" />
           <p className="text-gray-600">Verifying your payment...</p>
         </div>
       </div>
@@ -94,7 +94,7 @@ export default function CheckoutReturnPage() {
             <div className="flex space-x-4 justify-center">
               <Link
                 href="/orders"
-                className="bg-primary-600 text-white px-6 py-3 rounded-md font-medium hover:bg-primary-700"
+                className="bg-primary text-white px-6 py-3 rounded-md font-medium hover:brightness-[0.92]"
               >
                 View Orders
               </Link>
@@ -122,7 +122,7 @@ export default function CheckoutReturnPage() {
             <h1 className="text-3xl font-bold text-gray-900 mb-4">Payment Unsuccessful</h1>
             <p className="text-gray-600 mb-4">{message}</p>
             <div className="flex space-x-4 justify-center">
-              <Link href="/orders" className="bg-primary-600 text-white px-6 py-3 rounded-md font-medium hover:bg-primary-700">
+              <Link href="/orders" className="bg-primary text-white px-6 py-3 rounded-md font-medium hover:brightness-[0.92]">
                 View Orders
               </Link>
               <Link href="/checkout" className="bg-gray-100 text-gray-700 px-6 py-3 rounded-md font-medium hover:bg-gray-200">
@@ -145,7 +145,7 @@ export default function CheckoutReturnPage() {
           <h1 className="text-3xl font-bold text-gray-900 mb-4">Verification Issue</h1>
           <p className="text-gray-600 mb-4">{message}</p>
           <div className="flex space-x-4 justify-center">
-            <Link href="/orders" className="bg-primary-600 text-white px-6 py-3 rounded-md font-medium hover:bg-primary-700">
+            <Link href="/orders" className="bg-primary text-white px-6 py-3 rounded-md font-medium hover:brightness-[0.92]">
               View Orders
             </Link>
             <Link href="/" className="bg-gray-100 text-gray-700 px-6 py-3 rounded-md font-medium hover:bg-gray-200">

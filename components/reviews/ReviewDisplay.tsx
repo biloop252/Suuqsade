@@ -185,7 +185,7 @@ export default function ReviewDisplay({ productId, productName }: ReviewDisplayP
           {user && (
             <button
               onClick={() => setShowReviewForm(true)}
-              className="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:brightness-[0.92] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
             >
               Write a Review
             </button>
@@ -238,7 +238,7 @@ export default function ReviewDisplay({ productId, productName }: ReviewDisplayP
             {user && (
               <button
                 onClick={() => setShowReviewForm(true)}
-                className="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:brightness-[0.92] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
               >
                 Write the First Review
               </button>
@@ -281,8 +281,8 @@ export default function ReviewDisplay({ productId, productName }: ReviewDisplayP
                         className="h-10 w-10 rounded-full object-cover"
                       />
                     ) : (
-                      <div className="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center">
-                        <span className="text-sm font-medium text-primary-600">
+                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <span className="text-sm font-medium text-primary">
                           {getUserInitials(review.profiles?.first_name, review.profiles?.last_name)}
                         </span>
                       </div>

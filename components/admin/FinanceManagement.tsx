@@ -519,7 +519,7 @@ export default function FinanceManagement() {
       pending: 'bg-yellow-100 text-yellow-800',
       completed: 'bg-green-100 text-green-800',
       paid: 'bg-green-100 text-green-800',
-      processing: 'bg-primary-100 text-primary-800',
+      processing: 'bg-primary/10 text-primary',
       failed: 'bg-red-100 text-red-800',
       cancelled: 'bg-gray-100 text-gray-800'
     };
@@ -648,7 +648,7 @@ export default function FinanceManagement() {
       {/* Tab Content */}
       {loading ? (
         <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
         </div>
       ) : (
         <>
@@ -782,7 +782,7 @@ export default function FinanceManagement() {
 
                 <div className="rounded-lg bg-white p-6 shadow">
                   <div className="flex items-center">
-                    <div className="rounded-lg bg-primary-100 p-2">
+                    <div className="rounded-lg bg-primary/10 p-2">
                       <span className="text-2xl">📊</span>
                     </div>
                     <div className="ml-4">
@@ -1019,7 +1019,7 @@ export default function FinanceManagement() {
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
                             {formatCurrency(commission.commission_amount)}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary-600">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary">
                             {formatCurrency(commission.admin_amount)}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -1068,7 +1068,7 @@ export default function FinanceManagement() {
                     setPayoutModalVendorId('');
                     setCreatePayoutModalOpen(true);
                   }}
-                  className="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
+                  className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:brightness-[0.92]"
                 >
                   Create payout
                 </button>
@@ -1123,7 +1123,7 @@ export default function FinanceManagement() {
                             {payout.total_orders} orders
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
                               {payout.payout_method.replace('_', ' ').toUpperCase()}
                             </span>
                           </td>
@@ -1150,7 +1150,7 @@ export default function FinanceManagement() {
                                   payout.status === 'completed' ||
                                   (statusEdits[payout.id] ?? payout.status) === payout.status
                                 }
-                                className="rounded-md bg-primary-600 px-3 py-1.5 text-sm text-white hover:bg-primary-700 disabled:opacity-50"
+                                className="rounded-md bg-primary px-3 py-1.5 text-sm text-white hover:brightness-[0.92] disabled:opacity-50"
                               >
                                 {savingStatusFor === payout.id ? 'Saving...' : 'Save'}
                               </button>
@@ -1206,7 +1206,7 @@ export default function FinanceManagement() {
 
                 <div className="rounded-lg bg-white p-6 shadow">
                   <div className="flex items-center">
-                    <div className="rounded-lg bg-primary-100 p-2">
+                    <div className="rounded-lg bg-primary/10 p-2">
                       <span className="text-2xl">📊</span>
                     </div>
                     <div className="ml-4">
@@ -1275,7 +1275,7 @@ export default function FinanceManagement() {
                       type="button"
                       onClick={() => loadAdminRevenues()}
                       disabled={loading}
-                      className="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
+                      className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:brightness-[0.92] disabled:opacity-50"
                     >
                       {loading ? 'Loading...' : 'Refresh'}
                     </button>
@@ -1354,7 +1354,7 @@ export default function FinanceManagement() {
                               <p className="text-sm mt-1">Admin revenues will appear here as commissions are calculated</p>
                               <button
                                 onClick={() => loadAdminRevenues()}
-                                className="mt-4 bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 text-sm"
+                                className="mt-4 bg-primary text-white px-4 py-2 rounded-md hover:brightness-[0.92] text-sm"
                               >
                                 Refresh Data
                               </button>
@@ -1384,7 +1384,7 @@ export default function FinanceManagement() {
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
                 <div className="rounded-lg bg-white p-6 shadow">
                   <div className="flex items-center">
-                    <div className="rounded-lg bg-primary-100 p-2">
+                    <div className="rounded-lg bg-primary/10 p-2">
                       <span className="text-2xl">📋</span>
                     </div>
                     <div className="ml-4">
@@ -1497,7 +1497,7 @@ export default function FinanceManagement() {
                                   href={report.file_url} 
                                   target="_blank" 
                                   rel="noopener noreferrer"
-                                  className="text-primary-600 hover:text-primary-800 underline"
+                                  className="text-primary hover:opacity-80 underline"
                                 >
                                   Download
                                 </a>

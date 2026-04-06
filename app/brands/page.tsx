@@ -75,7 +75,7 @@ export default function BrandsPage() {
                         <StarIcon className="h-10 w-10 text-gray-400" />
                       )}
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-900 group-hover:text-primary-600 transition-colors duration-300 mb-2">
+                    <h3 className="text-lg font-semibold text-gray-900 group-hover:text-primary transition-colors duration-300 mb-2">
                       {brand.name}
                     </h3>
                     {brand.description && (

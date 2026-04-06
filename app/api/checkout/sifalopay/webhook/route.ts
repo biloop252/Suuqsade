@@ -221,6 +221,15 @@ export async function POST(request: NextRequest) {
       if (cartErr) console.error('Clear cart after Sifalo webhook:', cartErr);
     }
 
+    try {
+      const { dispatchOrderPlacedNotifications } = await import('@/lib/notifications/server');
+      if (orderUserId && (order as any).order_number) {
+        await dispatchOrderPlacedNotifications(orderUserId, (order as any).order_number);
+      }
+    } catch (notifyErr) {
+      console.error('app_notifications (Sifalo webhook order):', notifyErr);
+    }
+
     return NextResponse.json({
       success: true,
       status: 'success',

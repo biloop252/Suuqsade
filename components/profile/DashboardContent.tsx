@@ -39,7 +39,7 @@ export default function DashboardContent() {
     if (user) {
       fetchDashboardData();
     }
-  }, [user]);
+  }, [user?.id]);
 
   const fetchDashboardData = async () => {
     try {
@@ -124,7 +124,7 @@ export default function DashboardContent() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -132,7 +132,7 @@ export default function DashboardContent() {
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
-      <div className="bg-gradient-to-r from-primary-50 to-blue-50 rounded-lg p-6">
+      <div className="bg-gradient-to-r from-primary/5 to-blue-50 rounded-lg p-6">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">
           Welcome back, {profile?.first_name || 'Customer'}!
         </h2>
@@ -189,15 +189,15 @@ export default function DashboardContent() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Link 
             href="/products" 
-            className="flex flex-col items-center p-4 rounded-lg border border-gray-200 hover:border-primary-300 hover:bg-primary-50 transition-colors"
+            className="flex flex-col items-center p-4 rounded-lg border border-gray-200 hover:border-primary/40 hover:bg-primary/10 transition-colors"
           >
-            <ShoppingCartIcon className="h-8 w-8 text-primary-600 mb-2" />
+            <ShoppingCartIcon className="h-8 w-8 text-primary mb-2" />
             <span className="text-sm font-medium text-gray-900">Shop Now</span>
           </Link>
           
           <Link 
             href="/favorites" 
-            className="flex flex-col items-center p-4 rounded-lg border border-gray-200 hover:border-primary-300 hover:bg-primary-50 transition-colors"
+            className="flex flex-col items-center p-4 rounded-lg border border-gray-200 hover:border-primary/40 hover:bg-primary/10 transition-colors"
           >
             <HeartIcon className="h-8 w-8 text-red-500 mb-2" />
             <span className="text-sm font-medium text-gray-900">Favorites</span>
@@ -205,7 +205,7 @@ export default function DashboardContent() {
           
           <Link 
             href="/cart" 
-            className="flex flex-col items-center p-4 rounded-lg border border-gray-200 hover:border-primary-300 hover:bg-primary-50 transition-colors"
+            className="flex flex-col items-center p-4 rounded-lg border border-gray-200 hover:border-primary/40 hover:bg-primary/10 transition-colors"
           >
             <PackageIcon className="h-8 w-8 text-gray-600 mb-2" />
             <span className="text-sm font-medium text-gray-900">Cart</span>
@@ -213,7 +213,7 @@ export default function DashboardContent() {
           
           <Link 
             href="/profile?tab=all-orders" 
-            className="flex flex-col items-center p-4 rounded-lg border border-gray-200 hover:border-primary-300 hover:bg-primary-50 transition-colors"
+            className="flex flex-col items-center p-4 rounded-lg border border-gray-200 hover:border-primary/40 hover:bg-primary/10 transition-colors"
           >
             <CreditCardIcon className="h-8 w-8 text-green-600 mb-2" />
             <span className="text-sm font-medium text-gray-900">Orders</span>
@@ -228,7 +228,7 @@ export default function DashboardContent() {
             <h3 className="text-lg font-semibold text-gray-900">Recent Orders</h3>
             <Link 
               href="/profile?tab=all-orders" 
-              className="text-primary-600 hover:text-primary-700 text-sm font-medium"
+              className="text-primary hover:text-primary text-sm font-medium"
             >
               View All Orders
             </Link>

@@ -179,7 +179,7 @@ export default function CouponsManagement() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -197,7 +197,7 @@ export default function CouponsManagement() {
         <div className="flex space-x-3">
           <button
             onClick={() => setShowCreateModal(true)}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700"
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:brightness-[0.92]"
           >
             <Plus className="h-4 w-4 mr-2" />
             Create Coupon
@@ -214,14 +214,14 @@ export default function CouponsManagement() {
               placeholder="Search coupons..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
             />
           </div>
           <div>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as CouponStatus | 'all')}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
             >
               <option value="all">All Statuses</option>
               <option value="active">Active</option>
@@ -394,7 +394,7 @@ export default function CouponsManagement() {
                         </button>
                         <button
                           onClick={() => setEditingCoupon(coupon)}
-                          className="text-primary-600 hover:text-primary-800 p-1 rounded"
+                          className="text-primary hover:opacity-80 p-1 rounded"
                           title="Edit"
                         >
                           <Edit className="h-4 w-4" />

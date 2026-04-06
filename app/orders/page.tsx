@@ -92,7 +92,7 @@ export default function OrdersPage() {
     } else {
       router.push('/auth/signin');
     }
-  }, [user, router]);
+  }, [user?.id, router]);
 
   const fetchOrders = async () => {
     try {
@@ -161,7 +161,7 @@ export default function OrdersPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-600"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -173,7 +173,7 @@ export default function OrdersPage() {
         <div className="mb-8">
           <Link 
             href="/" 
-            className="inline-flex items-center text-gray-600 hover:text-primary-600 mb-4"
+            className="inline-flex items-center text-gray-600 hover:text-primary mb-4"
           >
             <ArrowLeftIcon className="h-5 w-5 mr-2" />
             Back to Home
@@ -188,7 +188,7 @@ export default function OrdersPage() {
             <p className="text-gray-600 mb-8">You haven't placed any orders yet.</p>
             <Link 
               href="/products" 
-              className="bg-primary-600 text-white px-6 py-3 rounded-md font-medium hover:bg-primary-700"
+              className="bg-primary text-white px-6 py-3 rounded-md font-medium hover:brightness-[0.92]"
             >
               Start Shopping
             </Link>

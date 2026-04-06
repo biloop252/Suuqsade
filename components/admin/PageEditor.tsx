@@ -186,7 +186,7 @@ export default function PageEditor({ mode, initialPage, pageId }: PageEditorProp
             type="button"
             disabled={loading}
             onClick={handleSave}
-            className="inline-flex items-center px-4 py-2 rounded-md bg-primary-600 text-white hover:bg-primary-700 disabled:opacity-50"
+            className="inline-flex items-center px-4 py-2 rounded-md bg-primary text-white hover:brightness-[0.92] disabled:opacity-50"
           >
             {loading ? (
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
@@ -213,7 +213,7 @@ export default function PageEditor({ mode, initialPage, pageId }: PageEditorProp
                   type="text"
                   value={formData.title}
                   onChange={(e) => handleTitleChange(e.target.value)}
-                  className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent ${errors.title ? 'border-red-300' : 'border-gray-300'}`}
+                  className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${errors.title ? 'border-red-300' : 'border-gray-300'}`}
                   placeholder="Enter page title"
                 />
                 {errors.title && (
@@ -230,7 +230,7 @@ export default function PageEditor({ mode, initialPage, pageId }: PageEditorProp
                   type="text"
                   value={formData.slug}
                   onChange={(e) => setFormData(prev => ({ ...prev, slug: e.target.value }))}
-                  className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent ${errors.slug ? 'border-red-300' : 'border-gray-300'}`}
+                  className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${errors.slug ? 'border-red-300' : 'border-gray-300'}`}
                   placeholder="page-slug"
                 />
                 {errors.slug && (
@@ -266,7 +266,7 @@ export default function PageEditor({ mode, initialPage, pageId }: PageEditorProp
                   type="text"
                   value={formData.meta_title || ''}
                   onChange={(e) => setFormData(prev => ({ ...prev, meta_title: e.target.value }))}
-                  className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent ${errors.meta_title ? 'border-red-300' : 'border-gray-300'}`}
+                  className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${errors.meta_title ? 'border-red-300' : 'border-gray-300'}`}
                   placeholder="SEO title (60 characters max)"
                   maxLength={60}
                 />
@@ -287,7 +287,7 @@ export default function PageEditor({ mode, initialPage, pageId }: PageEditorProp
                   rows={3}
                   value={formData.meta_description || ''}
                   onChange={(e) => setFormData(prev => ({ ...prev, meta_description: e.target.value }))}
-                  className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent ${errors.meta_description ? 'border-red-300' : 'border-gray-300'}`}
+                  className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${errors.meta_description ? 'border-red-300' : 'border-gray-300'}`}
                   placeholder="SEO description (160 characters max)"
                   maxLength={160}
                 />
@@ -308,7 +308,7 @@ export default function PageEditor({ mode, initialPage, pageId }: PageEditorProp
                   type="text"
                   value={formData.meta_keywords || ''}
                   onChange={(e) => setFormData(prev => ({ ...prev, meta_keywords: e.target.value }))}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                   placeholder="keyword1, keyword2, keyword3"
                 />
               </div>
@@ -323,7 +323,7 @@ export default function PageEditor({ mode, initialPage, pageId }: PageEditorProp
                 <select
                   value={formData.page_type}
                   onChange={(e) => setFormData(prev => ({ ...prev, page_type: e.target.value as Page['page_type'] }))}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 >
                   <option value="static">Static</option>
                   <option value="legal">Legal</option>
@@ -337,7 +337,7 @@ export default function PageEditor({ mode, initialPage, pageId }: PageEditorProp
                 <select
                   value={formData.status}
                   onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as Page['status'] }))}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 >
                   <option value="draft">Draft</option>
                   <option value="published">Published</option>
@@ -351,7 +351,7 @@ export default function PageEditor({ mode, initialPage, pageId }: PageEditorProp
                   type="number"
                   value={formData.sort_order}
                   onChange={(e) => setFormData(prev => ({ ...prev, sort_order: parseInt(e.target.value) || 0 }))}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                   placeholder="0"
                 />
               </div>
@@ -362,7 +362,7 @@ export default function PageEditor({ mode, initialPage, pageId }: PageEditorProp
                   type="checkbox"
                   checked={formData.is_featured}
                   onChange={(e) => setFormData(prev => ({ ...prev, is_featured: e.target.checked }))}
-                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
                 />
                 <label htmlFor="is_featured" className="ml-2 text-sm text-gray-900">Featured page</label>
               </div>

@@ -17,6 +17,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import Pagination from './Pagination';
+import AdminModalBackdrop, { AdminTallFormPanel } from './AdminModalBackdrop';
 
 const orderStatusFlow: OrderStatus[] = ['pending', 'confirmed', 'processing', 'shipped', 'delivered'];
 const orderStatusRank = (s: OrderStatus) => orderStatusFlow.indexOf(s);
@@ -311,7 +312,7 @@ export default function OrdersManagement() {
                 placeholder="Search orders..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500 w-full"
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary w-full"
               />
             </div>
           </div>
@@ -319,7 +320,7 @@ export default function OrdersManagement() {
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
             >
               <option value="">All Statuses</option>
               {statusOptions.map(status => (
@@ -339,7 +340,7 @@ export default function OrdersManagement() {
                 setDateFrom(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
             />
           </div>
           <div className="space-y-1">
@@ -351,7 +352,7 @@ export default function OrdersManagement() {
                 setDateTo(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
             />
           </div>
         </div>
@@ -420,7 +421,7 @@ export default function OrdersManagement() {
                               {(order as any).delivery[0].status.replace('_', ' ').charAt(0).toUpperCase() + (order as any).delivery[0].status.replace('_', ' ').slice(1)}
                             </span>
                             {!isStatusSynced(order.status, (order as any).delivery[0].status) && (
-                              <AlertCircle className="ml-1 h-3 w-3 text-primary-500" />
+                              <AlertCircle className="ml-1 h-3 w-3 text-primary" />
                             )}
                           </>
                         ) : (
@@ -439,7 +440,7 @@ export default function OrdersManagement() {
                         {(order as any).delivery?.[0] && !isStatusSynced(order.status, (order as any).delivery[0].status) && (
                           <button
                             onClick={() => syncOrderDeliveryStatus(order.id)}
-                            className="text-primary-500 hover:text-primary-600"
+                            className="text-primary hover:text-primary"
                             title="Sync status"
                           >
                             <RefreshCw className="h-4 w-4" />
@@ -574,12 +575,12 @@ function OrderDetailsModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-      <div className="relative top-4 mx-auto p-5 border max-w-4xl w-full shadow-lg rounded-md bg-white mb-4">
-        <div className="mt-3">
-          <div className="flex justify-between items-center mb-6">
+    <AdminModalBackdrop>
+      <AdminTallFormPanel className="w-full max-w-4xl">
+        <div className="flex shrink-0 items-center justify-between border-b border-gray-200 px-5 py-4">
             <h3 className="text-2xl font-bold text-gray-900">Order Details</h3>
             <button
+              type="button"
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600"
             >
@@ -587,6 +588,7 @@ function OrderDetailsModal({
             </button>
           </div>
 
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Order Information */}
             <div className="space-y-6">
@@ -607,7 +609,7 @@ function OrderDetailsModal({
                     <select
                       value={selectedStatus}
                       onChange={(e) => setSelectedStatus(e.target.value as OrderStatus)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                       required
                     >
                       {allowedStatusOptions.map(status => (
@@ -626,7 +628,7 @@ function OrderDetailsModal({
                     <button
                       type="submit"
                       disabled={loading}
-                      className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50"
+                      className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:brightness-[0.92] disabled:opacity-50"
                     >
                       {loading ? 'Updating...' : 'Update Status'}
                     </button>
@@ -863,8 +865,8 @@ function OrderDetailsModal({
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </AdminTallFormPanel>
+    </AdminModalBackdrop>
   );
 }
 

@@ -66,7 +66,7 @@ export default function CategoriesPage() {
               >
                 <div className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow duration-300">
                   <div className="flex items-center space-x-4">
-                    <div className="w-16 h-16 bg-primary-100 rounded-lg flex items-center justify-center group-hover:bg-primary-200 transition-colors duration-300">
+                    <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center group-hover:bg-primary/20 transition-colors duration-300">
                       {category.image_url ? (
                         <img
                           src={category.image_url}
@@ -74,11 +74,11 @@ export default function CategoriesPage() {
                           className="w-12 h-12 object-cover rounded-lg"
                         />
                       ) : (
-                        <PackageIcon className="h-8 w-8 text-primary-600" />
+                        <PackageIcon className="h-8 w-8 text-primary" />
                       )}
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-gray-900 group-hover:text-primary-600 transition-colors duration-300">
+                      <h3 className="text-lg font-semibold text-gray-900 group-hover:text-primary transition-colors duration-300">
                         {category.name}
                       </h3>
                     </div>

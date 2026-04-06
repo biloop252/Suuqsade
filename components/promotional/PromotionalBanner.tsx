@@ -320,7 +320,7 @@ export default function PromotionalBanner({
                     e.stopPropagation();
                     handleBannerClick();
                   }}
-                  className="bg-primary-600 text-white px-3 py-1 rounded text-sm hover:bg-primary-700 transition-colors flex items-center gap-1"
+                  className="bg-primary text-white px-3 py-1 rounded text-sm hover:brightness-[0.92] transition-colors flex items-center gap-1"
                 >
                   {banner.button_text}
                   {banner.target === '_blank' && <ExternalLink className="w-3 h-3" />}

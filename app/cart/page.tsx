@@ -58,7 +58,7 @@ export default function CartPage() {
     } else {
       router.push('/auth/signin');
     }
-  }, [user]);
+  }, [user?.id, router]);
 
   // Fetch discounts when cart items change
   useEffect(() => {
@@ -315,7 +315,7 @@ export default function CartPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-600"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -324,18 +324,19 @@ export default function CartPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumb */}
-        <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-8">
-          <Link href="/" className="hover:text-primary-600">Home</Link>
+        <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-6">
+          <Link href="/" className="hover:text-primary">Home</Link>
           <span>/</span>
-          <Link href="/products" className="hover:text-primary-600">Products</Link>
+          <Link href="/products" className="hover:text-primary">Products</Link>
           <span>/</span>
-          <span className="text-gray-900">Cart</span>
+          <span className="text-primary font-medium">Cart</span>
         </nav>
+        <h1 className="text-2xl sm:text-3xl font-bold text-primary mb-8">Shopping Cart</h1>
 
         {cartItems.length === 0 ? (
           <div className="text-center py-12">
-            <ShoppingCartIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Your cart is empty</h3>
+            <ShoppingCartIcon className="h-16 w-16 text-primary mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-primary mb-2">Your cart is empty</h3>
             <p className="text-gray-600 mb-4">Add some products to get started!</p>
             <Link href="/products" className="btn-primary">
               Continue Shopping
@@ -345,7 +346,7 @@ export default function CartPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Cart Items */}
             <div className="lg:col-span-2">
-              <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+              <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-primary/20">
                 {/* Desktop/Table View */}
                 <div className="overflow-x-auto hidden md:block">
                   <table className="min-w-full divide-y divide-gray-200">
@@ -406,7 +407,7 @@ export default function CartPage() {
                                 <div className="ml-4">
                                   <Link 
                                     href={`/products/${item.product.slug}`}
-                                    className="text-sm font-medium text-gray-900 hover:text-primary-600"
+                                    className="text-sm font-medium text-primary hover:brightness-110"
                                   >
                                     {item.product.name}
                                   </Link>
@@ -495,7 +496,7 @@ export default function CartPage() {
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <a href={`/products/${item.product.slug}`} className="block text-sm font-medium text-gray-900 hover:text-primary-600 line-clamp-2">
+                            <a href={`/products/${item.product.slug}`} className="block text-sm font-medium text-primary hover:brightness-110 line-clamp-2">
                               {item.product.name}
                             </a>
                             {item.product.brand && (
@@ -547,8 +548,8 @@ export default function CartPage() {
 
             {/* Order Summary */}
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-lg shadow-sm p-6 lg:sticky lg:top-8">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Order Summary</h2>
+              <div className="bg-white rounded-lg shadow-sm p-6 lg:sticky lg:top-8 border border-primary/20">
+                <h2 className="text-lg font-semibold text-primary mb-4">Order Summary</h2>
                 
                 {/* Coupon Code Section */}
                 <div className="mb-6">
@@ -585,13 +586,13 @@ export default function CartPage() {
                           value={couponCode}
                           onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                           placeholder="Enter coupon code"
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                           disabled={couponLoading}
                         />
                         <button
                           onClick={handleApplyCoupon}
                           disabled={couponLoading || !couponCode.trim()}
-                          className="px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-md hover:brightness-[0.92] disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {couponLoading ? 'Applying...' : 'Apply'}
                         </button>
@@ -646,14 +647,14 @@ export default function CartPage() {
 
                 <button 
                   onClick={handleProceedToCheckout}
-                  className="w-full bg-primary-600 text-white py-3 px-4 rounded-md font-medium hover:bg-primary-700 mb-4"
+                  className="w-full bg-primary text-white py-3 px-4 rounded-md font-medium hover:brightness-[0.92] mb-4"
                 >
                   Proceed to Checkout
                 </button>
                 
                 <Link 
                   href="/products" 
-                  className="block w-full text-center text-primary-600 hover:text-primary-700 py-2"
+                  className="block w-full text-center text-primary hover:text-primary py-2"
                 >
                   Continue Shopping
                 </Link>

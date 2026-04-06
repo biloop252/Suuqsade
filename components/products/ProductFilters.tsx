@@ -121,7 +121,7 @@ export default function ProductFilters({
         <h3 className="text-lg font-semibold text-gray-900">Filters</h3>
         <button
           onClick={onClearFilters}
-          className="text-sm text-primary-600 hover:text-primary-700 transition-colors duration-200"
+          className="text-sm text-primary hover:text-primary transition-colors duration-200"
         >
           Clear all
         </button>
@@ -148,7 +148,7 @@ export default function ProductFilters({
                   type="checkbox"
                   checked={isChecked}
                   onChange={(e) => handleCategoryChange(category.id, e.target.checked)}
-                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
                 />
                 <span className={`ml-2 text-sm text-gray-700 ${isSubcategory ? 'text-gray-600' : 'font-medium'}`}>
                   {category.name}
@@ -179,7 +179,7 @@ export default function ProductFilters({
                   type="checkbox"
                   checked={isChecked}
                   onChange={(e) => handleBrandChange(brand.id, e.target.checked)}
-                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
                 />
                 <span className="ml-2 text-sm text-gray-700">{brand.name}</span>
               </label>
@@ -208,7 +208,7 @@ export default function ProductFilters({
                   type="checkbox"
                   checked={isChecked}
                   onChange={(e) => handleVendorChange(vendor.id, e.target.checked)}
-                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
                 />
                 <span className="ml-2 text-sm text-gray-700">{vendor.business_name}</span>
               </label>
@@ -227,7 +227,7 @@ export default function ProductFilters({
               placeholder="0"
               value={filters.minPrice}
               onChange={(e) => onFilterChange({ minPrice: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
             />
           </div>
           <div>
@@ -237,7 +237,7 @@ export default function ProductFilters({
               placeholder="1000"
               value={filters.maxPrice}
               onChange={(e) => onFilterChange({ maxPrice: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
             />
           </div>
         </div>
@@ -256,7 +256,7 @@ export default function ProductFilters({
               placeholder="0"
               value={filters.discountMin}
               onChange={(e) => onFilterChange({ discountMin: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
             />
             <p className="text-xs text-gray-500 mt-1">Show products with at least this discount percentage</p>
           </div>
@@ -268,25 +268,25 @@ export default function ProductFilters({
         <div className="space-y-2">
           <button
             onClick={() => onFilterChange({ minPrice: '0', maxPrice: '50' })}
-            className="block w-full text-left text-sm text-gray-700 hover:text-primary-600 transition-colors duration-200"
+            className="block w-full text-left text-sm text-gray-700 hover:text-primary transition-colors duration-200"
           >
             Under $50
           </button>
           <button
             onClick={() => onFilterChange({ minPrice: '50', maxPrice: '100' })}
-            className="block w-full text-left text-sm text-gray-700 hover:text-primary-600 transition-colors duration-200"
+            className="block w-full text-left text-sm text-gray-700 hover:text-primary transition-colors duration-200"
           >
             $50 - $100
           </button>
           <button
             onClick={() => onFilterChange({ minPrice: '100', maxPrice: '200' })}
-            className="block w-full text-left text-sm text-gray-700 hover:text-primary-600 transition-colors duration-200"
+            className="block w-full text-left text-sm text-gray-700 hover:text-primary transition-colors duration-200"
           >
             $100 - $200
           </button>
           <button
             onClick={() => onFilterChange({ minPrice: '200', maxPrice: '' })}
-            className="block w-full text-left text-sm text-gray-700 hover:text-primary-600 transition-colors duration-200"
+            className="block w-full text-left text-sm text-gray-700 hover:text-primary transition-colors duration-200"
           >
             Over $200
           </button>

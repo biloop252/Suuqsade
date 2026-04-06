@@ -296,7 +296,7 @@ export default function ProfileForm() {
           </div>
           <button
             onClick={() => setShowPasswordForm(!showPasswordForm)}
-            className="text-primary-600 hover:text-primary-700 text-sm font-medium"
+            className="text-primary hover:text-primary text-sm font-medium"
           >
             {showPasswordForm ? 'Cancel' : 'Change Password'}
           </button>
@@ -440,7 +440,7 @@ export default function ProfileForm() {
               <button
                 type="submit"
                 disabled={isPasswordLoading || !passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword || passwordData.newPassword !== passwordData.confirmPassword}
-                className="px-4 py-2 text-sm font-medium text-white bg-primary-600 border border-transparent rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 text-sm font-medium text-white bg-primary border border-transparent rounded-md hover:brightness-[0.92] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isPasswordLoading ? 'Updating...' : 'Update Password'}
               </button>

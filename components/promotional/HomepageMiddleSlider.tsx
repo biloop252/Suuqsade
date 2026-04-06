@@ -331,7 +331,7 @@ export default function HomepageMiddleSlider({ className = '', maxSlides = 5 }: 
                             </p>
                           )}
                           {slide.button_text && (
-                            <div className="inline-block bg-primary-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-700 transition-colors">
+                            <div className="inline-block bg-primary text-white px-6 py-3 rounded-lg font-medium hover:brightness-[0.92] transition-colors">
                               {slide.button_text}
                             </div>
                           )}
@@ -380,8 +380,8 @@ export default function HomepageMiddleSlider({ className = '', maxSlides = 5 }: 
                   onClick={() => setCurrentSlide(index)}
                   className={`rounded-full transition-all duration-300 ${
                     index === currentSlide 
-                      ? 'bg-primary-500' 
-                      : 'bg-gray-300 hover:bg-primary-300'
+                      ? 'bg-primary' 
+                      : 'bg-gray-300 hover:bg-primary/30'
                   }`}
                   style={{ 
                     width: '10px', 

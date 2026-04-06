@@ -50,7 +50,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     } else {
       setCartItems([]);
     }
-  }, [user]);
+  }, [user?.id]);
 
   const fetchCartItems = async () => {
     try {

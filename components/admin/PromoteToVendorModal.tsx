@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { X, UserPlus, Building2 } from 'lucide-react';
+import AdminModalBackdrop, { AdminTallFormPanel } from './AdminModalBackdrop';
 
 interface PromoteToVendorModalProps {
   isOpen: boolean;
@@ -158,17 +159,17 @@ export default function PromoteToVendorModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-      <div className="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white">
-        <div className="mt-3">
-          <div className="flex items-center justify-between mb-4">
+    <AdminModalBackdrop>
+      <AdminTallFormPanel className="w-full max-w-2xl">
+        <div className="flex shrink-0 items-center justify-between border-b border-gray-200 px-5 py-4">
             <div className="flex items-center">
-              <UserPlus className="h-6 w-6 text-primary-600 mr-2" />
+              <UserPlus className="h-6 w-6 text-primary mr-2" />
               <h3 className="text-lg font-medium text-gray-900">
                 Promote User to Vendor
               </h3>
             </div>
             <button
+              type="button"
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600"
             >
@@ -176,7 +177,9 @@ export default function PromoteToVendorModal({
             </button>
           </div>
 
-          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+            <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4 space-y-4">
+          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
             <p className="text-sm text-blue-800">
               <strong>User:</strong> {userName} ({userEmail})
             </p>
@@ -186,12 +189,11 @@ export default function PromoteToVendorModal({
           </div>
 
           {errors.general && (
-            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+            <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded">
               {errors.general}
             </div>
           )}
 
-          <form onSubmit={handleSubmit}>
             <div className="space-y-4">
               {/* Business Information */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -201,7 +203,7 @@ export default function PromoteToVendorModal({
                     type="text"
                     value={formData.business_name}
                     onChange={(e) => setFormData({ ...formData, business_name: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                     required
                   />
                 </div>
@@ -214,7 +216,7 @@ export default function PromoteToVendorModal({
                   value={formData.business_description}
                   onChange={(e) => setFormData({ ...formData, business_description: e.target.value })}
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                   placeholder="Describe your business, services, and what makes you unique..."
                   required
                 />
@@ -228,7 +230,7 @@ export default function PromoteToVendorModal({
                     type="tel"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                     required
                   />
                 </div>
@@ -241,7 +243,7 @@ export default function PromoteToVendorModal({
                     step="0.01"
                     value={formData.commission_rate}
                     onChange={(e) => setFormData({ ...formData, commission_rate: parseFloat(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                     required
                   />
                   {errors.commission_rate && (
@@ -257,7 +259,7 @@ export default function PromoteToVendorModal({
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                   rows={2}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                   required
                 />
               </div>
@@ -268,7 +270,7 @@ export default function PromoteToVendorModal({
                   <select
                     value={selectedCountryId}
                     onChange={(e) => handleCountryChange(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                     required
                   >
                     <option value="">Select country</option>
@@ -284,7 +286,7 @@ export default function PromoteToVendorModal({
                   <select
                     value={selectedCityId}
                     onChange={(e) => handleCityChange(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                     required
                     disabled={!selectedCountryId}
                   >
@@ -305,7 +307,7 @@ export default function PromoteToVendorModal({
                     type="text"
                     value={formData.district}
                     onChange={(e) => setFormData({ ...formData, district: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                     required
                   />
                 </div>
@@ -315,7 +317,7 @@ export default function PromoteToVendorModal({
                     type="text"
                     value={formData.neighborhood}
                     onChange={(e) => setFormData({ ...formData, neighborhood: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                     required
                   />
                 </div>
@@ -328,13 +330,14 @@ export default function PromoteToVendorModal({
                   type="text"
                   value={formData.tax_id}
                   onChange={(e) => setFormData({ ...formData, tax_id: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                   required
                 />
               </div>
             </div>
+            </div>
 
-            <div className="flex justify-end space-x-3 mt-6">
+            <div className="flex shrink-0 justify-end gap-3 border-t border-gray-200 bg-gray-50 px-5 py-4">
               <button
                 type="button"
                 onClick={onClose}
@@ -345,14 +348,13 @@ export default function PromoteToVendorModal({
               <button
                 type="submit"
                 disabled={saving}
-                className="px-4 py-2 bg-primary-600 text-white rounded-md text-sm font-medium hover:bg-primary-700 disabled:opacity-50"
+                className="px-4 py-2 bg-primary text-white rounded-md text-sm font-medium hover:brightness-[0.92] disabled:opacity-50"
               >
                 {saving ? 'Promoting...' : 'Promote to Vendor'}
               </button>
             </div>
           </form>
-        </div>
-      </div>
-    </div>
+      </AdminTallFormPanel>
+    </AdminModalBackdrop>
   );
 }

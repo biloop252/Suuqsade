@@ -358,7 +358,7 @@ export default function PromotionalMediaDisplay({
                 {media.button_text && (
                   <button
                     onClick={() => handleMediaClick(media)}
-                    className="bg-primary-600 text-white px-4 py-2 rounded hover:bg-primary-700 transition-colors flex items-center gap-2"
+                    className="bg-primary text-white px-4 py-2 rounded hover:brightness-[0.92] transition-colors flex items-center gap-2"
                   >
                     {media.button_text}
                     {media.target === '_blank' && <ExternalLink className="w-4 h-4" />}
@@ -461,7 +461,7 @@ export default function PromotionalMediaDisplay({
                 }}
                 className={`w-2 h-2 rounded-full transition-all duration-300 ${
                   index === currentSlide 
-                    ? 'bg-primary-600 scale-125' 
+                    ? 'bg-primary scale-125' 
                     : 'bg-gray-300 hover:bg-gray-400'
                 }`}
                 aria-label={`Go to slide ${index + 1}`}

@@ -251,7 +251,7 @@ export default function BrandPage() {
             <p className="text-gray-600 mb-4">The brand you're looking for doesn't exist.</p>
             <Link
               href="/brands"
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:brightness-[0.92]"
             >
               <ArrowLeftIcon className="h-4 w-4 mr-2" />
               Back to Brands
@@ -267,9 +267,9 @@ export default function BrandPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumb */}
         <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-8">
-          <Link href="/" className="hover:text-primary-600">Home</Link>
+          <Link href="/" className="hover:text-primary">Home</Link>
           <span>/</span>
-          <Link href="/brands" className="hover:text-primary-600">Brands</Link>
+          <Link href="/brands" className="hover:text-primary">Brands</Link>
           <span>/</span>
           <span className="text-gray-900">{brand.name}</span>
         </nav>
@@ -324,7 +324,7 @@ export default function BrandPage() {
                 <h3 className="text-lg font-semibold text-gray-900">Filters</h3>
                 <button
                   onClick={clearFilters}
-                  className="text-sm text-primary-600 hover:text-primary-700"
+                  className="text-sm text-primary hover:text-primary"
                 >
                   Clear all
                 </button>
@@ -359,7 +359,7 @@ export default function BrandPage() {
                     type="checkbox"
                     checked={filters.inStock}
                     onChange={(e) => handleFilterChange('inStock', e.target.checked)}
-                    className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                    className="rounded border-gray-300 text-primary focus:ring-primary"
                   />
                   <span className="ml-2 text-sm text-gray-700">In Stock Only</span>
                 </label>
@@ -372,7 +372,7 @@ export default function BrandPage() {
                     type="checkbox"
                     checked={filters.onSale}
                     onChange={(e) => handleFilterChange('onSale', e.target.checked)}
-                    className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                    className="rounded border-gray-300 text-primary focus:ring-primary"
                   />
                   <span className="ml-2 text-sm text-gray-700">On Sale</span>
                 </label>
@@ -400,7 +400,7 @@ export default function BrandPage() {
                   <select
                     value={sortBy}
                     onChange={(e) => handleSortChange(e.target.value)}
-                    className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                   >
                     <option value="name">Name</option>
                     <option value="price">Price</option>
@@ -423,13 +423,13 @@ export default function BrandPage() {
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={() => setViewMode('grid')}
-                    className={`p-2 rounded ${viewMode === 'grid' ? 'bg-primary-100 text-primary-600' : 'text-gray-500 hover:bg-gray-100'}`}
+                    className={`p-2 rounded ${viewMode === 'grid' ? 'bg-primary/10 text-primary' : 'text-gray-500 hover:bg-gray-100'}`}
                   >
                     <PackageIcon className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => setViewMode('list')}
-                    className={`p-2 rounded ${viewMode === 'list' ? 'bg-primary-100 text-primary-600' : 'text-gray-500 hover:bg-gray-100'}`}
+                    className={`p-2 rounded ${viewMode === 'list' ? 'bg-primary/10 text-primary' : 'text-gray-500 hover:bg-gray-100'}`}
                   >
                     <FilterIcon className="h-4 w-4" />
                   </button>
@@ -445,7 +445,7 @@ export default function BrandPage() {
                 <p className="text-gray-600 mb-4">Try adjusting your filters to see more products.</p>
                 <button
                   onClick={clearFilters}
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:brightness-[0.92]"
                 >
                   Clear Filters
                 </button>

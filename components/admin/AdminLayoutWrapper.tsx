@@ -36,8 +36,10 @@ import {
   DollarSign,
   User,
   MessageSquare,
-  FileText
+  FileText,
+  Bell
 } from 'lucide-react';
+import AppNotificationBell from '@/components/notifications/AppNotificationBell';
 
 interface AdminLayoutWrapperProps {
   children: React.ReactNode;
@@ -49,7 +51,7 @@ export default function AdminLayoutWrapper({ children }: AdminLayoutWrapperProps
   const [isClient, setIsClient] = useState(false);
   const [productsDropdownOpen, setProductsDropdownOpen] = useState(false);
   const [settingsDropdownOpen, setSettingsDropdownOpen] = useState(false);
-  const { profile, signOut } = useAuth();
+  const { profile, signOut, user } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
   
@@ -98,6 +100,7 @@ export default function AdminLayoutWrapper({ children }: AdminLayoutWrapperProps
     { name: 'Support', href: '/admin/support', icon: MessageSquare },
     { name: 'Finance', href: '/admin/finance', icon: DollarSign },
     { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
+    { name: 'Notifications', href: '/admin/notifications', icon: Bell },
     { 
       name: 'Settings', 
       href: '/admin/settings', 
@@ -161,7 +164,7 @@ export default function AdminLayoutWrapper({ children }: AdminLayoutWrapperProps
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-gray-600">Loading admin panel...</p>
         </div>
       </div>
@@ -208,13 +211,20 @@ export default function AdminLayoutWrapper({ children }: AdminLayoutWrapperProps
           <div className="flex items-center gap-x-4 lg:gap-x-6 pr-4 sm:pr-6 lg:pr-8">
             <div className="hidden lg:block lg:h-6 lg:w-px lg:bg-gray-200" />
             <div className="flex items-center gap-x-4 lg:gap-x-6">
+              <AppNotificationBell
+                userId={user?.id}
+                audience="admin"
+                centerHref="/admin/notifications"
+                panelTitle="Admin notifications"
+                showPriority
+              />
               <div className="relative">
                 <Link
                   href="/admin/account"
-                  className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center hover:bg-primary-200 transition-colors cursor-pointer"
+                  className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors cursor-pointer"
                   title="Account Settings"
                 >
-                  <span className="text-sm font-medium text-primary-700">
+                  <span className="text-sm font-medium text-primary">
                     {currentProfile?.first_name?.charAt(0) || 'A'}
                   </span>
                 </Link>
@@ -251,7 +261,7 @@ export default function AdminLayoutWrapper({ children }: AdminLayoutWrapperProps
                       }}
                       className={`group flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                         isActive(item.href)
-                          ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-500'
+                          ? 'bg-primary/5 text-primary border-r-2 border-primary'
                           : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                       }`}
                     >
@@ -273,7 +283,7 @@ export default function AdminLayoutWrapper({ children }: AdminLayoutWrapperProps
                             href={dropdownItem.href}
                             className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                               isActive(dropdownItem.href)
-                                ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-500'
+                                ? 'bg-primary/5 text-primary border-r-2 border-primary'
                                 : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                             }`}
                             onClick={() => setSidebarOpen(false)}
@@ -290,7 +300,7 @@ export default function AdminLayoutWrapper({ children }: AdminLayoutWrapperProps
                     href={item.href}
                     className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                       isActive(item.href)
-                        ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-500'
+                        ? 'bg-primary/5 text-primary border-r-2 border-primary'
                         : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                     }`}
                     onClick={() => {
@@ -308,8 +318,8 @@ export default function AdminLayoutWrapper({ children }: AdminLayoutWrapperProps
           <div className="flex-shrink-0 border-t border-gray-200 p-4">
             <div className="flex items-center mb-3">
               <div className="flex-shrink-0">
-                <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center">
-                  <span className="text-sm font-medium text-primary-700">
+                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                  <span className="text-sm font-medium text-primary">
                     {currentProfile?.first_name?.charAt(0) || 'A'}
                   </span>
                 </div>
@@ -370,7 +380,7 @@ export default function AdminLayoutWrapper({ children }: AdminLayoutWrapperProps
                         }}
                         className={`group flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                           isActive(item.href)
-                            ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-500'
+                            ? 'bg-primary/5 text-primary border-r-2 border-primary'
                             : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                         }`}
                         title={sidebarCollapsed ? item.name : undefined}
@@ -395,7 +405,7 @@ export default function AdminLayoutWrapper({ children }: AdminLayoutWrapperProps
                               href={dropdownItem.href}
                               className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                                 isActive(dropdownItem.href)
-                                  ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-500'
+                                  ? 'bg-primary/5 text-primary border-r-2 border-primary'
                                   : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                               }`}
                             >
@@ -411,7 +421,7 @@ export default function AdminLayoutWrapper({ children }: AdminLayoutWrapperProps
                       href={item.href}
                       className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                         isActive(item.href)
-                          ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-500'
+                          ? 'bg-primary/5 text-primary border-r-2 border-primary'
                           : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                       }`}
                       onClick={() => handleNavigation(item.href, item.name)}
@@ -427,8 +437,8 @@ export default function AdminLayoutWrapper({ children }: AdminLayoutWrapperProps
             <div className="flex-shrink-0 border-t border-gray-200 p-4">
               <div className="flex items-center mb-3">
                 <div className="flex-shrink-0">
-                  <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center">
-                    <span className="text-sm font-medium text-primary-700">
+                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <span className="text-sm font-medium text-primary">
                       {currentProfile?.first_name?.charAt(0) || 'A'}
                     </span>
                   </div>

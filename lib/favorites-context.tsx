@@ -131,7 +131,7 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
   // Fetch favorites when user changes
   useEffect(() => {
     fetchFavorites();
-  }, [user]);
+  }, [user?.id]);
 
   const value: FavoritesContextType = {
     favorites,

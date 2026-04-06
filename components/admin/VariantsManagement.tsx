@@ -13,6 +13,7 @@ import {
   Package,
   Eye
 } from 'lucide-react';
+import AdminModalBackdrop from './AdminModalBackdrop';
 
 export default function VariantsManagement() {
   const [variants, setVariants] = useState<ProductVariant[]>([]);
@@ -110,7 +111,7 @@ export default function VariantsManagement() {
         </div>
         <button
           onClick={() => setShowAddModal(true)}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700"
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:brightness-[0.92]"
         >
           <Plus className="h-4 w-4 mr-2" />
           Add Variant
@@ -128,7 +129,7 @@ export default function VariantsManagement() {
                 placeholder="Search variants..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500 w-full"
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary w-full"
               />
             </div>
           </div>
@@ -136,7 +137,7 @@ export default function VariantsManagement() {
             <select
               value={selectedProduct}
               onChange={(e) => setSelectedProduct(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
             >
               <option value="">All Products</option>
               {products.map(product => (
@@ -183,8 +184,8 @@ export default function VariantsManagement() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-8 w-8">
-                          <div className="h-8 w-8 rounded-md bg-primary-100 flex items-center justify-center">
-                            <Package className="h-4 w-4 text-primary-700" />
+                          <div className="h-8 w-8 rounded-md bg-primary/10 flex items-center justify-center">
+                            <Package className="h-4 w-4 text-primary" />
                           </div>
                         </div>
                         <div className="ml-4">
@@ -377,9 +378,8 @@ function VariantModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-      <div className="relative top-4 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white">
-        <div className="mt-3">
+    <AdminModalBackdrop>
+      <div className="relative mx-auto w-full max-w-2xl rounded-lg border border-gray-200 bg-white p-5 shadow-lg">
           <h3 className="text-lg font-medium text-gray-900 mb-4">
             {variant ? 'Edit Variant' : 'Add New Variant'}
           </h3>
@@ -390,7 +390,7 @@ function VariantModal({
                 <select
                   value={formData.product_id}
                   onChange={(e) => setFormData({ ...formData, product_id: e.target.value })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary focus:border-primary"
                   required
                 >
                   <option value="">Select Product</option>
@@ -405,7 +405,7 @@ function VariantModal({
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary focus:border-primary"
                   required
                 />
               </div>
@@ -417,7 +417,7 @@ function VariantModal({
                 type="text"
                 value={formData.sku}
                 onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary focus:border-primary"
               />
             </div>
 
@@ -429,7 +429,7 @@ function VariantModal({
                   step="0.01"
                   value={formData.price}
                   onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary focus:border-primary"
                   required
                 />
               </div>
@@ -439,7 +439,7 @@ function VariantModal({
                   type="number"
                   value={formData.stock_quantity}
                   onChange={(e) => setFormData({ ...formData, stock_quantity: parseInt(e.target.value) || 0 })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary focus:border-primary"
                 />
               </div>
             </div>
@@ -456,7 +456,7 @@ function VariantModal({
                       value={formData.attributes[attribute.id] || ''}
                       onChange={(e) => handleAttributeChange(attribute.id, e.target.value)}
                       placeholder={`Enter ${attribute.name.toLowerCase()}`}
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                     />
                   </div>
                 ))}
@@ -474,15 +474,14 @@ function VariantModal({
               <button
                 type="submit"
                 disabled={loading}
-                className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50"
+                className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:brightness-[0.92] disabled:opacity-50"
               >
                 {loading ? 'Saving...' : (variant ? 'Update' : 'Create')}
               </button>
             </div>
           </form>
-        </div>
       </div>
-    </div>
+    </AdminModalBackdrop>
   );
 }
 
@@ -518,9 +517,8 @@ function DeleteVariantModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-      <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div className="mt-3">
+    <AdminModalBackdrop>
+      <div className="relative mx-auto w-full max-w-md rounded-lg border border-gray-200 bg-white p-5 shadow-lg">
           <h3 className="text-lg font-medium text-gray-900 mb-4">Delete Variant</h3>
           <p className="text-sm text-gray-500 mb-6">
             Are you sure you want to delete "{variant.name}"? This action cannot be undone.
@@ -540,9 +538,8 @@ function DeleteVariantModal({
               {loading ? 'Deleting...' : 'Delete'}
             </button>
           </div>
-        </div>
       </div>
-    </div>
+    </AdminModalBackdrop>
   );
 }
 

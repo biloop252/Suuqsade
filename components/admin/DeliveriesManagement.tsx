@@ -17,6 +17,7 @@ import {
   RefreshCw,
   AlertCircle
 } from 'lucide-react';
+import AdminModalBackdrop, { AdminTallFormPanel } from './AdminModalBackdrop';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -559,7 +560,7 @@ export default function DeliveriesManagement() {
                               {orderStatusConfig[delivery.order.status].label}
                             </span>
                             {!isStatusSynced(delivery.status, delivery.order.status) && (
-                              <AlertCircle className="ml-1 h-3 w-3 text-primary-500" />
+                              <AlertCircle className="ml-1 h-3 w-3 text-primary" />
                             )}
                           </>
                         ) : (
@@ -607,7 +608,7 @@ export default function DeliveriesManagement() {
                         {delivery.order?.status && !isStatusSynced(delivery.status, delivery.order.status) && (
                           <button
                             onClick={() => syncDeliveryOrderStatus(delivery.id)}
-                            className="text-primary-500 hover:text-primary-600"
+                            className="text-primary hover:text-primary"
                             title="Sync status"
                           >
                             <RefreshCw className="h-4 w-4" />
@@ -716,18 +717,20 @@ export default function DeliveriesManagement() {
 
       {/* Delivery Details Modal */}
       {showDetailsModal && selectedDelivery && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
-            <div className="flex justify-between items-center mb-4">
+        <AdminModalBackdrop>
+          <AdminTallFormPanel className="w-11/12 max-w-2xl md:w-3/4 lg:max-w-xl">
+            <div className="flex shrink-0 items-center justify-between border-b border-gray-200 px-5 py-4">
               <h3 className="text-lg font-semibold text-gray-900">Shipment Details</h3>
               <button
+                type="button"
                 onClick={() => setShowDetailsModal(false)}
                 className="text-gray-400 hover:text-gray-600"
               >
                 <XCircle className="h-6 w-6" />
               </button>
             </div>
-            
+
+            <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
             <div className="space-y-6">
               {/* Tracking Information */}
               <div className="bg-gray-50 p-4 rounded-lg">
@@ -856,24 +859,27 @@ export default function DeliveriesManagement() {
                 </div>
               )}
             </div>
-          </div>
-        </div>
+            </div>
+          </AdminTallFormPanel>
+        </AdminModalBackdrop>
       )}
 
       {/* Edit Status Modal */}
       {showEditModal && selectedDelivery && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div className="flex justify-between items-center mb-4">
+        <AdminModalBackdrop>
+          <AdminTallFormPanel className="w-full max-w-md">
+            <div className="flex shrink-0 items-center justify-between border-b border-gray-200 px-5 py-4">
               <h3 className="text-lg font-semibold text-gray-900">Update Shipment</h3>
               <button
+                type="button"
                 onClick={() => setShowEditModal(false)}
                 className="text-gray-400 hover:text-gray-600"
               >
                 <XCircle className="h-6 w-6" />
               </button>
             </div>
-            
+
+            <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -937,9 +943,12 @@ export default function DeliveriesManagement() {
                   })}
                 </select>
               </div>
+            </div>
+            </div>
 
-              <div className="flex gap-2 pt-2">
+            <div className="flex shrink-0 gap-2 border-t border-gray-200 bg-gray-50 px-5 py-4">
                 <button
+                  type="button"
                   onClick={() => setShowEditModal(false)}
                   className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
                   disabled={saving}
@@ -947,16 +956,16 @@ export default function DeliveriesManagement() {
                   Cancel
                 </button>
                 <button
+                  type="button"
                   onClick={handleShipmentUpdate}
                   className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
                   disabled={saving}
                 >
                   {saving ? 'Saving...' : 'Save'}
                 </button>
-              </div>
             </div>
-          </div>
-        </div>
+          </AdminTallFormPanel>
+        </AdminModalBackdrop>
       )}
     </div>
   );

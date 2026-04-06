@@ -15,6 +15,7 @@ import {
   Plus
 } from 'lucide-react';
 import Pagination from './Pagination';
+import AdminModalBackdrop from './AdminModalBackdrop';
 
 export default function UsersManagement() {
   const [users, setUsers] = useState<Profile[]>([]);
@@ -188,7 +189,7 @@ export default function UsersManagement() {
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:brightness-[0.92] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
         >
           <Plus className="h-4 w-4 mr-2" />
           Add User
@@ -206,7 +207,7 @@ export default function UsersManagement() {
                 placeholder="Search users..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500 w-full"
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary w-full"
               />
             </div>
           </div>
@@ -214,7 +215,7 @@ export default function UsersManagement() {
             <select
               value={selectedRole}
               onChange={(e) => setSelectedRole(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
             >
               <option value="">All Workers</option>
               {roleOptions.map(role => (
@@ -258,8 +259,8 @@ export default function UsersManagement() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-8 w-8">
-                          <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center">
-                            <span className="text-sm font-medium text-primary-700">
+                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                            <span className="text-sm font-medium text-primary">
                               {user.first_name?.charAt(0) || 'U'}
                             </span>
                           </div>
@@ -396,9 +397,8 @@ function EditUserModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-      <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div className="mt-3">
+    <AdminModalBackdrop>
+      <div className="relative mx-auto w-full max-w-md rounded-lg border border-gray-200 bg-white p-5 shadow-lg">
           <h3 className="text-lg font-medium text-gray-900 mb-4">Update User Role</h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -415,7 +415,7 @@ function EditUserModal({
               <select
                 value={selectedRole}
                 onChange={(e) => setSelectedRole(e.target.value as UserRole)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                 required
               >
                 {roleOptions.map(role => (
@@ -434,15 +434,14 @@ function EditUserModal({
               <button
                 type="submit"
                 disabled={loading}
-                className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50"
+                className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:brightness-[0.92] disabled:opacity-50"
               >
                 {loading ? 'Updating...' : 'Update Role'}
               </button>
             </div>
           </form>
-        </div>
       </div>
-    </div>
+    </AdminModalBackdrop>
   );
 }
 
@@ -506,9 +505,8 @@ function CreateUserModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-      <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div className="mt-3">
+    <AdminModalBackdrop>
+      <div className="relative mx-auto w-full max-w-md rounded-lg border border-gray-200 bg-white p-5 shadow-lg">
           <h3 className="text-lg font-medium text-gray-900 mb-4">Add New User</h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
@@ -518,7 +516,7 @@ function CreateUserModal({
                   type="text"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                 />
               </div>
               <div>
@@ -527,7 +525,7 @@ function CreateUserModal({
                   type="text"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                 />
               </div>
             </div>
@@ -538,7 +536,7 @@ function CreateUserModal({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
               />
             </div>
             <div>
@@ -546,7 +544,7 @@ function CreateUserModal({
               <select
                 value={role}
                 onChange={(e) => setRole(e.target.value as UserRole)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
               >
                 {roleOptions.map(r => (
                   <option key={r.value} value={r.value}>{r.label}</option>
@@ -560,7 +558,7 @@ function CreateUserModal({
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Leave blank to auto-generate"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
               />
             </div>
             <div className="flex justify-end space-x-3 pt-2">
@@ -574,15 +572,14 @@ function CreateUserModal({
               <button
                 type="submit"
                 disabled={loading}
-                className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50"
+                className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:brightness-[0.92] disabled:opacity-50"
               >
                 {loading ? 'Creating...' : 'Create User'}
               </button>
             </div>
           </form>
-        </div>
       </div>
-    </div>
+    </AdminModalBackdrop>
   );
 }
 

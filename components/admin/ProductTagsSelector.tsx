@@ -90,7 +90,7 @@ export default function ProductTagsSelector({ initialSelectedIds = [], onChange 
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search tags..."
-          className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+          className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-primary focus:border-primary"
         />
       </div>
 
@@ -107,7 +107,7 @@ export default function ProductTagsSelector({ initialSelectedIds = [], onChange 
               onClick={() => toggleSelect(tag.id)}
               className={`px-2.5 py-1 text-xs rounded-full border ${
                 selectedIds.includes(tag.id)
-                  ? 'bg-primary-50 text-primary-700 border-primary-200'
+                  ? 'bg-primary/5 text-primary border-primary/25'
                   : 'bg-gray-50 text-gray-700 border-gray-200'
               }`}
               title={tag.description || ''}
@@ -124,7 +124,7 @@ export default function ProductTagsSelector({ initialSelectedIds = [], onChange 
           value={newTagName}
           onChange={(e) => setNewTagName(e.target.value)}
           placeholder="Create new tag"
-          className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+          className="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-primary focus:border-primary"
         />
         <button
           type="button"

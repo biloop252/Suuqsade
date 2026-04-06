@@ -248,7 +248,7 @@ export default function SupportManagement() {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'urgent': return 'bg-red-100 text-red-800';
-      case 'high': return 'bg-primary-100 text-primary-800';
+      case 'high': return 'bg-primary/10 text-primary';
       case 'medium': return 'bg-yellow-100 text-yellow-800';
       case 'low': return 'bg-green-100 text-green-800';
       default: return 'bg-gray-100 text-gray-800';
@@ -275,7 +275,7 @@ export default function SupportManagement() {
         </div>
         <button
           onClick={fetchTickets}
-          className="flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+          className="flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:brightness-[0.92] transition-colors"
         >
           <RefreshCw className="h-4 w-4 mr-2" />
           Refresh
@@ -320,8 +320,8 @@ export default function SupportManagement() {
           </div>
           <div className="bg-white p-6 rounded-lg shadow">
             <div className="flex items-center">
-              <div className="p-2 bg-primary-100 rounded-lg">
-                <AlertCircle className="h-6 w-6 text-primary-700" />
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <AlertCircle className="h-6 w-6 text-primary" />
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Urgent</p>
@@ -347,14 +347,14 @@ export default function SupportManagement() {
                       placeholder="Search tickets..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                     />
                   </div>
                 </div>
                 <select
                   value={selectedStatus}
                   onChange={(e) => setSelectedStatus(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                 >
                   <option value="">All Status</option>
                   <option value="open">Open</option>
@@ -367,7 +367,7 @@ export default function SupportManagement() {
                 <select
                   value={selectedPriority}
                   onChange={(e) => setSelectedPriority(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                 >
                   <option value="">All Priority</option>
                   <option value="low">Low</option>
@@ -420,7 +420,7 @@ export default function SupportManagement() {
                     tickets.map((ticket) => (
                       <tr 
                         key={ticket.id} 
-                        className={`hover:bg-gray-50 cursor-pointer ${selectedTicket?.id === ticket.id ? 'bg-primary-50' : ''}`}
+                        className={`hover:bg-gray-50 cursor-pointer ${selectedTicket?.id === ticket.id ? 'bg-primary/5' : ''}`}
                         onClick={() => handleTicketClick(ticket)}
                       >
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -461,7 +461,7 @@ export default function SupportManagement() {
                                 e.stopPropagation();
                                 handleTicketClick(ticket);
                               }}
-                              className="text-primary-600 hover:text-primary-800"
+                              className="text-primary hover:opacity-80"
                             >
                               <Eye className="h-4 w-4" />
                             </button>
@@ -533,7 +533,7 @@ export default function SupportManagement() {
                       onClick={() => updateTicketStatus(selectedTicket.id, status)}
                       className={`px-3 py-1 text-xs rounded-full transition-colors ${
                         selectedTicket.status === status
-                          ? 'bg-primary-100 text-primary-800'
+                          ? 'bg-primary/10 text-primary'
                           : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                       }`}
                     >
@@ -588,7 +588,7 @@ export default function SupportManagement() {
                       id="internal"
                       checked={isInternal}
                       onChange={(e) => setIsInternal(e.target.checked)}
-                      className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                      className="rounded border-gray-300 text-primary focus:ring-primary"
                     />
                     <label htmlFor="internal" className="text-sm text-gray-700">
                       Internal note (not visible to customer)
@@ -599,12 +599,12 @@ export default function SupportManagement() {
                     onChange={(e) => setNewMessage(e.target.value)}
                     placeholder="Type your message..."
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                   <button
                     onClick={sendMessage}
                     disabled={!newMessage.trim()}
-                    className="w-full flex items-center justify-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="w-full flex items-center justify-center px-4 py-2 bg-primary text-white rounded-lg hover:brightness-[0.92] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     <Send className="h-4 w-4 mr-2" />
                     Send Message

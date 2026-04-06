@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Discount, DiscountType, DiscountStatus, Product, Category, Brand, Profile } from '@/types/database';
 import { X, Save, Calendar, DollarSign, Percent, Truck, Package, FolderTree, Award, Users, Building2 } from 'lucide-react';
+import AdminModalBackdrop, { AdminTallFormPanel } from './AdminModalBackdrop';
 
 interface DiscountFormProps {
   discount?: Discount;
@@ -438,13 +439,14 @@ export default function DiscountForm({ discount, onClose, onSave, isVendor = fal
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-      <div className="relative top-4 mx-auto p-5 border w-full max-w-4xl shadow-lg rounded-md bg-white mb-4">
-        <div className="flex justify-between items-center mb-6">
+    <AdminModalBackdrop>
+      <AdminTallFormPanel className="w-full max-w-4xl">
+        <div className="flex shrink-0 items-center justify-between border-b border-gray-200 px-5 py-4">
           <h3 className="text-lg font-medium text-gray-900">
             {discount ? 'Edit Discount' : 'Create Discount'}
           </h3>
           <button
+            type="button"
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600"
           >
@@ -452,7 +454,8 @@ export default function DiscountForm({ discount, onClose, onSave, isVendor = fal
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+          <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4 space-y-6">
           {/* Basic Information */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
@@ -463,7 +466,7 @@ export default function DiscountForm({ discount, onClose, onSave, isVendor = fal
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                className={`w-full px-3 py-2 border rounded-md focus:ring-primary-500 focus:border-primary-500 ${
+                className={`w-full px-3 py-2 border rounded-md focus:ring-primary focus:border-primary ${
                   errors.name ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="e.g., Summer Sale 2024"
@@ -479,7 +482,7 @@ export default function DiscountForm({ discount, onClose, onSave, isVendor = fal
                 type="text"
                 value={formData.code}
                 onChange={(e) => setFormData(prev => ({ ...prev, code: e.target.value.toUpperCase() }))}
-                className={`w-full px-3 py-2 border rounded-md focus:ring-primary-500 focus:border-primary-500 ${
+                className={`w-full px-3 py-2 border rounded-md focus:ring-primary focus:border-primary ${
                   errors.code ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="e.g., SUMMER2024"
@@ -496,7 +499,7 @@ export default function DiscountForm({ discount, onClose, onSave, isVendor = fal
               value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
               placeholder="Describe the discount..."
             />
           </div>
@@ -544,7 +547,7 @@ export default function DiscountForm({ discount, onClose, onSave, isVendor = fal
                 step={formData.type === 'percentage' ? '0.01' : '0.01'}
                 value={formData.value}
                 onChange={(e) => setFormData(prev => ({ ...prev, value: e.target.value }))}
-                className={`w-full px-3 py-2 border rounded-md focus:ring-primary-500 focus:border-primary-500 ${
+                className={`w-full px-3 py-2 border rounded-md focus:ring-primary focus:border-primary ${
                   errors.value ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder={formData.type === 'percentage' ? '20' : '10.00'}
@@ -566,7 +569,7 @@ export default function DiscountForm({ discount, onClose, onSave, isVendor = fal
                 step="0.01"
                 value={formData.minimum_order_amount}
                 onChange={(e) => setFormData(prev => ({ ...prev, minimum_order_amount: e.target.value }))}
-                className={`w-full px-3 py-2 border rounded-md focus:ring-primary-500 focus:border-primary-500 ${
+                className={`w-full px-3 py-2 border rounded-md focus:ring-primary focus:border-primary ${
                   errors.minimum_order_amount ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="0.00"
@@ -585,7 +588,7 @@ export default function DiscountForm({ discount, onClose, onSave, isVendor = fal
                   step="0.01"
                   value={formData.maximum_discount_amount}
                   onChange={(e) => setFormData(prev => ({ ...prev, maximum_discount_amount: e.target.value }))}
-                  className={`w-full px-3 py-2 border rounded-md focus:ring-primary-500 focus:border-primary-500 ${
+                  className={`w-full px-3 py-2 border rounded-md focus:ring-primary focus:border-primary ${
                     errors.maximum_discount_amount ? 'border-red-500' : 'border-gray-300'
                   }`}
                   placeholder="50.00"
@@ -606,7 +609,7 @@ export default function DiscountForm({ discount, onClose, onSave, isVendor = fal
                 min="0"
                 value={formData.usage_limit}
                 onChange={(e) => setFormData(prev => ({ ...prev, usage_limit: e.target.value }))}
-                className={`w-full px-3 py-2 border rounded-md focus:ring-primary-500 focus:border-primary-500 ${
+                className={`w-full px-3 py-2 border rounded-md focus:ring-primary focus:border-primary ${
                   errors.usage_limit ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="Leave empty for unlimited"
@@ -623,7 +626,7 @@ export default function DiscountForm({ discount, onClose, onSave, isVendor = fal
                 min="1"
                 value={formData.usage_limit_per_user}
                 onChange={(e) => setFormData(prev => ({ ...prev, usage_limit_per_user: e.target.value }))}
-                className={`w-full px-3 py-2 border rounded-md focus:ring-primary-500 focus:border-primary-500 ${
+                className={`w-full px-3 py-2 border rounded-md focus:ring-primary focus:border-primary ${
                   errors.usage_limit_per_user ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
@@ -640,7 +643,7 @@ export default function DiscountForm({ discount, onClose, onSave, isVendor = fal
                <select
                  value={formData.vendor_id}
                  onChange={(e) => setFormData(prev => ({ ...prev, vendor_id: e.target.value }))}
-                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
                >
                  <option value="">Global Discount (No Vendor)</option>
                  {vendors.map((vendor) => (
@@ -798,7 +801,7 @@ export default function DiscountForm({ discount, onClose, onSave, isVendor = fal
                 type="datetime-local"
                 value={formData.start_date}
                 onChange={(e) => setFormData(prev => ({ ...prev, start_date: e.target.value }))}
-                className={`w-full px-3 py-2 border rounded-md focus:ring-primary-500 focus:border-primary-500 ${
+                className={`w-full px-3 py-2 border rounded-md focus:ring-primary focus:border-primary ${
                   errors.start_date ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
@@ -813,7 +816,7 @@ export default function DiscountForm({ discount, onClose, onSave, isVendor = fal
                 type="datetime-local"
                 value={formData.end_date}
                 onChange={(e) => setFormData(prev => ({ ...prev, end_date: e.target.value }))}
-                className={`w-full px-3 py-2 border rounded-md focus:ring-primary-500 focus:border-primary-500 ${
+                className={`w-full px-3 py-2 border rounded-md focus:ring-primary focus:border-primary ${
                   errors.end_date ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
@@ -840,9 +843,10 @@ export default function DiscountForm({ discount, onClose, onSave, isVendor = fal
               <p className="text-sm text-red-600">{errors.submit}</p>
             </div>
           )}
+          </div>
 
           {/* Actions */}
-          <div className="flex justify-end space-x-3 pt-6 border-t">
+          <div className="flex shrink-0 justify-end gap-3 border-t border-gray-200 bg-gray-50 px-5 py-4">
             <button
               type="button"
               onClick={onClose}
@@ -853,7 +857,7 @@ export default function DiscountForm({ discount, onClose, onSave, isVendor = fal
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50 flex items-center"
+              className="px-4 py-2 bg-primary text-white rounded-md hover:brightness-[0.92] disabled:opacity-50 flex items-center"
             >
               {loading ? (
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
@@ -864,7 +868,7 @@ export default function DiscountForm({ discount, onClose, onSave, isVendor = fal
             </button>
           </div>
         </form>
-      </div>
-    </div>
+      </AdminTallFormPanel>
+    </AdminModalBackdrop>
   );
 }

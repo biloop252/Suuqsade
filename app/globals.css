@@ -72,7 +72,7 @@
   
   /* Keep focus visible for keyboard navigation */
   *:focus-visible {
-    outline: 2px solid theme('colors.primary.500');
+    outline: 2px solid theme('colors.primary');
     outline-offset: 2px;
   }
   
@@ -85,13 +85,13 @@
 @layer components {
   /* Responsive Button Styles */
   .btn-primary {
-    @apply bg-primary-500 text-white px-3 py-2 sm:px-4 sm:py-2 rounded-lg hover:bg-primary-600 transition-colors font-medium text-sm sm:text-base min-h-[44px] min-w-[44px] flex items-center justify-center;
+    @apply bg-primary text-white px-3 py-2 sm:px-4 sm:py-2 rounded-lg hover:brightness-[0.92] transition-colors font-medium text-sm sm:text-base min-h-[44px] min-w-[44px] flex items-center justify-center;
     outline: none !important;
     -webkit-tap-highlight-color: transparent;
   }
   
   .btn-secondary {
-    @apply bg-secondary-500 text-gray-900 px-3 py-2 sm:px-4 sm:py-2 rounded-lg hover:bg-secondary-400 transition-colors font-medium text-sm sm:text-base min-h-[44px] min-w-[44px] flex items-center justify-center;
+    @apply bg-secondary text-gray-900 px-3 py-2 sm:px-4 sm:py-2 rounded-lg hover:brightness-110 transition-colors font-medium text-sm sm:text-base min-h-[44px] min-w-[44px] flex items-center justify-center;
     outline: none !important;
     -webkit-tap-highlight-color: transparent;
   }
@@ -106,7 +106,7 @@
   
   /* Responsive Input Styles */
   .input-field {
-    @apply block w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 transition-colors text-sm sm:text-base min-h-[44px];
+    @apply block w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary transition-colors text-sm sm:text-base min-h-[44px];
   }
   
   /* Responsive Card Styles */

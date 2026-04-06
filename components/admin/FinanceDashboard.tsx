@@ -208,7 +208,7 @@ export default function FinanceDashboard() {
       pending: 'bg-yellow-100 text-yellow-800',
       completed: 'bg-green-100 text-green-800',
       paid: 'bg-green-100 text-green-800',
-      processing: 'bg-primary-100 text-primary-800',
+      processing: 'bg-primary/10 text-primary',
       failed: 'bg-red-100 text-red-800',
       cancelled: 'bg-gray-100 text-gray-800'
     };
@@ -225,7 +225,7 @@ export default function FinanceDashboard() {
       case 'sale_commission':
         return <TrendingUp className="h-4 w-4 text-green-600" />;
       case 'vendor_payout':
-        return <CreditCard className="h-4 w-4 text-primary-600" />;
+        return <CreditCard className="h-4 w-4 text-primary" />;
       case 'admin_revenue':
         return <DollarSign className="h-4 w-4 text-purple-600" />;
       default:
@@ -490,7 +490,7 @@ export default function FinanceDashboard() {
           <div className="px-6 py-4 border-t border-gray-200 text-center">
             <Link
               href="/admin/finance/overview"
-              className="text-sm font-medium text-primary-600 hover:text-primary-900"
+              className="text-sm font-medium text-primary hover:opacity-80"
             >
               View all vendors in detailed workspace →
             </Link>

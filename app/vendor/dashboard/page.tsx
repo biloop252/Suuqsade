@@ -40,7 +40,7 @@ export default function VendorDashboard() {
     }
     
     loadVendorStats();
-  }, [user, profile, router]);
+  }, [user?.id, profile?.role, router]);
 
   const loadVendorStats = async () => {
     if (!user) return;

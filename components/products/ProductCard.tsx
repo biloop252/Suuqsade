@@ -149,7 +149,7 @@ export default function ProductCard({ product, viewMode = 'grid', discountData, 
 
   if (viewMode === 'list') {
     return (
-      <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-100">
+      <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 border border-primary/20 hover:border-primary/40">
         <div className="flex">
           {/* Image */}
           <div className="w-48 h-48 flex-shrink-0">
@@ -193,7 +193,7 @@ export default function ProductCard({ product, viewMode = 'grid', discountData, 
             <div className="flex justify-between items-start">
               <div className="flex-1">
                 <Link href={`/products/${product.slug}`}>
-                  <h3 className={`${variant === 'compact' ? 'text-sm font-medium' : 'text-base sm:text-lg font-semibold'} text-[#851F8F] hover:text-[#851F8F] mt-1 mb-2 transition-colors`}>
+                  <h3 className={`${variant === 'compact' ? 'text-sm font-medium' : 'text-base sm:text-lg font-semibold'} text-primary hover:brightness-110 mt-1 mb-2 transition-all`}>
                     {product.name}
                   </h3>
                 </Link>
@@ -243,7 +243,7 @@ export default function ProductCard({ product, viewMode = 'grid', discountData, 
                 <button
                   onClick={handleAddToCart}
                   disabled={addingToCart}
-                  className="flex items-center justify-center px-4 py-2 bg-[#851F8F] text-white rounded-md hover:bg-[#851F8F] disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+                  className="flex items-center justify-center px-4 py-2 bg-primary text-white rounded-md hover:brightness-[0.92] disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium"
                 >
                   <ShoppingBasket className="h-4 w-4 mr-2" />
                   {addingToCart ? 'Adding...' : 'Add to Cart'}
@@ -268,7 +268,7 @@ export default function ProductCard({ product, viewMode = 'grid', discountData, 
 
   return (
     <div
-      className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 group border border-gray-100 h-full flex flex-col"
+      className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 group border border-primary/20 hover:border-primary/40 h-full flex flex-col"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -323,7 +323,7 @@ export default function ProductCard({ product, viewMode = 'grid', discountData, 
       <div className={`${variant === 'compact' ? 'p-3' : 'p-4'} flex flex-col flex-1`}>
         
         <Link href={`/products/${product.slug}`}>
-          <h3 className={`${variant === 'compact' ? 'text-sm font-medium' : 'text-base sm:text-lg font-semibold'} text-[#851F8F] hover:text-[#851F8F] mt-1 mb-2 line-clamp-2 transition-colors`}>
+          <h3 className={`${variant === 'compact' ? 'text-sm font-medium' : 'text-base sm:text-lg font-semibold'} text-primary hover:brightness-110 mt-1 mb-2 line-clamp-2 transition-all`}>
             {product.name}
           </h3>
         </Link>
@@ -372,7 +372,7 @@ export default function ProductCard({ product, viewMode = 'grid', discountData, 
           <button
             onClick={handleAddToCart}
             disabled={addingToCart}
-            className="w-10 h-10 flex items-center justify-center bg-[#851F8F] text-white rounded-full hover:bg-[#851F8F] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-10 h-10 flex items-center justify-center bg-primary text-white rounded-full hover:brightness-[0.92] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
           >
             <ShoppingBasket className="h-4 w-4" />
           </button>
